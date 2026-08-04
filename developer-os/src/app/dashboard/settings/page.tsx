@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useSession } from "next-auth/react";
+import { useSession, signIn } from "next-auth/react";
 import {
   User,
   Palette,
@@ -112,13 +112,54 @@ export default function SettingsPage() {
   const loginProvider = session?.user?.loginProvider;
   const providerInfo = getProviderInfo(loginProvider);
 
+  // Track whether we've initialized profile fields from session
+  const hasInitializedRef = useRef(false);
+  const googleAutoSyncDoneRef = useRef(false);
+
   useEffect(() => {
     setMounted(true);
-    if (session?.user) {
+  }, []);
+
+  // Populate profile fields from session on initial load
+  useEffect(() => {
+    if (session?.user && !hasInitializedRef.current) {
+      hasInitializedRef.current = true;
       setProfileName(session.user.name || "");
       setProfileEmail(session.user.email || "");
       setProfileImage(session.user.image || "");
       setImageError(false);
+    }
+  }, [session]);
+
+  // Auto-save profile after Google OAuth redirect (detects first Google login)
+  useEffect(() => {
+    if (
+      session?.user?.loginProvider === "google" &&
+      hasInitializedRef.current &&
+      !googleAutoSyncDoneRef.current
+    ) {
+      googleAutoSyncDoneRef.current = true;
+      const name = session.user.name || "";
+      const email = session.user.email || "";
+      const image = session.user.image || "";
+
+      if (name || image) {
+        setProfileName(name);
+        setProfileImage(image);
+        // Auto-save the profile to persist Google data
+        fetch("/api/profile", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, email, image }),
+        })
+          .then(() => {
+            setSaved(true);
+            setTimeout(() => setSaved(false), 3000);
+          })
+          .catch((err) => {
+            console.error("Auto-save after Google connect failed:", err);
+          });
+      }
     }
   }, [session]);
 
@@ -374,18 +415,28 @@ export default function SettingsPage() {
                           }
                         </span>
                       </div>
-                      <button
-                        onClick={handleSyncFromProvider}
-                        disabled={isSyncingFromProvider || !loginProvider}
-                        className="flex items-center gap-1 text-xs font-medium text-primary hover:text-primary/80 transition-colors disabled:opacity-50"
-                      >
-                        {isSyncingFromProvider ? (
-                          <Loader2 className="h-3 w-3 animate-spin" />
-                        ) : (
-                          <RefreshCw className="h-3 w-3" />
-                        )}
-                        Sync from {providerInfo.name}
-                      </button>
+                      {!loginProvider ? (
+                        <button
+                          onClick={() => signIn("google", { callbackUrl: "/dashboard/settings" })}
+                          className="flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 px-3 py-1.5 text-xs font-semibold text-white shadow-md shadow-blue-500/20 hover:shadow-lg hover:shadow-blue-500/30 transition-all duration-200 active:scale-95"
+                        >
+                          <GoogleIcon className="h-3 w-3" />
+                          Connect Google
+                        </button>
+                      ) : (
+                        <button
+                          onClick={handleSyncFromProvider}
+                          disabled={isSyncingFromProvider}
+                          className="flex items-center gap-1 text-xs font-medium text-primary hover:text-primary/80 transition-colors disabled:opacity-50"
+                        >
+                          {isSyncingFromProvider ? (
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                          ) : (
+                            <RefreshCw className="h-3 w-3" />
+                          )}
+                          Sync from {providerInfo.name}
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>

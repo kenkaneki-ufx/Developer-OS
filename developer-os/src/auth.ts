@@ -111,6 +111,26 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
 
       // Always allow OAuth sign-in - we use JWT sessions
+      // Auto-sync Google profile data (name, image) to existing user record by email match
+      if (account.provider === "google" && user.email && prisma) {
+        try {
+          const existingUser = await prisma.user.findUnique({
+            where: { email: user.email },
+            select: { id: true, name: true, image: true },
+          });
+          if (existingUser) {
+            await prisma.user.update({
+              where: { id: existingUser.id },
+              data: {
+                ...(user.name && { name: user.name }),
+                ...(user.image && { image: user.image }),
+              },
+            });
+          }
+        } catch (error) {
+          console.error("Error syncing Google profile data:", error);
+        }
+      }
       return true;
     },
     async jwt({ token, user, account, trigger }) {

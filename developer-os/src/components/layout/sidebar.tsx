@@ -78,26 +78,6 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
-    title: "Skills & Growth",
-    items: [
-      {
-        label: "DSA Tracker",
-        href: "/dashboard/dsa",
-        icon: Code,
-      },
-      {
-        label: "Programming Roadmap",
-        href: "/dashboard/roadmaps/programming",
-        icon: Map,
-      },
-      {
-        label: "ML Roadmap",
-        href: "/dashboard/roadmaps/ml",
-        icon: Map,
-      },
-    ],
-  },
-  {
     title: "Projects & Work",
     items: [
       {
@@ -124,6 +104,26 @@ const navGroups: NavGroup[] = [
         label: "Documentation",
         href: "/dashboard/documentation",
         icon: BookOpen,
+      },
+    ],
+  },
+  {
+    title: "Skills & Growth",
+    items: [
+      {
+        label: "DSA Tracker",
+        href: "/dashboard/dsa",
+        icon: Code,
+      },
+      {
+        label: "Programming Roadmap",
+        href: "/dashboard/roadmaps/programming",
+        icon: Map,
+      },
+      {
+        label: "ML Roadmap",
+        href: "/dashboard/roadmaps/ml",
+        icon: Map,
       },
     ],
   },

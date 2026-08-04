@@ -57,13 +57,7 @@ const gradients = [
   "from-teal-500/20 to-cyan-500/20",
 ];
 
-const initialProjects: Project[] = [
-  { id: "1", name: "Developer OS", description: "Your second brain for productivity", status: "active", progress: 15, technologies: ["Next.js", "TypeScript", "Tailwind", "Prisma"], tasks: { total: 45, completed: 7 }, deadline: "2026-12-31", github: "https://github.com/user/developer-os", gradient: gradients[0], starred: true },
-  { id: "2", name: "ML Image Classifier", description: "Deep learning model for image classification", status: "active", progress: 60, technologies: ["Python", "TensorFlow", "OpenCV"], tasks: { total: 20, completed: 12 }, deadline: "2026-08-15", github: "https://github.com/user/ml-classifier", gradient: gradients[1], starred: false },
-  { id: "3", name: "E-commerce API", description: "RESTful API for online store", status: "completed", progress: 100, technologies: ["Node.js", "Express", "MongoDB"], tasks: { total: 30, completed: 30 }, deadline: "2026-06-30", gradient: gradients[2], starred: false },
-  { id: "4", name: "Chat Application", description: "Real-time messaging with WebSocket", status: "completed", progress: 100, technologies: ["React", "Socket.io", "Redis"], tasks: { total: 25, completed: 25 }, gradient: gradients[3], starred: true },
-  { id: "5", name: "Portfolio Website", description: "Personal portfolio and blog", status: "paused", progress: 40, technologies: ["Next.js", "MDX", "Tailwind"], tasks: { total: 15, completed: 6 }, gradient: gradients[4], starred: false },
-];
+const initialProjects: Project[] = [];
 
 const statusConfig = {
   active: { label: "Active", className: "bg-green-500/10 text-green-600 border-green-500/20", icon: CheckCircle2 },
