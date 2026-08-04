@@ -120,8 +120,7 @@ Built with modern web technologies and powered by AI, this application provides 
 
 ```
 Developer-OS/
-├── setup.py                 # One-time setup
-├── run.py                   # Launch Developer OS
+├── first_setup.py                 # One-time setup
 ├── README.md
 ├── LICENSE
 └── developer-os/
