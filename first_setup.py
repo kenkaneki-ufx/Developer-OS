@@ -124,7 +124,6 @@ APP_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "developer-os
 subprocess.Popen(["npm", "run", "dev"], shell=True, cwd=APP_DIR)
 '''
 
-
 def create_run_script():
     run_path = os.path.join(ROOT_DIR, "run.py")
     with open(run_path, "w", encoding="utf-8") as f:
