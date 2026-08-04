@@ -1,0 +1,30 @@
+# dependencies
+node_modules/
+
+# environment variables
+.env
+.env.local
+.env*.local
+
+# build output
+.next/
+out/
+build/
+dist/
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# misc
+.DS_Store
+*.log
+
+# prisma 
+prisma/dev.db
+
+# editor
+.vscode/
+.idea/
+
+run.py

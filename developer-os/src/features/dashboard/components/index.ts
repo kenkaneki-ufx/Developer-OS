@@ -1,0 +1,9 @@
+export { StatCard } from "./stat-card";
+export { AITasksWidget } from "./ai-tasks-widget";
+export { ProjectsWidget } from "./projects-widget";
+export { DeadlinesWidget } from "./deadlines-widget";
+export { GitHubWidget } from "./github-widget";
+export { DSAWidget } from "./dsa-widget";
+export { MLWidget } from "./ml-widget";
+export { MotivationWidget } from "./motivation-widget";
+export { QuickNotesWidget } from "./notes-widget";

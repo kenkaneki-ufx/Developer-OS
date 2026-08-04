@@ -1,0 +1,767 @@
+// Developer OS - Prisma Schema
+// A comprehensive schema for a Developer Operating System
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ===========================================
+// AUTHENTICATION & USER MANAGEMENT
+// ===========================================
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  accounts         Account[]
+  sessions         Session[]
+  profile          Profile?
+  projects         Project[]
+  tasks            Task[]
+  notes            Note[]
+  studySessions    StudySession[]
+  dsaProgress      DSAProgress[]
+  mlProgress       MLProgress[]
+  roadmapProgress  RoadmapProgress[]
+  collegeData      CollegeData?
+  settings         UserSettings?
+  streaks          UserStreak[]
+  githubData       GitHubData?
+  dailyAnalytics   DailyAnalytics[]
+  aiConversations  AIConversation[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ===========================================
+// USER PROFILE & SETTINGS
+// ===========================================
+
+model Profile {
+  id              String  @id @default(cuid())
+  userId          String  @unique
+  bio             String? @db.Text
+  university      String?
+  semester        Int?
+  course          String? // B.Tech, BCA, etc.
+  yearOfStudy     Int?
+  github          String?
+  leetcodeUsername String? // LeetCode username
+  linkedin        String?
+  website         String?
+  skills          String[] // Array of skill tags
+  goals           Json?    // Structured goals data
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model UserSettings {
+  id              String  @id @default(cuid())
+  userId          String  @unique
+  theme           String  @default("dark") // dark, light, system
+  language        String  @default("en")
+  timezone        String  @default("UTC")
+  aiProvider      String  @default("openai") // openai, anthropic, gemini
+  aiModel         String  @default("gpt-4")
+  notifications   Json?   // Notification preferences
+  pomodoroLength  Int     @default(25) // minutes
+  shortBreak      Int     @default(5) // minutes
+  longBreak       Int     @default(15) // minutes
+  dailyGoalHours  Float   @default(8)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ===========================================
+// PROJECT MANAGEMENT
+// ===========================================
+
+model Project {
+  id          String       @id @default(cuid())
+  userId      String
+  name        String
+  description String?      @db.Text
+  status      ProjectStatus @default(ACTIVE)
+  priority    Priority     @default(MEDIUM)
+  color       String?      // Custom color for project
+  icon        String?      // Icon identifier
+  githubUrl   String?
+  demoUrl     String?
+  tags        String[]
+  startDate   DateTime?
+  endDate     DateTime?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  milestones Milestone[]
+  tasks      Task[]
+  technologies ProjectTechnology[]
+  images     ProjectImage[]
+  documents  ProjectDocument[]
+
+  @@index([userId])
+  @@index([status])
+}
+
+model Milestone {
+  id          String        @id @default(cuid())
+  projectId   String
+  name        String
+  description String?       @db.Text
+  status      MilestoneStatus @default(PENDING)
+  dueDate     DateTime?
+  completedAt DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  project Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tasks   Task[]
+
+  @@index([projectId])
+}
+
+model ProjectTechnology {
+  id        String @id @default(cuid())
+  projectId String
+  name      String
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, name])
+}
+
+model ProjectImage {
+  id        String @id @default(cuid())
+  projectId String
+  url       String
+  alt       String?
+  order     Int    @default(0)
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+}
+
+model ProjectDocument {
+  id        String @id @default(cuid())
+  projectId String
+  title     String
+  content   String @db.Text
+  type      String @default("markdown") // markdown, text
+  order     Int    @default(0)
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+}
+
+// ===========================================
+// TASK SYSTEM (AI-Powered)
+// ===========================================
+
+model Task {
+  id           String     @id @default(cuid())
+  userId       String
+  projectId    String?
+  milestoneId  String?
+  title        String
+  description  String?    @db.Text
+  status       TaskStatus @default(TODO)
+  priority     Priority   @default(MEDIUM)
+  category     String?    // study, coding, project, college
+  topic        String?    // DSA topic, ML topic, etc.
+  difficulty   Int?       @default(3) // 1-5 scale
+  estimatedMin Int?       // Estimated minutes
+  actualMin    Int?       // Actual minutes spent
+  dueDate      DateTime?
+  completedAt  DateTime?
+  aiGenerated  Boolean    @default(false)
+  recurrence   String?    // daily, weekly, none
+  order        Int        @default(0)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project    Project?   @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  milestone  Milestone? @relation(fields: [milestoneId], references: [id], onDelete: SetNull)
+  subtasks   Subtask[]
+  tags       TaskTag[]
+  dependencies TaskDependency[] @relation("DependentTask")
+  dependedOnBy TaskDependency[] @relation("DependencyTask")
+
+  @@index([userId])
+  @@index([projectId])
+  @@index([status])
+  @@index([dueDate])
+}
+
+model Subtask {
+  id       String     @id @default(cuid())
+  taskId   String
+  title    String
+  completed Boolean   @default(false)
+  order    Int        @default(0)
+
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
+}
+
+model TaskTag {
+  id   String @id @default(cuid())
+  taskId String
+  tag  String
+
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@unique([taskId, tag])
+}
+
+model TaskDependency {
+  id           String @id @default(cuid())
+  taskId       String // The task that depends on another
+  dependencyId String // The task that must be completed first
+
+  task       Task @relation("DependentTask", fields: [taskId], references: [id], onDelete: Cascade)
+  dependency Task @relation("DependencyTask", fields: [dependencyId], references: [id], onDelete: Cascade)
+
+  @@unique([taskId, dependencyId])
+}
+
+// ===========================================
+// NOTES SYSTEM
+// ===========================================
+
+model Note {
+  id        String   @id @default(cuid())
+  userId    String
+  folderId  String?
+  title     String
+  content   String   @db.Text
+  excerpt   String?  @db.Text // First few lines for preview
+  type      String   @default("markdown") // markdown, code, link
+  isPinned  Boolean  @default(false)
+  isArchived Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  folder Folder? @relation(fields: [folderId], references: [id], onDelete: SetNull)
+  tags   NoteTag[]
+  links  NoteLink[]
+
+  @@index([userId])
+  @@index([folderId])
+  @@index([isPinned])
+}
+
+model Folder {
+  id       String  @id @default(cuid())
+  userId   String
+  name     String
+  parentId String?
+  order    Int     @default(0)
+
+  parent   Folder? @relation("FolderHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children Folder[] @relation("FolderHierarchy")
+  notes    Note[]
+
+  @@index([userId])
+  @@index([parentId])
+}
+
+model NoteTag {
+  id     String @id @default(cuid())
+  noteId String
+  tag    String
+
+  note Note @relation(fields: [noteId], references: [id], onDelete: Cascade)
+
+  @@unique([noteId, tag])
+}
+
+model NoteLink {
+  id       String @id @default(cuid())
+  noteId   String
+  url      String
+  title    String?
+  favicon  String?
+
+  note Note @relation(fields: [noteId], references: [id], onDelete: Cascade)
+
+  @@index([noteId])
+}
+
+// ===========================================
+// DSA TRACKING
+// ===========================================
+
+model DSATopic {
+  id          String @id @default(cuid())
+  name        String @unique
+  category    String // Arrays, Trees, DP, etc.
+  description String? @db.Text
+  order       Int    @default(0)
+
+  progress   DSAProgress[]
+  questions  DSAQuestion[]
+  resources  DSAResource[]
+}
+
+model DSAProgress {
+  id        String   @id @default(cuid())
+  userId    String
+  topicId   String
+  status    String   @default("not_started") // not_started, in_progress, completed
+  questionsSolved Int @default(0)
+  totalQuestions   Int @default(0)
+  confidence Int    @default(0) // 0-100
+  lastPracticed DateTime?
+  notes      String? @db.Text
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user  User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  topic DSATopic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, topicId])
+}
+
+model DSAQuestion {
+  id         String @id @default(cuid())
+  topicId    String
+  platform   String // LeetCode, NeetCode, Codeforces, etc.
+  externalId String? // Platform-specific ID
+  title      String
+  url        String?
+  difficulty  String // Easy, Medium, Hard
+  tags       String[]
+  notes      String? @db.Text
+
+  topic DSATopic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  @@index([topicId])
+}
+
+model DSAResource {
+  id       String @id @default(cuid())
+  topicId  String
+  type     String // video, article, course, book
+  title    String
+  url      String
+  author   String?
+  rating   Int?   // 1-5
+
+  topic DSATopic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  @@index([topicId])
+}
+
+// ===========================================
+// ML ROADMAP TRACKING
+// ===========================================
+
+model MLTopic {
+  id          String @id @default(cuid())
+  name        String @unique
+  category    String // Python, Math, ML, DL, etc.
+  description String? @db.Text
+  order       Int    @default(0)
+
+  progress  MLProgress[]
+  resources MLResource[]
+}
+
+model MLProgress {
+  id        String   @id @default(cuid())
+  userId    String
+  topicId   String
+  status    String   @default("not_started")
+  completionPercent Int @default(0)
+  confidence Int    @default(0)
+  lastStudied DateTime?
+  notes     String? @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user  User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  topic MLTopic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, topicId])
+}
+
+model MLResource {
+  id       String @id @default(cuid())
+  topicId  String
+  type     String
+  title    String
+  url      String
+  author   String?
+
+  topic MLTopic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  @@index([topicId])
+}
+
+// ===========================================
+// PROGRAMMING ROADMAPS
+// ===========================================
+
+model Roadmap {
+  id          String @id @default(cuid())
+  name        String @unique
+  description String? @db.Text
+  category    String // frontend, backend, devops, etc.
+  icon        String?
+  order       Int    @default(0)
+
+  items RoadmapItem[]
+}
+
+model RoadmapItem {
+  id          String  @id @default(cuid())
+  roadmapId   String
+  parentId    String?
+  name        String
+  description String? @db.Text
+  order       Int     @default(0)
+  isOptional  Boolean @default(false)
+
+  roadmap   Roadmap     @relation(fields: [roadmapId], references: [id], onDelete: Cascade)
+  parent    RoadmapItem? @relation("ItemHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children  RoadmapItem[] @relation("ItemHierarchy")
+  progress  RoadmapProgress[]
+
+  @@index([roadmapId])
+}
+
+model RoadmapProgress {
+  id       String @id @default(cuid())
+  userId   String
+  itemId   String
+  status   String @default("not_started")
+  completedAt DateTime?
+
+  user User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  item RoadmapItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, itemId])
+}
+
+// ===========================================
+// COLLEGE PLANNER
+// ===========================================
+
+model CollegeData {
+  id          String @id @default(cuid())
+  userId      String @unique
+  university  String
+  course      String
+  semester    Int
+  branch      String? // CSE, IT, etc.
+  rollNumber  String?
+  startDate   DateTime?
+  endDate     DateTime?
+
+  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subjects   CollegeSubject[]
+  exams      CollegeExam[]
+  attendance CollegeAttendance[]
+}
+
+model CollegeSubject {
+  id           String  @id @default(cuid())
+  collegeDataId String
+  name         String
+  code         String?
+  credits      Int?
+  type         String  @default("theory") // theory, practical, elective
+  syllabus     String? @db.Text
+  notes        String? @db.Text
+  resources    Json?
+
+  collegeData CollegeData @relation(fields: [collegeDataId], references: [id], onDelete: Cascade)
+  assignments CollegeAssignment[]
+  exams       CollegeExam[]
+
+  @@index([collegeDataId])
+}
+
+model CollegeAssignment {
+  id        String   @id @default(cuid())
+  subjectId String
+  title     String
+  description String? @db.Text
+  dueDate   DateTime?
+  status    String   @default("pending") // pending, submitted, graded
+  grade     String?
+  notes     String?  @db.Text
+
+  subject CollegeSubject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+
+  @@index([subjectId])
+}
+
+model CollegeExam {
+  id           String  @id @default(cuid())
+  collegeDataId String
+  subjectId    String?
+  name         String
+  type         String  // internal, midsem, endsem, practical
+  date         DateTime?
+  syllabus     String? @db.Text
+  preparation  String? @db.Text
+  marks        Int?
+  totalMarks   Int?
+  grade        String?
+
+  collegeData CollegeData    @relation(fields: [collegeDataId], references: [id], onDelete: Cascade)
+  subject     CollegeSubject? @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+
+  @@index([collegeDataId])
+}
+
+model CollegeAttendance {
+  id           String  @id @default(cuid())
+  collegeDataId String
+  date         DateTime
+  present      Boolean
+  subject      String?
+  notes        String?
+
+  collegeData CollegeData @relation(fields: [collegeDataId], references: [id], onDelete: Cascade)
+
+  @@index([collegeDataId])
+  @@index([date])
+}
+
+// ===========================================
+// STUDY & CODING TRACKING
+// ===========================================
+
+model StudySession {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String   // study, coding, reading, revision
+  topic     String?
+  startTime DateTime
+  endTime   DateTime?
+  duration  Int?     // minutes
+  notes     String?  @db.Text
+  tags      String[]
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([startTime])
+}
+
+// ===========================================
+// GITHUB INTEGRATION
+// ===========================================
+
+model GitHubData {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  username      String
+  accessToken   String?  // Encrypted
+  refreshToken  String?  // Encrypted
+  lastSynced    DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  repositories  GitHubRepository[]
+}
+
+model GitHubRepository {
+  id           String   @id @default(cuid())
+  githubDataId String
+  name         String
+  fullName     String
+  description  String?
+  url          String
+  language     String?
+  stars        Int      @default(0)
+  forks        Int      @default(0)
+  isPrivate    Boolean  @default(false)
+  topics       String[]
+  lastUpdated  DateTime?
+
+  githubData GitHubData @relation(fields: [githubDataId], references: [id], onDelete: Cascade)
+
+  @@index([githubDataId])
+}
+
+// ===========================================
+// ANALYTICS & STREAKS
+// ===========================================
+
+model UserStreak {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String   // coding, study, commit
+  date      DateTime
+  count     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, type, date])
+  @@index([userId])
+  @@index([date])
+}
+
+model DailyAnalytics {
+  id           String   @id @default(cuid())
+  userId       String
+  date         DateTime
+  codingMinutes Int     @default(0)
+  studyMinutes  Int     @default(0)
+  tasksCompleted Int    @default(0)
+  questionsSolved Int   @default(0)
+  commitsCount  Int     @default(0)
+  notesCreated  Int     @default(0)
+  pagesRead     Int     @default(0)
+  pomodoros     Int     @default(0)
+  productivityScore Float? // 0-100
+  createdAt    DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@index([userId])
+}
+
+// ===========================================
+// DOCUMENTATION LIBRARY
+// ===========================================
+
+model Documentation {
+  id        String   @id @default(cuid())
+  title     String
+  url       String   @unique
+  category  String   // official, tutorial, reference
+  tags      String[]
+  notes     String?  @db.Text
+  isRead    Boolean  @default(false)
+  rating    Int?     // 1-5
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([category])
+}
+
+// ===========================================
+// AI ASSISTANT
+// ===========================================
+
+model AIConversation {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String?
+  context   String?  // What feature context this conversation relates to
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user    User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages AIMessage[]
+
+  @@index([userId])
+}
+
+model AIMessage {
+  id             String   @id @default(cuid())
+  conversationId String
+  role           String   // user, assistant, system
+  content        String   @db.Text
+  tokens         Int?
+  model          String?
+  provider       String?  // openai, anthropic, gemini
+  createdAt      DateTime @default(now())
+
+  conversation AIConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+}
+
+// ===========================================
+// ENUMS
+// ===========================================
+
+enum ProjectStatus {
+  PLANNING
+  ACTIVE
+  ON_HOLD
+  COMPLETED
+  ARCHIVED
+}
+
+enum MilestoneStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  OVERDUE
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  IN_REVIEW
+  COMPLETED
+  CANCELLED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
