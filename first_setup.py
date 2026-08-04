@@ -95,12 +95,12 @@ def setup_env_file():
 
 
 def setup_database():
-    print("="*50,"\nGenerating Prisma client...\n")
+    print("\nGenerating Prisma client...\n")
     subprocess.run(["npx", "prisma", "generate"], cwd=APP_DIR, shell=True, check=True)
     print("Prisma client generated.")
     print(
         "\nRun 'npx prisma db push' inside developer-os/ once your\n"
-        "DATABASE_URL is set in .env.local, to create your database tables.\n","="*50
+        "DATABASE_URL is set in .env.local, to create your database tables.\n"
     )
 
 
