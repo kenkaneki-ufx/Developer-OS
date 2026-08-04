@@ -337,13 +337,15 @@ Create a `.env.local` file in the root directory with the following variables:
 1. **Create a new database**
 
    ```sql
-   CREATE DATABASE developer_os;
+   1 -> Visit link : "https://supabase.com/"
+   2 -> Click [ Strart your project ]
+   3 -> Click [ +New project ]
    ```
 
 2. **Update DATABASE_URL** in `.env.local`
 
    ```
-   DATABASE_URL="postgresql://username:password@localhost:5432/developer_os"
+   DATABASE_URL= [GENERATE_ME_WITH_STEPS_ABOVE]
    ```
 
 3. **Run Prisma migrations**
