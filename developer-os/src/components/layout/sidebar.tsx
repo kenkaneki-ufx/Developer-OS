@@ -275,17 +275,56 @@ export function Sidebar({ open, onOpenChange }: SidebarProps) {
           {/* Logo */}
           <div className="flex h-16 items-center gap-3 border-b border-border px-5">
             <motion.div
-              className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/80 shadow-lg shadow-primary/25"
-              whileHover={{ scale: 1.08, rotate: 5 }}
+              className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/80 shadow-lg shadow-primary/25"
+              whileHover={{ scale: 1.12, rotate: 8 }}
               transition={{ type: "spring", stiffness: 400, damping: 17 }}
+              suppressHydrationWarning
             >
-              <span className="text-sm font-bold text-primary-foreground">DO</span>
+              {/* Pulsing glow ring */}
+              <motion.div
+                className="absolute inset-0 rounded-xl bg-primary/30"
+                animate={{ scale: [1, 1.3, 1], opacity: [0.5, 0, 0.5] }}
+                transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+              />
+              {/* Shimmer sweep */}
+              <motion.div
+                className="absolute inset-0 rounded-xl overflow-hidden"
+                initial={{ opacity: 0 }}
+                whileHover={{ opacity: 1 }}
+              >
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12"
+                  animate={{ x: ["-100%", "200%"] }}
+                  transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 2, ease: "easeInOut" }}
+                />
+              </motion.div>
+              <span className="relative z-10 text-sm font-bold text-primary-foreground">DO</span>
             </motion.div>
-            <div>
-              <h1 className="text-sm font-bold text-foreground tracking-tight">
-                Developer OS
+            <div className="group/logo cursor-default">
+              <h1 className="text-sm font-bold tracking-tight">
+                {"Developer OS".split("").map((char, i) => (
+                  <motion.span
+                    key={i}
+                    className="inline-block text-foreground group-hover/logo:text-primary transition-colors duration-300"
+                    initial={{ opacity: 0, y: 8, filter: "blur(4px)" }}
+                    animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                    whileHover={{ y: -2, scale: 1.05 }}
+                    transition={{ delay: 0.1 + i * 0.04, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                    suppressHydrationWarning
+                  >
+                    {char === " " ? "\u00A0" : char}
+                  </motion.span>
+                ))}
               </h1>
-              <p className="text-[11px] text-muted-foreground/70">Your second brain</p>
+              <motion.p
+                className="text-[11px] text-muted-foreground/70"
+                initial={{ opacity: 0, x: -5 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.8, duration: 0.5 }}
+                suppressHydrationWarning
+              >
+                Your second brain
+              </motion.p>
             </div>
           </div>
 

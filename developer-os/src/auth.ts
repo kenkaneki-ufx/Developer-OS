@@ -225,7 +225,25 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   },
   cookies: {
     sessionToken: {
-      name: `next-auth.session-token`,
+      name: `authjs.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+      },
+    },
+    csrfToken: {
+      name: `authjs.csrf-token`,
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+      },
+    },
+    callbackUrl: {
+      name: `authjs.callback-url`,
       options: {
         httpOnly: true,
         sameSite: "lax",

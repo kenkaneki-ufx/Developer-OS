@@ -2,6 +2,9 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  env: {
+    NEXT_SHOW_ERROR_OVERLAY: "false",
+  },
   images: {
     remotePatterns: [
       {

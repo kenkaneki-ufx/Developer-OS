@@ -9,6 +9,7 @@ import {
   MapPin,
   Plus,
   Trash2,
+  Edit3,
   AlertCircle,
   X,
   Save,
@@ -41,7 +42,7 @@ const item = {
 type TabType = "timetable" | "subjects" | "exams";
 
 export default function CollegePage() {
-  const { data, isLoaded, addSubject, updateSubject, deleteSubject, updateSyllabusTopics, addTimetableSlot, deleteTimetableSlot, addExam, deleteExam, getSubject, updateCollegeDetails, addSubjectsFromSyllabus } = useCollege();
+  const { data, isLoaded, addSubject, updateSubject, deleteSubject, updateSyllabusTopics, addTimetableSlot, updateTimetableSlot, deleteTimetableSlot, addExam, deleteExam, getSubject, updateCollegeDetails, addSubjectsFromSyllabus } = useCollege();
   
   const [activeTab, setActiveTab] = useState<TabType>("timetable");
   const [selectedDay, setSelectedDay] = useState<DayOfWeek>("monday");
@@ -136,7 +137,12 @@ export default function CollegePage() {
         addSubject(editingSubject);
       }
     } else if (modalType === "slot" && editingSlot) {
-      addTimetableSlot(editingSlot as TimetableSlot);
+      const exists = data.timetable?.find(s => s.id === editingSlot.id);
+      if (exists) {
+        updateTimetableSlot(editingSlot.id!, editingSlot as TimetableSlot);
+      } else {
+        addTimetableSlot(editingSlot as TimetableSlot);
+      }
     } else if (modalType === "exam" && editingExam) {
       addExam(editingExam as Exam);
     }
@@ -145,6 +151,12 @@ export default function CollegePage() {
     setEditingSubject(null);
     setEditingSlot(null);
     setEditingExam(null);
+  };
+
+  const handleEditSlot = (slot: TimetableSlot) => {
+    setEditingSlot({ ...slot });
+    setModalType("slot");
+    setShowAddModal(true);
   };
 
   const { addToast } = useToast();
@@ -358,12 +370,22 @@ export default function CollegePage() {
                             )}
                           </div>
                         </div>
-                        <button
-                          onClick={() => deleteTimetableSlot(slot.id)}
-                          className="rounded-lg p-2 text-muted-foreground/40 hover:bg-destructive/10 hover:text-destructive transition-colors"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
+                        <div className="flex gap-1">
+                          <button
+                            onClick={() => handleEditSlot(slot)}
+                            className="rounded-lg p-2 text-muted-foreground/40 hover:bg-primary/10 hover:text-primary transition-colors"
+                            title="Edit class"
+                          >
+                            <Edit3 className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => deleteTimetableSlot(slot.id)}
+                            className="rounded-lg p-2 text-muted-foreground/40 hover:bg-destructive/10 hover:text-destructive transition-colors"
+                            title="Delete class"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
                       </motion.div>
                     );
                   })
@@ -628,7 +650,7 @@ export default function CollegePage() {
               <div className="flex items-center justify-between mb-5">
                 <h3 className="text-lg font-semibold text-foreground">
                   {modalType === "subject" && (editingSubject?.id.startsWith("sub-") && data.subjects.find(s => s.id === editingSubject?.id) ? "Edit Subject" : "Add Subject")}
-                  {modalType === "slot" && "Add Class to Timetable"}
+                  {modalType === "slot" && (editingSlot?.id && data.timetable?.find(s => s.id === editingSlot.id) ? "Edit Class" : "Add Class to Timetable")}
                   {modalType === "exam" && "Add Exam"}
                 </h3>
                 <button onClick={() => setShowAddModal(false)} className="rounded-xl p-1.5 text-muted-foreground hover:bg-muted/60 transition-colors">
