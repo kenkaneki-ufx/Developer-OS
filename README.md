@@ -220,18 +220,6 @@ The setup script will automatically:
 - ✅ Create `run.py`, the launcher you'll use from then on
 - ✅ Delete itself once setup is complete — it's a one-time script and won't be needed again
 
-Once setup is complete, start the application using:
-
-```bash
-python run.py
-```
-
-The launcher will:
-
-- 🙈 Hide its own console window
-- 🌐 Open the app in Google Chrome, maximized
-- 🚀 Start the Next.js development server at `http://localhost:3000`
-
 > **Note**
 >
 > `run.py` currently uses Windows-only APIs to hide its console window and launch Chrome. On macOS/Linux, skip both scripts and use the standard Node.js workflow instead:
@@ -340,21 +328,6 @@ Create a `.env.local` file in the root directory with the following variables:
 
 > **Note:** If OAuth credentials are not configured, the app will run in demo mode with a credentials-based login.
 
-### Optional - AI Features
-
-| Variable | Description |
-|----------|-------------|
-| `OPENAI_API_KEY` | OpenAI API key for AI features |
-| `ANTHROPIC_API_KEY` | Anthropic API key alternative |
-| `GOOGLE_AI_API_KEY` | Google Gemini API key (free tier available) |
-
-> **💡 Free AI Options:** No credit card required!
->
-> - **Google Gemini** - [Get free API key](https://ai.google.dev) - 1,500 requests/day
-> - **Groq** - [Get free API key](https://console.groq.com) - 14,400 requests/day
-> - **Cohere** - [Get free API key](https://cohere.com) - Free tier available
->
-> **Note:** The app also includes a **Built-in Local AI** that works without any API keys!
 
 ---
 
