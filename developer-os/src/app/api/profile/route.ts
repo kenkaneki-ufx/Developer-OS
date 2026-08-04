@@ -54,12 +54,18 @@ export async function PUT(request: NextRequest) {
       });
     }
 
-    const updatedUser = await prisma.user.update({
+    const updatedUser = await prisma.user.upsert({
       where: { id: session.user.id },
-      data: {
+      update: {
         ...(name !== undefined && { name: name?.trim() || null }),
         ...(email !== undefined && { email: email?.trim() || null }),
         ...(image !== undefined && { image: image?.trim() || null }),
+      },
+      create: {
+        id: session.user.id,
+        name: name?.trim() || null,
+        email: email?.trim() || null,
+        image: image?.trim() || null,
       },
       select: { name: true, email: true, image: true },
     });
