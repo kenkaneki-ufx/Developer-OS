@@ -11,7 +11,7 @@ Run this once after cloning the repo. It will:
 """
 
 import os
-import shutil
+import re
 import subprocess
 import sys
 
@@ -60,15 +60,38 @@ def setup_env_file():
         print("'.env.local' already exists, skipping.")
         return
 
-    if os.path.exists(example):
-        shutil.copy(example, target)
-        print(
-            "\nCreated .env.local from .env.example.\n"
-            "Open developer-os/.env.local and fill in your real values\n"
-            "(database URL, OAuth keys, etc.) before running the app.\n"
-        )
-    else:
+    if not os.path.exists(example):
         print("No .env.example found, skipping .env.local setup.")
+        return
+
+    with open(example, "r", encoding="utf-8") as f:
+        content = f.read()
+
+    print("\nSetting up your local environment file...")
+    db_url = input(
+        "Enter your DATABASE_URL "
+        "(e.g. postgresql://user:password@localhost:5432/developer_os)\n"
+        "  Press Enter to skip and fill it in manually later: "
+    ).strip().strip('"')
+
+    if db_url:
+        content = re.sub(
+            r'DATABASE_URL=".*?"',
+            lambda m: f'DATABASE_URL="{db_url}"',
+            content,
+        )
+        print("DATABASE_URL saved to .env.local.")
+    else:
+        print("Skipped — DATABASE_URL left as a placeholder in .env.local.")
+
+    with open(target, "w", encoding="utf-8") as f:
+        f.write(content)
+
+    print(
+        "="*30,"\nCreated developer-os/.env.local.\n"
+        "Open it and fill in any remaining values (AUTH_SECRET, OAuth keys, "
+        "etc.) before running the app.\n","="*30
+    )
 
 
 def setup_database():

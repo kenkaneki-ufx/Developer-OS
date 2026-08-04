@@ -201,7 +201,7 @@ Developer OS includes a one-time setup script that automatically prepares the pr
 ### Clone the repository
 
 ```bash
-git clone https://github.com/<your-username>/Developer-OS.git
+git clone https://github.com/kenkaneki-ufx/Developer-OS.git
 cd Developer-OS
 ```
 
