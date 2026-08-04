@@ -88,9 +88,9 @@ def setup_env_file():
         f.write(content)
 
     print(
-        "="*50,"\nCreated developer-os/.env.local.\n"
+        "="*60,"\nCreated developer-os/.env.local.\n"
         "Open it and fill in any remaining values (AUTH_SECRET, OAuth keys, "
-        "etc.) before running the app.\n","="*50
+        "etc.) before running the app.\n","="*60
     )
 
 
@@ -99,7 +99,7 @@ def setup_database():
     subprocess.run(["npx", "prisma", "generate"], cwd=APP_DIR, shell=True, check=True)
     print("Prisma client generated.")
     print(
-        "\nRun 'npx prisma db push' inside developer-os/ once your\n"
+        "="*60,"\nRun 'npx prisma db push' inside developer-os/ once your\n"
         "DATABASE_URL is set in .env.local, to create your database tables.\n"
     )
 
@@ -152,9 +152,9 @@ def main():
     setup_database()
     create_run_script()
 
-    print("="*50,"\nSetup complete! Fill in developer-os/.env.local if you haven't,")
-    print("then double-click run.py any time to start Developer OS.\n","="*50)
-
+    print("\nSetup complete! Fill in developer-os/.env.local if you haven't,")
+    print("then double-click run.py any time to start Developer OS.")
+    print("="*60)
     self_destruct()
 
 
