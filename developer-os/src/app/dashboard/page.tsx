@@ -58,22 +58,7 @@ const item = {
 
 export default function DashboardPage() {
   const [motivation, setMotivation] = useState(motivationQuotes[0]);
-  const [notes, setNotes] = useState<QuickNote[]>([
-    {
-      id: "1",
-      content: "Remember to review binary tree problems before the deadline",
-      createdAt: "2026-07-28T00:00:00.000Z",
-      updatedAt: "2026-07-28T00:00:00.000Z",
-      tags: ["dsa", "revision"],
-    },
-    {
-      id: "2",
-      content: "Start working on neural network project proposal",
-      createdAt: "2026-07-28T00:00:00.000Z",
-      updatedAt: "2026-07-28T00:00:00.000Z",
-      tags: ["ml", "project"],
-    },
-  ]);
+  const [notes, setNotes] = useState<QuickNote[]>([]);
 
   const handleRefreshMotivation = () => {
     const randomIndex = Math.floor(Math.random() * motivationQuotes.length);

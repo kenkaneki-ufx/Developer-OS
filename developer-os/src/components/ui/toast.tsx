@@ -2,19 +2,26 @@
 
 import { useState, useCallback, createContext, useContext } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, AlertCircle, CheckCircle, Info } from "lucide-react";
+import { X, AlertCircle, CheckCircle, Info, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type ToastType = "success" | "error" | "info" | "warning";
+
+interface ToastAction {
+  label: string;
+  onClick: () => void;
+  icon?: React.ReactNode;
+}
 
 interface Toast {
   id: string;
   message: string;
   type: ToastType;
+  action?: ToastAction;
 }
 
 interface ToastContextType {
-  addToast: (message: string, type?: ToastType) => void;
+  addToast: (message: string, type?: ToastType, action?: ToastAction) => void;
 }
 
 const ToastContext = createContext<ToastContextType | null>(null);
@@ -30,13 +37,16 @@ export function useToast() {
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
-  const addToast = useCallback((message: string, type: ToastType = "info") => {
+  const addToast = useCallback((message: string, type: ToastType = "info", action?: ToastAction) => {
     const id = `toast-${Date.now()}-${Math.random()}`;
-    setToasts((prev) => [...prev, { id, message, type }]);
+    setToasts((prev) => [...prev, { id, message, type, action }]);
 
-    setTimeout(() => {
-      setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 4000);
+    // Don't auto-dismiss if there's an action (user needs time to click it)
+    if (!action) {
+      setTimeout(() => {
+        setToasts((prev) => prev.filter((t) => t.id !== id));
+      }, 4000);
+    }
   }, []);
 
   const removeToast = useCallback((id: string) => {
@@ -78,6 +88,18 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
               <p className="flex-1 text-sm font-medium text-foreground">
                 {toast.message}
               </p>
+              {toast.action && (
+                <button
+                  onClick={() => {
+                    toast.action?.onClick();
+                    removeToast(toast.id);
+                  }}
+                  className="flex items-center gap-1.5 rounded-lg bg-background/80 px-2.5 py-1.5 text-xs font-semibold text-foreground hover:bg-background transition-colors border border-border/50"
+                >
+                  {toast.action.icon || <RotateCcw className="h-3 w-3" />}
+                  {toast.action.label}
+                </button>
+              )}
               <button
                 onClick={() => removeToast(toast.id)}
                 className="rounded-lg p-1 text-muted-foreground/60 hover:text-foreground transition-colors"

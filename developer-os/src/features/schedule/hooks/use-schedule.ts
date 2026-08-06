@@ -32,8 +32,8 @@ export function useSchedule() {
     setIsLoaded(true);
   }, []);
 
-  // Save to localStorage whenever schedule changes
-  const saveSchedule = useCallback((newSchedule: WeeklySchedule) => {
+  // Save to localStorage whenever schedule changes. Returns true on success, false on failure.
+  const saveSchedule = useCallback((newSchedule: WeeklySchedule): boolean => {
     const updatedSchedule = {
       ...newSchedule,
       updatedAt: new Date().toISOString(),
@@ -41,8 +41,15 @@ export function useSchedule() {
     setSchedule(updatedSchedule);
     
     if (typeof window !== "undefined") {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedSchedule));
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedSchedule));
+        return true;
+      } catch (e) {
+        console.warn("Failed to save schedule to localStorage:", e);
+        return false;
+      }
     }
+    return true;
   }, []);
 
   // Reset to default (for new users or logout)

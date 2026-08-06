@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FileText,
@@ -24,16 +24,39 @@ import {
   Download,
   ExternalLink,
   Paperclip,
+  BookOpen,
+  Layers,
+  Copy,
+  SortAsc,
+  SortDesc,
+  Archive,
+  Sparkles,
+  CheckCircle2,
+  AlertTriangle,
+  PenLine,
+  StickyNote,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PageWrapper } from "@/components/ui/page-wrapper";
+import { useToast } from "@/components/ui/toast";
+import {
+  initNotesDB,
+  loadNotes as dbLoadNotes,
+  saveAllNotes as dbSaveAllNotes,
+  loadSubjects as dbLoadSubjects,
+  saveAllSubjects as dbSaveAllSubjects,
+  isIndexedDBSupported,
+  type Note as DBNote,
+  type Subject as DBSubject,
+} from "@/lib/db/notes-db";
 
+// ─── Types ───────────────────────────────────────────────────────────
 interface NoteAttachment {
   id: string;
   name: string;
-  type: string; // mime type
+  type: string;
   size: number;
-  url: string; // data URL or blob URL
+  url: string;
   category: "pdf" | "document" | "markdown" | "image" | "other";
 }
 
@@ -42,42 +65,108 @@ interface Note {
   title: string;
   content: string;
   tags: string[];
-  folder: string;
+  subject: string;
+  chapter: string;
   updatedAt: string;
+  createdAt: string;
   pinned: boolean;
   starred: boolean;
+  archived: boolean;
   attachments: NoteAttachment[];
   color: number;
+  wordCount: number;
 }
 
-const defaultNotes: Note[] = [
-  { id: "1", title: "Binary Trees Notes", content: "In-order, pre-order, post-order traversal patterns.\n\n## DFS and BFS approaches\n- DFS uses stack or recursion\n- BFS uses queue\n\n### Traversal patterns\n1. **In-order**: Left → Root → Right\n2. **Pre-order**: Root → Left → Right\n3. **Post-order**: Left → Right → Root", tags: ["dsa", "trees"], folder: "DSA", updatedAt: "2 hours ago", pinned: true, starred: false, attachments: [], color: 0 },
-  { id: "2", title: "React Hooks Cheat Sheet", content: "useState, useEffect, useCallback, useMemo patterns. Custom hooks best practices. Performance optimization tips.", tags: ["react", "hooks"], folder: "Frontend", updatedAt: "1 day ago", pinned: false, starred: true, attachments: [], color: 1 },
-  { id: "3", title: "SQL Joins Reference", content: "INNER JOIN, LEFT JOIN, RIGHT JOIN, FULL JOIN, CROSS JOIN. Performance considerations and indexing strategies.", tags: ["sql", "database"], folder: "Database", updatedAt: "3 days ago", pinned: false, starred: false, attachments: [], color: 2 },
-  { id: "4", title: "ML Algorithms Summary", content: "Linear Regression, Logistic Regression, SVM, Decision Trees, Random Forest, Gradient Boosting. When to use each algorithm.", tags: ["ml", "algorithms"], folder: "ML", updatedAt: "1 week ago", pinned: false, starred: false, attachments: [], color: 3 },
-  { id: "5", title: "Git Commands", content: "git stash, git rebase, git cherry-pick advanced. Git workflow strategies for teams. Conflict resolution patterns.", tags: ["git", "devops"], folder: "DevOps", updatedAt: "2 days ago", pinned: false, starred: false, attachments: [], color: 4 },
-  { id: "6", title: "System Design Notes", content: "CAP theorem, horizontal vs vertical scaling, load balancing strategies, caching patterns, database sharding.", tags: ["architecture", "system-design"], folder: "Architecture", updatedAt: "5 days ago", pinned: true, starred: true, attachments: [], color: 0 },
-];
+interface Subject {
+  id: string;
+  name: string;
+  icon: string;
+  color: string;
+  chapters: string[];
+}
 
-const folders = ["All", "DSA", "Frontend", "Database", "ML", "DevOps", "Architecture"];
+// ─── Constants ───────────────────────────────────────────────────────
+const STORAGE_KEY = "developer-os-notes-v2"; // Legacy, for migration only
+const SUBJECTS_KEY = "developer-os-subjects"; // Legacy, for migration only
+
+const defaultSubjects: Subject[] = [
+  { id: "dsa", name: "DSA", icon: "🧮", color: "blue", chapters: ["Arrays", "Strings", "Linked Lists", "Stacks & Queues", "Trees", "Graphs", "Dynamic Programming", "Sorting & Searching"] },
+  { id: "frontend", name: "Frontend", icon: "🎨", color: "purple", chapters: ["HTML & CSS", "JavaScript", "React", "TypeScript", "Next.js", "Tailwind CSS"] },
+  { id: "backend", name: "Backend", icon: "⚙️", color: "green", chapters: ["Node.js", "Express", "Databases", "APIs", "Authentication", "Deployment"] },
+  { id: "ml", name: "Machine Learning", icon: "🤖", color: "amber", chapters: ["Python Basics", "Math & Stats", "Supervised Learning", "Unsupervised Learning", "Deep Learning", "NLP", "Computer Vision"] },
+  { id: "devops", name: "DevOps", icon: "🚀", color: "red", chapters: ["Git", "Docker", "CI/CD", "Linux", "Cloud", "Monitoring"] },
+  { id: "college", name: "College", icon: "🎓", color: "cyan", chapters: ["Semester Notes", "Assignments", "Lab Work", "Exam Prep", "Projects"] },
+];
 
 const noteColors = [
-  "from-yellow-500/10 to-yellow-500/5 border-yellow-500/20",
-  "from-green-500/10 to-green-500/5 border-green-500/20",
-  "from-blue-500/10 to-blue-500/5 border-blue-500/20",
-  "from-purple-500/10 to-purple-500/5 border-purple-500/20",
-  "from-pink-500/10 to-pink-500/5 border-pink-500/20",
+  "from-amber-500/8 to-amber-500/3 border-amber-500/15",
+  "from-emerald-500/8 to-emerald-500/3 border-emerald-500/15",
+  "from-blue-500/8 to-blue-500/3 border-blue-500/15",
+  "from-purple-500/8 to-purple-500/3 border-purple-500/15",
+  "from-rose-500/8 to-rose-500/3 border-rose-500/15",
+  "from-cyan-500/8 to-cyan-500/3 border-cyan-500/15",
+  "from-orange-500/8 to-orange-500/3 border-orange-500/15",
 ];
 
-const container = {
-  hidden: { opacity: 0 },
-  show: { opacity: 1, transition: { staggerChildren: 0.05, delayChildren: 0.05 } },
+const subjectColorMap: Record<string, { bg: string; text: string; border: string; hover: string; dot: string }> = {
+  blue:   { bg: "bg-blue-500/8",   text: "text-blue-600 dark:text-blue-400",   border: "border-blue-500/20",   hover: "hover:bg-blue-500/12",   dot: "bg-blue-500" },
+  purple: { bg: "bg-purple-500/8", text: "text-purple-600 dark:text-purple-400", border: "border-purple-500/20", hover: "hover:bg-purple-500/12", dot: "bg-purple-500" },
+  green:  { bg: "bg-emerald-500/8", text: "text-emerald-600 dark:text-emerald-400", border: "border-emerald-500/20", hover: "hover:bg-emerald-500/12", dot: "bg-emerald-500" },
+  amber:  { bg: "bg-amber-500/8",  text: "text-amber-600 dark:text-amber-400",  border: "border-amber-500/20",  hover: "hover:bg-amber-500/12",  dot: "bg-amber-500" },
+  red:    { bg: "bg-red-500/8",    text: "text-red-600 dark:text-red-400",       border: "border-red-500/20",    hover: "hover:bg-red-500/12",    dot: "bg-red-500" },
+  cyan:   { bg: "bg-cyan-500/8",   text: "text-cyan-600 dark:text-cyan-400",     border: "border-cyan-500/20",   hover: "hover:bg-cyan-500/12",   dot: "bg-cyan-500" },
 };
 
-const item = {
-  hidden: { opacity: 0, y: 20, scale: 0.98 },
-  show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } },
+// ─── Framer Motion Variants ─────────────────────────────────────────
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.04, delayChildren: 0.06 },
+  },
 };
+
+const fadeSlideUp = {
+  hidden: { opacity: 0, y: 16, scale: 0.98 },
+  visible: {
+    opacity: 1, y: 0, scale: 1,
+    transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] },
+  },
+  exit: {
+    opacity: 0, scale: 0.95, y: -8,
+    transition: { duration: 0.25, ease: "easeIn" },
+  },
+};
+
+const modalOverlay = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { duration: 0.2 } },
+  exit: { opacity: 0, transition: { duration: 0.15 } },
+};
+
+const modalContent = {
+  hidden: { opacity: 0, scale: 0.94, y: 24 },
+  visible: {
+    opacity: 1, scale: 1, y: 0,
+    transition: { type: "spring", stiffness: 380, damping: 30, mass: 0.8 },
+  },
+  exit: {
+    opacity: 0, scale: 0.96, y: 16,
+    transition: { duration: 0.18, ease: "easeIn" },
+  },
+};
+
+
+
+// ─── Utilities ───────────────────────────────────────────────────────
+function countWords(text: string): number {
+  return text.trim().split(/\s+/).filter(Boolean).length;
+}
+
+function readingTime(words: number): string {
+  const mins = Math.max(1, Math.ceil(words / 200));
+  return `${mins} min`;
+}
 
 function getAttachmentCategory(mimeType: string, fileName: string): NoteAttachment["category"] {
   if (mimeType === "application/pdf" || fileName.endsWith(".pdf")) return "pdf";
@@ -93,21 +182,16 @@ function formatFileSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-const NOTES_STORAGE_KEY = "developer-os-notes";
-
-function loadNotesFromStorage(): Note[] | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const stored = localStorage.getItem(NOTES_STORAGE_KEY);
-    if (stored) return JSON.parse(stored);
-  } catch {}
-  return null;
-}
-
-function saveNotesToStorage(notes: Note[]) {
-  if (typeof window !== "undefined") {
-    localStorage.setItem(NOTES_STORAGE_KEY, JSON.stringify(notes));
-  }
+function timeAgo(dateStr: string): string {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "Just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days}d ago`;
+  return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
 function renderMarkdown(text: string): string {
@@ -127,56 +211,251 @@ function renderMarkdown(text: string): string {
   return html;
 }
 
+// ─── Storage ─────────────────────────────────────────────────────────
+const useIDB = typeof window !== "undefined" && isIndexedDBSupported();
+
+async function loadNotesStorage(): Promise<Note[]> {
+  if (useIDB) {
+    try { return await dbLoadNotes(); } catch { /* fallthrough */ }
+  }
+  // Fallback to localStorage (legacy)
+  if (typeof window === "undefined") return [];
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored && stored.length < 500000) return JSON.parse(stored);
+  } catch {}
+  return [];
+}
+
+async function saveNotesStorage(notes: Note[]): Promise<boolean> {
+  if (useIDB) {
+    try { return await dbSaveAllNotes(notes as DBNote[]); } catch { /* fallthrough */ }
+  }
+  // Fallback to localStorage (legacy)
+  if (typeof window === "undefined") return false;
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
+    return true;
+  } catch (e) {
+    console.warn("Failed to save notes:", e);
+    return false;
+  }
+}
+
+async function loadSubjectsStorage(): Promise<Subject[]> {
+  if (useIDB) {
+    try { return await dbLoadSubjects(); } catch { /* fallthrough */ }
+  }
+  if (typeof window === "undefined") return defaultSubjects;
+  try {
+    const stored = localStorage.getItem(SUBJECTS_KEY);
+    if (stored) return JSON.parse(stored);
+  } catch {}
+  return defaultSubjects;
+}
+
+async function saveSubjectsStorage(subjects: Subject[]): Promise<boolean> {
+  if (useIDB) {
+    try { return await dbSaveAllSubjects(subjects as DBSubject[]); } catch { /* fallthrough */ }
+  }
+  if (typeof window === "undefined") return false;
+  try {
+    localStorage.setItem(SUBJECTS_KEY, JSON.stringify(subjects));
+    return true;
+  } catch (e) {
+    console.warn("Failed to save subjects:", e);
+    return false;
+  }
+}
+
+// ─── Main Component ──────────────────────────────────────────────────
 export default function NotesPage() {
+  const { addToast } = useToast();
+
+  // State
+  const [notes, setNotes] = useState<Note[]>([]);
+  const [subjects, setSubjects] = useState<Subject[]>([]);
   const [search, setSearch] = useState("");
-  const [folder, setFolder] = useState("All");
+  const [selectedSubject, setSelectedSubject] = useState<string>("all");
+  const [selectedChapter, setSelectedChapter] = useState<string>("all");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [notes, setNotes] = useState<Note[]>(defaultNotes);
-  const isLoadedRef = useRef(false);
+  const [sortBy, setSortBy] = useState<"date" | "title">("date");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const [showArchived, setShowArchived] = useState(false);
+  const [searchFocused, setSearchFocused] = useState(false);
 
-  // Load from localStorage on mount, then persist on changes
-  useEffect(() => {
-    const stored = loadNotesFromStorage();
-    if (stored) setNotes(stored);
-    isLoadedRef.current = true;
-  }, []);
-
-  useEffect(() => {
-    if (isLoadedRef.current) saveNotesToStorage(notes);
-  }, [notes]);
+  // Editor state
   const [showEditor, setShowEditor] = useState(false);
   const [editingNote, setEditingNote] = useState<Note | null>(null);
-  const [showPreview, setShowPreview] = useState<Note | null>(null);
   const [editorTitle, setEditorTitle] = useState("");
   const [editorContent, setEditorContent] = useState("");
   const [editorTags, setEditorTags] = useState<string[]>([]);
-  const [editorFolder, setEditorFolder] = useState("DSA");
+  const [editorSubject, setEditorSubject] = useState("");
+  const [editorChapter, setEditorChapter] = useState("");
   const [editorPinned, setEditorPinned] = useState(false);
   const [editorStarred, setEditorStarred] = useState(false);
   const [editorAttachments, setEditorAttachments] = useState<NoteAttachment[]>([]);
   const [tagInput, setTagInput] = useState("");
-  const [showFolderDropdown, setShowFolderDropdown] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [showSubjectDropdown, setShowSubjectDropdown] = useState(false);
+  const [showChapterDropdown, setShowChapterDropdown] = useState(false);
 
-  const filtered = notes.filter(
-    (n) =>
-      (folder === "All" || n.folder === folder) &&
-      (n.title.toLowerCase().includes(search.toLowerCase()) ||
-        n.content.toLowerCase().includes(search.toLowerCase()) ||
-        n.tags.some((t) => t.toLowerCase().includes(search.toLowerCase())))
-  );
+  // Preview
+  const [showPreview, setShowPreview] = useState<Note | null>(null);
+
+  // Subject management
+  const [showSubjectManager, setShowSubjectManager] = useState(false);
+  const [newSubjectName, setNewSubjectName] = useState("");
+  const [newSubjectIcon, setNewSubjectIcon] = useState("📚");
+  const [newChapterName, setNewChapterName] = useState("");
+  const [editingSubject, setEditingSubject] = useState<string | null>(null);
+
+  // Delete confirmation
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const isLoadedRef = useRef(false);
+  const notesRef = useRef<Note[]>([]);
+  const subjectsRef = useRef<Subject[]>([]);
+
+  // Keep refs in sync with state
+  notesRef.current = notes;
+  subjectsRef.current = subjects;
+
+  // Initialize IndexedDB and load data on mount
+  useEffect(() => {
+    let cancelled = false;
+    async function init() {
+      try { await initNotesDB(); } catch { /* continue with defaults */ }
+      const [loadedNotes, loadedSubjects] = await Promise.all([
+        loadNotesStorage(),
+        loadSubjectsStorage(),
+      ]);
+      if (!cancelled) {
+        setNotes(loadedNotes);
+        setSubjects(loadedSubjects);
+        isLoadedRef.current = true;
+      }
+    }
+    init();
+    return () => { cancelled = true; };
+  }, []);
+
+  // Retry function for notes save failures
+  const retrySaveNotes = useCallback(async () => {
+    const ok = await saveNotesStorage(notesRef.current);
+    if (ok) {
+      addToast("Notes saved successfully", "success");
+    } else {
+      addToast("Failed to save notes — please try again", "error", {
+        label: "Retry",
+        onClick: () => retrySaveNotes(),
+      });
+    }
+  }, [addToast]);
+
+  // Retry function for subjects save failures
+  const retrySaveSubjects = useCallback(async () => {
+    const ok = await saveSubjectsStorage(subjectsRef.current);
+    if (ok) {
+      addToast("Subjects saved successfully", "success");
+    } else {
+      addToast("Failed to save subjects — please try again", "error", {
+        label: "Retry",
+        onClick: () => retrySaveSubjects(),
+      });
+    }
+  }, [addToast]);
+
+  // Auto-save notes (debounced, only after initial load)
+  useEffect(() => {
+    if (!isLoadedRef.current) return;
+    const timer = setTimeout(async () => {
+      const ok = await saveNotesStorage(notes);
+      if (!ok) {
+        addToast("Failed to save notes — storage may be full", "error", {
+          label: "Retry",
+          onClick: () => retrySaveNotes(),
+        });
+      }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [notes, addToast, retrySaveNotes]);
+
+  // Auto-save subjects (debounced, only after initial load)
+  useEffect(() => {
+    if (!isLoadedRef.current) return;
+    const timer = setTimeout(async () => {
+      const ok = await saveSubjectsStorage(subjects);
+      if (!ok) {
+        addToast("Failed to save subjects — storage may be full", "error", {
+          label: "Retry",
+          onClick: () => retrySaveSubjects(),
+        });
+      }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [subjects, addToast, retrySaveSubjects]);
+
+  // Close dropdowns on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      // Don't close if clicking inside a dropdown menu item
+      if (target.closest("[data-dropdown-item]")) return;
+      if (!target.closest("[data-subject-dd]")) setShowSubjectDropdown(false);
+      if (!target.closest("[data-chapter-dd]")) setShowChapterDropdown(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  // ─── Derived Data ────────────────────────────────────────────────
+  const currentSubject = subjects.find((s) => s.id === selectedSubject);
+  const chapters = currentSubject?.chapters ?? [];
+
+  const filtered = useMemo(() => notes
+    .filter((n) => {
+      if (showArchived ? !n.archived : n.archived) return false;
+      if (selectedSubject !== "all" && n.subject !== selectedSubject) return false;
+      if (selectedChapter !== "all" && n.chapter !== selectedChapter) return false;
+      if (search) {
+        const q = search.toLowerCase();
+        return (
+          n.title.toLowerCase().includes(q) ||
+          n.content.toLowerCase().includes(q) ||
+          n.tags.some((t) => t.toLowerCase().includes(q)) ||
+          n.subject.toLowerCase().includes(q) ||
+          n.chapter.toLowerCase().includes(q)
+        );
+      }
+      return true;
+    })
+    .sort((a, b) => {
+      if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
+      if (sortBy === "title") {
+        return sortDir === "asc" ? a.title.localeCompare(b.title) : b.title.localeCompare(a.title);
+      }
+      const da = new Date(a.createdAt).getTime();
+      const db = new Date(b.createdAt).getTime();
+      return sortDir === "asc" ? da - db : db - da;
+    }), [notes, showArchived, selectedSubject, selectedChapter, search, sortBy, sortDir]);
 
   const pinnedNotes = filtered.filter((n) => n.pinned);
   const unpinnedNotes = filtered.filter((n) => !n.pinned);
   const displayNotes = [...pinnedNotes, ...unpinnedNotes];
 
-  const openEditor = (note?: Note) => {
+  const totalWords = notes.reduce((sum, n) => sum + n.wordCount, 0);
+  const noteCount = notes.filter((n) => !n.archived).length;
+
+  // ─── Note Actions ────────────────────────────────────────────────
+  const openEditor = useCallback((note?: Note) => {
     if (note) {
       setEditingNote(note);
       setEditorTitle(note.title);
       setEditorContent(note.content);
       setEditorTags([...note.tags]);
-      setEditorFolder(note.folder);
+      setEditorSubject(note.subject);
+      setEditorChapter(note.chapter);
       setEditorPinned(note.pinned);
       setEditorStarred(note.starred);
       setEditorAttachments([...note.attachments]);
@@ -185,501 +464,1104 @@ export default function NotesPage() {
       setEditorTitle("");
       setEditorContent("");
       setEditorTags([]);
-      setEditorFolder("DSA");
+      setEditorSubject(selectedSubject !== "all" ? selectedSubject : subjects[0]?.id ?? "");
+      setEditorChapter("all");
       setEditorPinned(false);
       setEditorStarred(false);
       setEditorAttachments([]);
     }
     setShowEditor(true);
-  };
+  }, [selectedSubject, subjects]);
 
-  const saveNote = () => {
-    if (!editorTitle.trim()) return;
+  const saveNote = useCallback(() => {
+    if (!editorTitle.trim()) {
+      addToast("Please enter a note title", "warning");
+      return;
+    }
+    const now = new Date().toISOString();
+    const wc = countWords(editorContent);
 
-    const now = "Just now";
     if (editingNote) {
       setNotes((prev) =>
         prev.map((n) =>
           n.id === editingNote.id
-            ? {
-                ...n,
-                title: editorTitle,
-                content: editorContent,
-                tags: editorTags,
-                folder: editorFolder,
-                pinned: editorPinned,
-                starred: editorStarred,
-                attachments: editorAttachments,
-                updatedAt: now,
-              }
+            ? { ...n, title: editorTitle, content: editorContent, tags: editorTags, subject: editorSubject, chapter: editorChapter === "all" ? "" : editorChapter, pinned: editorPinned, starred: editorStarred, attachments: editorAttachments, updatedAt: now, wordCount: wc }
             : n
         )
       );
+      addToast("Note updated", "success");
     } else {
       const newNote: Note = {
-        id: `note-${Date.now()}`,
+        id: `note-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
         title: editorTitle,
         content: editorContent,
         tags: editorTags,
-        folder: editorFolder,
+        subject: editorSubject,
+        chapter: editorChapter === "all" ? "" : editorChapter,
         updatedAt: now,
+        createdAt: now,
         pinned: editorPinned,
         starred: editorStarred,
+        archived: false,
         attachments: editorAttachments,
         color: Math.floor(Math.random() * noteColors.length),
+        wordCount: wc,
       };
       setNotes((prev) => [newNote, ...prev]);
+      addToast("Note created", "success");
     }
     setShowEditor(false);
-  };
+  }, [editorTitle, editorContent, editorTags, editorSubject, editorChapter, editorPinned, editorStarred, editorAttachments, editingNote, addToast]);
 
-  const deleteNote = (id: string) => {
+  const deleteNote = useCallback((id: string) => {
     setNotes((prev) => prev.filter((n) => n.id !== id));
     if (showPreview?.id === id) setShowPreview(null);
-  };
+    setDeleteConfirm(null);
+    addToast("Note deleted", "info");
+  }, [showPreview, addToast]);
 
-  const togglePin = (id: string) => {
-    setNotes((prev) => prev.map((n) => (n.id === id ? { ...n, pinned: !n.pinned } : n)));
-  };
+  const archiveNote = useCallback((id: string) => {
+    setNotes((prev) => prev.map((n) => (n.id === id ? { ...n, archived: !n.archived } : n)));
+    addToast("Note archived", "info");
+  }, [addToast]);
 
-  const toggleStar = (id: string) => {
-    setNotes((prev) => prev.map((n) => (n.id === id ? { ...n, starred: !n.starred } : n)));
-  };
+  const duplicateNote = useCallback((note: Note) => {
+    const now = new Date().toISOString();
+    const dup: Note = {
+      ...note,
+      id: `note-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      title: `${note.title} (Copy)`,
+      createdAt: now,
+      updatedAt: now,
+      pinned: false,
+      starred: false,
+      archived: false,
+    };
+    setNotes((prev) => [dup, ...prev]);
+    addToast("Note duplicated", "success");
+  }, [addToast]);
 
-  const addTag = () => {
+  // ─── Backup / Restore ────────────────────────────────────────────
+  const exportNotes = useCallback(() => {
+    const data = JSON.stringify({ notes, subjects, exportedAt: new Date().toISOString(), version: "1.0" }, null, 2);
+    const blob = new Blob([data], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `developer-os-notes-backup-${new Date().toISOString().split("T")[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    addToast(`Exported ${notes.length} notes`, "success");
+  }, [notes, subjects, addToast]);
+
+  const importNotes = useCallback(() => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".json";
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const data = JSON.parse(event.target?.result as string);
+          if (data.notes && Array.isArray(data.notes)) {
+            const merged = [...notes];
+            let added = 0;
+            for (const note of data.notes) {
+              if (!merged.find((n) => n.id === note.id)) {
+                merged.push(note);
+                added++;
+              }
+            }
+            setNotes(merged);
+            if (data.subjects && Array.isArray(data.subjects)) {
+              const mergedSubjects = [...subjects];
+              for (const s of data.subjects) {
+                if (!mergedSubjects.find((ms) => ms.id === s.id)) mergedSubjects.push(s);
+              }
+              setSubjects(mergedSubjects);
+            }
+            addToast(`Imported ${added} new notes`, "success");
+          } else {
+            addToast("Invalid backup file format", "error");
+          }
+        } catch {
+          addToast("Failed to parse backup file", "error");
+        }
+      };
+      reader.readAsText(file);
+    };
+    input.click();
+  }, [notes, subjects, addToast]);
+
+  // ─── Tag Handling ────────────────────────────────────────────────
+  const addTag = useCallback(() => {
     const tag = tagInput.trim().toLowerCase();
     if (tag && !editorTags.includes(tag)) {
       setEditorTags((prev) => [...prev, tag]);
       setTagInput("");
     }
-  };
+  }, [tagInput, editorTags]);
 
-  const removeTag = (tag: string) => {
-    setEditorTags((prev) => prev.filter((t) => t !== tag));
-  };
-
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // ─── File Upload ─────────────────────────────────────────────────
+  const handleFileUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
-
     Array.from(files).forEach((file) => {
       const reader = new FileReader();
       reader.onload = (event) => {
-        const dataUrl = event.target?.result as string;
-        const attachment: NoteAttachment = {
+        const att: NoteAttachment = {
           id: `att-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
           name: file.name,
           type: file.type,
           size: file.size,
-          url: dataUrl,
+          url: event.target?.result as string,
           category: getAttachmentCategory(file.type, file.name),
         };
-        setEditorAttachments((prev) => [...prev, attachment]);
+        setEditorAttachments((prev) => [...prev, att]);
       };
       reader.readAsDataURL(file);
     });
-
     if (fileInputRef.current) fileInputRef.current.value = "";
-  };
+  }, []);
 
-  const removeAttachment = (id: string) => {
-    setEditorAttachments((prev) => prev.filter((a) => a.id !== id));
-  };
+  // ─── Subject Management ──────────────────────────────────────────
+  const addSubject = useCallback(() => {
+    if (!newSubjectName.trim()) return;
+    const id = newSubjectName.trim().toLowerCase().replace(/\s+/g, "-");
+    if (subjects.find((s) => s.id === id)) {
+      addToast("Subject already exists", "warning");
+      return;
+    }
+    const colors = ["blue", "purple", "green", "amber", "red", "cyan"];
+    setSubjects((prev) => [...prev, { id, name: newSubjectName.trim(), icon: newSubjectIcon, color: colors[prev.length % colors.length], chapters: [] }]);
+    setNewSubjectName("");
+    setNewSubjectIcon("📚");
+    addToast(`Subject "${newSubjectName.trim()}" added`, "success");
+  }, [newSubjectName, newSubjectIcon, subjects, addToast]);
 
-  const downloadAttachment = (att: NoteAttachment) => {
-    const a = document.createElement("a");
-    a.href = att.url;
-    a.download = att.name;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  };
+  const deleteSubject = useCallback((id: string) => {
+    setSubjects((prev) => prev.filter((s) => s.id !== id));
+    setNotes((prev) => prev.map((n) => (n.subject === id ? { ...n, subject: "" } : n)));
+    if (selectedSubject === id) setSelectedSubject("all");
+    addToast("Subject deleted", "info");
+  }, [selectedSubject, addToast]);
 
+  const addChapter = useCallback((subjectId: string) => {
+    if (!newChapterName.trim()) return;
+    setSubjects((prev) =>
+      prev.map((s) =>
+        s.id === subjectId ? { ...s, chapters: [...s.chapters, newChapterName.trim()] } : s
+      )
+    );
+    setNewChapterName("");
+    addToast("Chapter added", "success");
+  }, [newChapterName, addToast]);
+
+  const deleteChapter = useCallback((subjectId: string, chapter: string) => {
+    setSubjects((prev) =>
+      prev.map((s) =>
+        s.id === subjectId ? { ...s, chapters: s.chapters.filter((c) => c !== chapter) } : s
+      )
+    );
+    setNotes((prev) => prev.map((n) => (n.subject === subjectId && n.chapter === chapter ? { ...n, chapter: "" } : n)));
+    addToast("Chapter deleted", "info");
+  }, [addToast]);
+
+  // ─── Attachment Icons ────────────────────────────────────────────
   const getAttachmentIcon = (category: NoteAttachment["category"]) => {
     switch (category) {
       case "pdf": return <File className="h-4 w-4 text-red-500" />;
-      case "image": return <FileImage className="h-4 w-4 text-green-500" />;
+      case "image": return <FileImage className="h-4 w-4 text-emerald-500" />;
       case "markdown": return <FileText className="h-4 w-4 text-blue-500" />;
       case "document": return <FileText className="h-4 w-4 text-blue-600" />;
       default: return <File className="h-4 w-4 text-muted-foreground" />;
     }
   };
 
+  // ─── Render ──────────────────────────────────────────────────────
   return (
     <PageWrapper
-      title="Notes"
-      subtitle="Your personal knowledge base"
-      headerAction={
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={() => openEditor()}
-          className="flex items-center gap-2 rounded-xl bg-gradient-to-b from-primary to-primary/90 px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all duration-200"
-        >
-          <Plus className="h-4 w-4" /> New Note
-        </motion.button>
-      }
+      title=""
+      subtitle=""
+      headerAction={null}
     >
-      <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
-        {/* Search and Filters */}
-        <motion.div variants={item} className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-          <div className="relative flex-1 w-full">
-            <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/40" />
-            <input
-              type="text"
-              placeholder="Search notes..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-xl border border-border bg-muted/30 py-2.5 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all duration-200"
-            />
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="flex gap-1 rounded-xl border border-border bg-muted/30 p-1 overflow-x-auto">
-              {folders.map((f) => (
-                <button
-                  key={f}
-                  onClick={() => setFolder(f)}
-                  className={cn(
-                    "rounded-lg px-3 py-1.5 text-xs font-semibold transition-all duration-200 whitespace-nowrap",
-                    folder === f ? "bg-background text-foreground shadow-sm" : "text-muted-foreground/60 hover:text-foreground hover:bg-muted/40"
-                  )}
-                >
-                  {f}
-                </button>
-              ))}
+      {/* ─── Page Header ─── */}
+      <motion.div
+        initial={{ opacity: 0, y: -12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"
+      >
+        <div>
+          <div className="flex items-center gap-3 mb-1">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/10">
+              <StickyNote className="h-5 w-5 text-primary" />
             </div>
-            <div className="flex gap-1 rounded-xl border border-border bg-muted/30 p-1">
-              <button
-                onClick={() => setViewMode("grid")}
-                className={cn("rounded-lg p-2 transition-all duration-200", viewMode === "grid" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground/60 hover:text-foreground")}
-              >
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                </svg>
-              </button>
-              <button
-                onClick={() => setViewMode("list")}
-                className={cn("rounded-lg p-2 transition-all duration-200", viewMode === "list" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground/60 hover:text-foreground")}
-              >
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              </button>
-            </div>
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">
+              Notes
+            </h1>
           </div>
-        </motion.div>
-
-        {/* Notes Stats */}
-        <motion.div variants={item} className="flex items-center gap-4 text-sm text-muted-foreground">
-          <span className="font-medium">{displayNotes.length} notes</span>
-          {pinnedNotes.length > 0 && (
-            <span className="flex items-center gap-1">
-              <Pin className="h-3 w-3" /> {pinnedNotes.length} pinned
+          <p className="text-sm text-muted-foreground/60 ml-[52px]">
+            <span className="inline-flex items-center gap-1 rounded-full bg-primary/8 px-2 py-0.5 text-xs font-semibold text-primary mr-1.5">
+              {noteCount}
             </span>
-          )}
-          <span className="flex items-center gap-1">
-            <Star className="h-3 w-3" /> {notes.filter((n) => n.starred).length} starred
-          </span>
-        </motion.div>
+            notes · {totalWords.toLocaleString()} words
+          </p>
+        </div>
 
-        {/* Notes Grid/List */}
-        <motion.div variants={item} className={cn(viewMode === "grid" ? "grid gap-4 sm:grid-cols-2 lg:grid-cols-3" : "space-y-3")}>
-          <AnimatePresence mode="popLayout">
-            {displayNotes.map((note, index) => (
+        <div className="flex items-center gap-2">
+          <motion.button
+            whileHover={{ scale: 1.03, y: -1 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={importNotes}
+            className="flex items-center gap-2 rounded-xl border border-border bg-background/80 backdrop-blur-sm px-3.5 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 hover:border-primary/20 transition-all duration-200"
+          >
+            <Upload className="h-4 w-4" /> Import
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.03, y: -1 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={exportNotes}
+            className="flex items-center gap-2 rounded-xl border border-border bg-background/80 backdrop-blur-sm px-3.5 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 hover:border-primary/20 transition-all duration-200"
+          >
+            <Download className="h-4 w-4" /> Export
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.03, y: -1 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={() => openEditor()}
+            className="group flex items-center gap-2 rounded-xl bg-gradient-to-b from-primary to-primary/90 px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all duration-200 relative overflow-hidden"
+          >
+            <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out" />
+            <Plus className="h-4 w-4 relative" /> New Note
+          </motion.button>
+        </div>
+      </motion.div>
+
+      {/* ─── Subject Tabs ─── */}
+      <motion.div
+        variants={staggerContainer}
+        initial="hidden"
+        animate="visible"
+        className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide"
+      >
+        <motion.button
+          variants={fadeSlideUp}
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.97 }}
+          onClick={() => { setSelectedSubject("all"); setSelectedChapter("all"); }}
+          className={cn(
+            "flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-medium transition-all duration-300 whitespace-nowrap",
+            selectedSubject === "all"
+              ? "border-primary/30 bg-primary/10 text-primary shadow-sm shadow-primary/10"
+              : "border-border/60 text-muted-foreground hover:bg-muted/40 hover:border-primary/15"
+          )}
+        >
+          <Layers className="h-4 w-4" /> All
+          <span className={cn(
+            "ml-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-bold transition-colors duration-300",
+            selectedSubject === "all" ? "bg-primary/15 text-primary" : "bg-muted/60 text-muted-foreground/60"
+          )}>{notes.filter((n) => !n.archived).length}</span>
+        </motion.button>
+
+        {subjects.map((s, i) => {
+          const count = notes.filter((n) => n.subject === s.id && !n.archived).length;
+          const isActive = selectedSubject === s.id;
+          const colors = subjectColorMap[s.color] || subjectColorMap.blue;
+          return (
+            <motion.button
+              key={s.id}
+              variants={fadeSlideUp}
+              whileHover={{ scale: 1.03, y: -1 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={() => { setSelectedSubject(s.id); setSelectedChapter("all"); }}
+              className={cn(
+                "flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-medium transition-all duration-300 whitespace-nowrap group",
+                isActive
+                  ? cn("shadow-sm", colors.bg, colors.text, colors.border)
+                  : cn("border-border/60 text-muted-foreground hover:bg-muted/40 hover:border-primary/15")
+              )}
+            >
+              <span className="transition-transform duration-300 group-hover:scale-110">{s.icon}</span>
+              {s.name}
+              <span className={cn(
+                "rounded-full px-1.5 py-0.5 text-[10px] font-bold transition-all duration-300",
+                isActive ? "bg-white/15 dark:bg-black/15 text-current" : "bg-muted/60 text-muted-foreground/60"
+              )}>{count}</span>
+            </motion.button>
+          );
+        })}
+
+        <motion.button
+          variants={fadeSlideUp}
+          whileHover={{ scale: 1.1, rotate: 90 }}
+          whileTap={{ scale: 0.9 }}
+          onClick={() => setShowSubjectManager(true)}
+          className="flex items-center justify-center rounded-xl border border-dashed border-border/60 p-2.5 text-muted-foreground/40 hover:border-primary/30 hover:text-primary hover:bg-primary/5 transition-all duration-300"
+        >
+          <Plus className="h-4 w-4" />
+        </motion.button>
+      </motion.div>
+
+      {/* ─── Chapter Tabs ─── */}
+      <AnimatePresence>
+        {selectedSubject !== "all" && chapters.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            className="overflow-hidden"
+          >
+            <div className="flex items-center gap-1.5 overflow-x-auto py-1 scrollbar-hide">
+              <button
+                onClick={() => setSelectedChapter("all")}
+                className={cn(
+                  "rounded-lg px-3 py-1.5 text-xs font-semibold transition-all duration-200 whitespace-nowrap",
+                  selectedChapter === "all"
+                    ? "bg-background text-foreground shadow-sm border border-border/60"
+                    : "text-muted-foreground/50 hover:text-foreground hover:bg-muted/30"
+                )}
+              >
+                All
+              </button>
+              {chapters.map((ch) => {
+                const chCount = notes.filter((n) => n.chapter === ch && n.subject === selectedSubject && !n.archived).length;
+                return (
+                  <button
+                    key={ch}
+                    onClick={() => setSelectedChapter(ch)}
+                    className={cn(
+                      "rounded-lg px-3 py-1.5 text-xs font-semibold transition-all duration-200 whitespace-nowrap flex items-center gap-1.5",
+                      selectedChapter === ch
+                        ? "bg-background text-foreground shadow-sm border border-border/60"
+                        : "text-muted-foreground/50 hover:text-foreground hover:bg-muted/30"
+                    )}
+                  >
+                    {ch}
+                    {chCount > 0 && (
+                      <span className={cn(
+                        "rounded-full px-1 text-[9px] font-bold",
+                        selectedChapter === ch ? "bg-primary/10 text-primary" : "bg-muted/40 text-muted-foreground/40"
+                      )}>{chCount}</span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ─── Search & Controls ─── */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.1 }}
+        className="flex flex-col sm:flex-row items-start sm:items-center gap-3"
+      >
+        <div className={cn(
+          "relative flex-1 w-full transition-all duration-300",
+          searchFocused && "scale-[1.01]"
+        )}>
+          <Search className={cn(
+            "absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 transition-colors duration-200",
+            searchFocused ? "text-primary" : "text-muted-foreground/30"
+          )} />
+          <input
+            type="text"
+            placeholder="Search notes..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            onFocus={() => setSearchFocused(true)}
+            onBlur={() => setSearchFocused(false)}
+            className={cn(
+              "w-full rounded-xl border bg-background/80 backdrop-blur-sm py-2.5 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground/30 focus:outline-none transition-all duration-300",
+              searchFocused
+                ? "border-primary/30 ring-2 ring-primary/10 shadow-sm shadow-primary/5"
+                : "border-border/60 hover:border-primary/15"
+            )}
+          />
+          {search && (
+            <motion.button
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.5 }}
+              onClick={() => setSearch("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-0.5 hover:bg-muted/60 text-muted-foreground/40 hover:text-foreground transition-colors"
+            >
+              <X className="h-3.5 w-3.5" />
+            </motion.button>
+          )}
+        </div>
+
+        <div className="flex items-center gap-2">
+          <motion.button
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={() => setShowArchived(!showArchived)}
+            className={cn(
+              "flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-medium transition-all duration-300",
+              showArchived
+                ? "border-amber-500/30 bg-amber-500/8 text-amber-600 dark:text-amber-400"
+                : "border-border/60 text-muted-foreground hover:bg-muted/40 hover:border-primary/15"
+            )}
+          >
+            <Archive className="h-3.5 w-3.5" /> {showArchived ? "Archived" : "Active"}
+          </motion.button>
+
+          <motion.button
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={() => setSortBy(sortBy === "date" ? "title" : "date")}
+            className="flex items-center gap-1.5 rounded-xl border border-border/60 px-3 py-2 text-xs font-medium text-muted-foreground hover:bg-muted/40 hover:border-primary/15 transition-all duration-300"
+          >
+            {sortBy === "date" ? <Clock className="h-3.5 w-3.5" /> : <SortAsc className="h-3.5 w-3.5" />}
+            {sortBy === "date" ? "Date" : "Title"}
+          </motion.button>
+
+          <motion.button
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={() => setSortDir(sortDir === "asc" ? "desc" : "asc")}
+            className="rounded-xl border border-border/60 p-2 text-muted-foreground hover:bg-muted/40 hover:border-primary/15 transition-all duration-300"
+          >
+            {sortDir === "asc" ? <SortAsc className="h-3.5 w-3.5" /> : <SortDesc className="h-3.5 w-3.5" />}
+          </motion.button>
+
+          <div className="flex gap-0.5 rounded-xl border border-border/60 bg-muted/20 p-1">
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setViewMode("grid")}
+              className={cn(
+                "rounded-lg p-2 transition-all duration-200",
+                viewMode === "grid" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground/40 hover:text-foreground"
+              )}
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
+            </motion.button>
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setViewMode("list")}
+              className={cn(
+                "rounded-lg p-2 transition-all duration-200",
+                viewMode === "list" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground/40 hover:text-foreground"
+              )}
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
+            </motion.button>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* ─── Stats Bar ─── */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.15 }}
+        className="flex items-center gap-4 text-xs text-muted-foreground/50 font-medium"
+      >
+        <span>{displayNotes.length} {showArchived ? "archived" : "active"}</span>
+        {pinnedNotes.length > 0 && (
+          <span className="flex items-center gap-1"><Pin className="h-3 w-3 text-primary/60" /> {pinnedNotes.length} pinned</span>
+        )}
+        {notes.filter((n) => n.starred && !n.archived).length > 0 && (
+          <span className="flex items-center gap-1"><Star className="h-3 w-3 fill-amber-400/60 text-amber-400/60" /> {notes.filter((n) => n.starred && !n.archived).length} starred</span>
+        )}
+        {selectedSubject !== "all" && currentSubject && (
+          <span className="flex items-center gap-1"><BookOpen className="h-3 w-3 text-primary/60" /> {currentSubject.icon} {currentSubject.name}</span>
+        )}
+      </motion.div>
+
+      {/* ─── Notes Grid/List ─── */}
+      <motion.div
+        variants={staggerContainer}
+        initial="hidden"
+        animate="visible"
+        className={cn(
+          viewMode === "grid"
+            ? "grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+            : "space-y-2.5"
+        )}
+      >
+        <AnimatePresence mode="popLayout">
+          {displayNotes.map((note, index) => {
+            const subjectInfo = subjects.find((s) => s.id === note.subject);
+            const colors = subjectInfo ? subjectColorMap[subjectInfo.color] : null;
+            return (
               <motion.div
                 key={note.id}
                 layout
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ delay: index * 0.04, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                variants={fadeSlideUp}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                transition={{ delay: index * 0.025, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                whileHover={{ y: -3, transition: { duration: 0.2 } }}
                 className={cn(
-                  "group relative rounded-2xl border bg-gradient-to-br p-5 transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 cursor-pointer",
+                  "group relative rounded-2xl border bg-gradient-to-br p-5 cursor-pointer",
+                  "transition-shadow duration-300 hover:shadow-lg hover:shadow-black/5 dark:hover:shadow-black/20",
+                  "border-border/50 hover:border-primary/20",
                   noteColors[note.color % noteColors.length],
                   viewMode === "list" && "flex items-center gap-4"
                 )}
                 onClick={() => setShowPreview(note)}
               >
+                {/* Pinned indicator */}
                 {note.pinned && (
-                  <div className="absolute -top-2 -right-2">
-                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md">
+                  <motion.div
+                    initial={{ scale: 0, rotate: -45 }}
+                    animate={{ scale: 1, rotate: 0 }}
+                    className="absolute -top-1.5 -right-1.5 z-10"
+                  >
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md shadow-primary/20">
                       <Pin className="h-3 w-3" />
                     </div>
-                  </div>
+                  </motion.div>
                 )}
 
-                <div className={cn(viewMode === "grid" ? "" : "flex-1")}>
-                  <div className="flex items-start justify-between mb-2">
-                    <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors duration-200 line-clamp-1">{note.title}</h3>
-                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200" onClick={(e) => e.stopPropagation()}>
+                <div className={cn(viewMode === "grid" ? "" : "flex-1 min-w-0")}>
+                  {/* Title & Actions */}
+                  <div className="flex items-start justify-between mb-2.5">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors duration-200 line-clamp-1 text-[15px]">
+                        {note.title}
+                      </h3>
+                      {/* Subject & Chapter badges */}
+                      <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                        {subjectInfo && (
+                          <span className={cn(
+                            "inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-[10px] font-semibold transition-colors duration-200",
+                            colors?.bg, colors?.text, colors?.border
+                          )}>
+                            {subjectInfo.icon} {subjectInfo.name}
+                          </span>
+                        )}
+                        {note.chapter && (
+                          <span className="inline-flex items-center gap-1 rounded-md bg-muted/40 border border-border/40 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground/60">
+                            {note.chapter}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Hover actions */}
+                    <div
+                      className="flex gap-0.5 opacity-0 group-hover:opacity-100 -translate-y-1 group-hover:translate-y-0 transition-all duration-200"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <motion.button
-                        whileHover={{ scale: 1.1 }}
+                        whileHover={{ scale: 1.15 }}
+                        whileTap={{ scale: 0.9 }}
                         onClick={() => setShowPreview(note)}
-                        className="rounded-lg p-1.5 hover:bg-primary/10"
+                        className="rounded-lg p-1.5 hover:bg-primary/10 text-muted-foreground/40 hover:text-primary transition-colors"
                         title="Preview"
                       >
-                        <Eye className="h-3.5 w-3.5 text-primary" />
+                        <Eye className="h-3.5 w-3.5" />
                       </motion.button>
                       <motion.button
-                        whileHover={{ scale: 1.1 }}
+                        whileHover={{ scale: 1.15 }}
+                        whileTap={{ scale: 0.9 }}
                         onClick={() => openEditor(note)}
-                        className="rounded-lg p-1.5 hover:bg-background/80"
+                        className="rounded-lg p-1.5 hover:bg-muted/60 text-muted-foreground/40 hover:text-foreground transition-colors"
                         title="Edit"
                       >
-                        <Edit3 className="h-3.5 w-3.5 text-muted-foreground/60" />
+                        <Edit3 className="h-3.5 w-3.5" />
                       </motion.button>
                       <motion.button
-                        whileHover={{ scale: 1.1 }}
-                        onClick={() => deleteNote(note.id)}
-                        className="rounded-lg p-1.5 hover:bg-red-500/10"
+                        whileHover={{ scale: 1.15 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => duplicateNote(note)}
+                        className="rounded-lg p-1.5 hover:bg-muted/60 text-muted-foreground/40 hover:text-foreground transition-colors"
+                        title="Duplicate"
+                      >
+                        <Copy className="h-3.5 w-3.5" />
+                      </motion.button>
+                      <motion.button
+                        whileHover={{ scale: 1.15 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => archiveNote(note.id)}
+                        className="rounded-lg p-1.5 hover:bg-amber-500/10 text-muted-foreground/40 hover:text-amber-500 transition-colors"
+                        title="Archive"
+                      >
+                        <Archive className="h-3.5 w-3.5" />
+                      </motion.button>
+                      <motion.button
+                        whileHover={{ scale: 1.15 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => setDeleteConfirm(note.id)}
+                        className="rounded-lg p-1.5 hover:bg-red-500/10 text-muted-foreground/40 hover:text-red-500 transition-colors"
                         title="Delete"
                       >
-                        <Trash2 className="h-3.5 w-3.5 text-red-500" />
+                        <Trash2 className="h-3.5 w-3.5" />
                       </motion.button>
                     </div>
                   </div>
-                  <p className={cn("text-sm text-muted-foreground/60 leading-relaxed whitespace-pre-line", viewMode === "grid" ? "line-clamp-3" : "line-clamp-1")}>
-                    {note.content}
+
+                  {/* Content preview */}
+                  <p className={cn(
+                    "text-sm text-muted-foreground/50 leading-relaxed whitespace-pre-line",
+                    viewMode === "grid" ? "line-clamp-3" : "line-clamp-1"
+                  )}>
+                    {note.content || "Empty note"}
                   </p>
 
-                  {/* Attachments preview */}
+                  {/* Attachments */}
                   {note.attachments.length > 0 && (
-                    <div className="mt-2 flex flex-wrap gap-1.5">
+                    <div className="mt-2.5 flex flex-wrap gap-1">
                       {note.attachments.slice(0, 3).map((att) => (
-                        <span key={att.id} className="inline-flex items-center gap-1 rounded-md bg-background/60 border border-border/50 px-2 py-0.5 text-[10px] font-medium text-muted-foreground/60">
-                          {getAttachmentIcon(att.category)}
-                          {att.name.length > 15 ? att.name.slice(0, 15) + "..." : att.name}
+                        <span key={att.id} className="inline-flex items-center gap-1 rounded-md bg-muted/30 border border-border/30 px-2 py-0.5 text-[10px] font-medium text-muted-foreground/50">
+                          {getAttachmentIcon(att.category)} {att.name.length > 12 ? att.name.slice(0, 12) + "…" : att.name}
                         </span>
                       ))}
                       {note.attachments.length > 3 && (
-                        <span className="text-[10px] text-muted-foreground/40">+{note.attachments.length - 3} more</span>
+                        <span className="text-[10px] text-muted-foreground/30 font-medium">+{note.attachments.length - 3}</span>
                       )}
                     </div>
                   )}
 
-                  <div className="mt-3.5 flex items-center justify-between">
-                    <div className="flex flex-wrap gap-1.5">
-                      {note.tags.slice(0, viewMode === "list" ? 3 : undefined).map((t) => (
-                        <span key={t} className="inline-flex items-center gap-1 rounded-md bg-background/50 border border-border/50 px-2 py-0.5 text-[10px] font-medium text-muted-foreground/60">
-                          <Hash className="h-2.5 w-2.5" />
-                          {t}
+                  {/* Tags & Metadata */}
+                  <div className="mt-3 flex items-center justify-between">
+                    <div className="flex flex-wrap gap-1">
+                      {note.tags.slice(0, viewMode === "list" ? 4 : 3).map((t) => (
+                        <span key={t} className="inline-flex items-center gap-0.5 rounded-md bg-primary/5 border border-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary/70">
+                          <Hash className="h-2.5 w-2.5" />{t}
                         </span>
                       ))}
+                      {note.tags.length > (viewMode === "list" ? 4 : 3) && (
+                        <span className="text-[10px] text-muted-foreground/30">+{note.tags.length - (viewMode === "list" ? 4 : 3)}</span>
+                      )}
                     </div>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground/40 font-medium">
-                      {note.starred && <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />}
-                      <span className="flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        {note.updatedAt}
+                    <div className="flex items-center gap-2 text-[11px] text-muted-foreground/35 font-medium">
+                      {note.wordCount > 0 && <span>{readingTime(note.wordCount)}</span>}
+                      {note.starred && <Star className="h-3 w-3 fill-amber-400 text-amber-400" />}
+                      <span className="flex items-center gap-0.5">
+                        <Clock className="h-3 w-3" />{timeAgo(note.updatedAt)}
                       </span>
                     </div>
                   </div>
                 </div>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </motion.div>
 
-        {/* Empty State */}
-        {displayNotes.length === 0 && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-border py-16"
-          >
-            <div className="mb-4 rounded-full bg-muted/50 p-4">
-              <FileText className="h-8 w-8 text-muted-foreground/40" />
-            </div>
-            <h3 className="text-lg font-semibold text-foreground mb-2">No notes found</h3>
-            <p className="text-sm text-muted-foreground/60 mb-4">{search ? "Try a different search term" : "Create your first note to get started"}</p>
-            <button
-              onClick={() => openEditor()}
-              className="flex items-center gap-2 rounded-xl bg-gradient-to-b from-primary to-primary/90 px-4 py-2 text-sm font-semibold text-primary-foreground shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 transition-all duration-200"
-            >
-              <Plus className="h-4 w-4" /> New Note
-            </button>
-          </motion.div>
-        )}
+                {/* Delete Confirmation Overlay */}
+                <AnimatePresence>
+                  {deleteConfirm === note.id && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="absolute inset-0 z-20 flex items-center justify-center rounded-2xl bg-background/95 backdrop-blur-sm border border-red-200 dark:border-red-900/50"
+                      onClick={(e) => { e.stopPropagation(); setDeleteConfirm(null); }}
+                    >
+                      <motion.div
+                        initial={{ scale: 0.9, y: 8 }}
+                        animate={{ scale: 1, y: 0 }}
+                        exit={{ scale: 0.9, y: 8 }}
+                        className="text-center p-4"
+                      >
+                        <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-red-500/10">
+                          <AlertTriangle className="h-5 w-5 text-red-500" />
+                        </div>
+                        <p className="text-sm font-semibold text-foreground mb-3">Delete this note?</p>
+                        <div className="flex items-center gap-2 justify-center">
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setDeleteConfirm(null); }}
+                            className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted/50 transition-colors"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); deleteNote(note.id); }}
+                            className="rounded-lg bg-red-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-600 transition-colors"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </motion.div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            );
+          })}
+        </AnimatePresence>
       </motion.div>
 
-      {/* Editor Modal */}
+      {/* ─── Empty State ─── */}
+      {displayNotes.length === 0 && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.96 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+          className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-border/50 py-20 relative overflow-hidden"
+        >
+          {/* Decorative background */}
+          <div className="absolute inset-0 bg-gradient-to-b from-primary/[0.02] to-transparent" />
+
+          <motion.div
+            animate={{ y: [0, -6, 0] }}
+            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+            className="relative mb-6"
+          >
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/15 to-primary/5 border border-primary/10 shadow-lg shadow-primary/10">
+              {showArchived ? (
+                <Archive className="h-7 w-7 text-primary/60" />
+              ) : search ? (
+                <Search className="h-7 w-7 text-primary/60" />
+              ) : (
+                <PenLine className="h-7 w-7 text-primary/60" />
+              )}
+            </div>
+            <motion.div
+              animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0, 0.5] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute -inset-4 rounded-3xl bg-primary/5 -z-10"
+            />
+          </motion.div>
+
+          <h3 className="text-lg font-bold text-foreground mb-2">
+            {showArchived ? "No archived notes" : search ? "No notes found" : "Start taking notes"}
+          </h3>
+          <p className="text-sm text-muted-foreground/50 mb-6 max-w-sm text-center leading-relaxed">
+            {search
+              ? `No notes match "${search}". Try a different search term.`
+              : "Organize your study materials, lecture notes, and ideas. Create your first note to get started."
+            }
+          </p>
+          {!search && (
+            <motion.button
+              whileHover={{ scale: 1.04, y: -2 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={() => openEditor()}
+              className="group flex items-center gap-2 rounded-xl bg-gradient-to-b from-primary to-primary/90 px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all duration-200 relative overflow-hidden"
+            >
+              <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out" />
+              <Plus className="h-4 w-4 relative" /> Create First Note
+            </motion.button>
+          )}
+        </motion.div>
+      )}
+
+      {/* ═══════════════════════════════════════════════════════════════
+          EDITOR MODAL
+         ═══════════════════════════════════════════════════════════════ */}
       <AnimatePresence>
         {showEditor && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+            variants={modalOverlay}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
             onClick={() => setShowEditor(false)}
           >
             <motion.div
-              initial={{ scale: 0.95, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.95, y: 20 }}
-              className="w-full max-w-2xl rounded-2xl border border-border bg-background p-6 shadow-2xl max-h-[90vh] overflow-y-auto"
+              variants={modalContent}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className="w-full max-w-2xl rounded-2xl border border-border/50 bg-background/95 backdrop-blur-xl p-6 shadow-2xl max-h-[90vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex items-center justify-between mb-5">
-                <h3 className="text-lg font-semibold text-foreground">{editingNote ? "Edit Note" : "New Note"}</h3>
-                <button onClick={() => setShowEditor(false)} className="rounded-xl p-1.5 text-muted-foreground hover:bg-muted/60 transition-colors">
+              {/* Modal Header */}
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 border border-primary/10">
+                    {editingNote ? <Edit3 className="h-4 w-4 text-primary" /> : <Sparkles className="h-4 w-4 text-primary" />}
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-foreground">{editingNote ? "Edit Note" : "New Note"}</h3>
+                    <p className="text-xs text-muted-foreground/50">{editingNote ? "Update your note" : "Create a new note"}</p>
+                  </div>
+                </div>
+                <motion.button
+                  whileHover={{ scale: 1.1, rotate: 90 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => setShowEditor(false)}
+                  className="rounded-xl p-2 text-muted-foreground hover:bg-muted/60 hover:text-foreground transition-colors"
+                >
                   <X className="h-5 w-5" />
-                </button>
+                </motion.button>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-5">
+                {/* Title */}
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-foreground">Title</label>
+                  <label className="mb-1.5 block text-xs font-semibold text-muted-foreground uppercase tracking-wider">Title</label>
                   <input
                     type="text"
                     value={editorTitle}
                     onChange={(e) => setEditorTitle(e.target.value)}
-                    placeholder="Note title..."
-                    className="w-full rounded-xl border border-border bg-muted/30 px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all duration-200"
+                    placeholder="Enter note title..."
+                    className="w-full rounded-xl border border-border/60 bg-muted/20 px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/30 focus:outline-none focus:ring-2 focus:ring-primary/15 focus:border-primary/25 transition-all duration-200"
                     autoFocus
                   />
                 </div>
 
+                {/* Subject & Chapter */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="relative" data-subject-dd>
+                    <label className="mb-1.5 block text-xs font-semibold text-muted-foreground uppercase tracking-wider">Subject</label>
+                    <button
+                      onClick={() => { setShowSubjectDropdown(!showSubjectDropdown); setShowChapterDropdown(false); }}
+                      className="w-full flex items-center justify-between rounded-xl border border-border/60 bg-muted/20 px-4 py-3 text-sm text-foreground hover:border-primary/20 transition-all duration-200"
+                    >
+                      <span className="flex items-center gap-2 truncate">
+                        {editorSubject ? (
+                          <>{subjects.find((s) => s.id === editorSubject)?.icon} {subjects.find((s) => s.id === editorSubject)?.name}</>
+                        ) : (
+                          <><BookOpen className="h-4 w-4 text-muted-foreground/40" /> Select subject</>
+                        )}
+                      </span>
+                      <ChevronDown className={cn("h-4 w-4 text-muted-foreground/40 transition-transform duration-200", showSubjectDropdown && "rotate-180")} />
+                    </button>
+                    <AnimatePresence>
+                      {showSubjectDropdown && (
+                        <motion.div
+                          data-subject-dd
+                          initial={{ opacity: 0, y: -4, scale: 0.98 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: -4, scale: 0.98 }}
+                          transition={{ duration: 0.15 }}
+                          className="absolute z-20 mt-1.5 w-full rounded-xl border border-border/60 bg-background shadow-xl overflow-hidden"
+                        >
+                          {subjects.map((s) => (
+                            <button
+                              key={s.id}
+                              data-dropdown-item
+                              onClick={() => { setEditorSubject(s.id); setEditorChapter(""); setShowSubjectDropdown(false); }}
+                              className={cn(
+                                "w-full px-4 py-2.5 text-sm text-left hover:bg-muted/50 transition-colors flex items-center gap-2",
+                                editorSubject === s.id && "bg-primary/8 text-primary font-medium"
+                              )}
+                            >
+                              <span>{s.icon}</span> {s.name}
+                              {editorSubject === s.id && <CheckCircle2 className="h-3.5 w-3.5 ml-auto text-primary" />}
+                            </button>
+                          ))}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+
+                  <div className="relative" data-chapter-dd>
+                    <label className="mb-1.5 block text-xs font-semibold text-muted-foreground uppercase tracking-wider">Chapter</label>
+                    <button
+                      onClick={() => { setShowChapterDropdown(!showChapterDropdown); setShowSubjectDropdown(false); }}
+                      disabled={!editorSubject}
+                      className="w-full flex items-center justify-between rounded-xl border border-border/60 bg-muted/20 px-4 py-3 text-sm text-foreground hover:border-primary/20 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      <span className="flex items-center gap-2 truncate">
+                        {editorChapter ? (
+                          <><FileText className="h-4 w-4 text-muted-foreground/40" /> {editorChapter}</>
+                        ) : (
+                          <><FolderOpen className="h-4 w-4 text-muted-foreground/40" /> Select chapter</>
+                        )}
+                      </span>
+                      <ChevronDown className={cn("h-4 w-4 text-muted-foreground/40 transition-transform duration-200", showChapterDropdown && "rotate-180")} />
+                    </button>
+                    <AnimatePresence>
+                      {showChapterDropdown && editorSubject && (
+                        <motion.div
+                          data-chapter-dd
+                          initial={{ opacity: 0, y: -4, scale: 0.98 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: -4, scale: 0.98 }}
+                          transition={{ duration: 0.15 }}
+                          className="absolute z-20 mt-1.5 w-full rounded-xl border border-border/60 bg-background shadow-xl max-h-48 overflow-y-auto"
+                        >
+                          {subjects.find((s) => s.id === editorSubject)?.chapters.map((ch) => (
+                            <button
+                              key={ch}
+                              data-dropdown-item
+                              onClick={() => { setEditorChapter(ch); setShowChapterDropdown(false); }}
+                              className={cn(
+                                "w-full px-4 py-2.5 text-sm text-left hover:bg-muted/50 transition-colors",
+                                editorChapter === ch && "bg-primary/8 text-primary font-medium"
+                              )}
+                            >
+                              {ch}
+                            </button>
+                          ))}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </div>
+
+                {/* Content */}
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-foreground">Content</label>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Content</label>
+                    <span className="text-[10px] text-muted-foreground/30 font-medium">
+                      {countWords(editorContent)} words · {readingTime(countWords(editorContent))}
+                    </span>
+                  </div>
                   <textarea
                     value={editorContent}
                     onChange={(e) => setEditorContent(e.target.value)}
                     placeholder="Write your notes here... (Markdown supported)"
-                    rows={10}
-                    className="w-full rounded-xl border border-border bg-muted/30 px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all duration-200 resize-none font-mono leading-relaxed"
+                    rows={12}
+                    className="w-full rounded-xl border border-border/60 bg-muted/20 px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/30 focus:outline-none focus:ring-2 focus:ring-primary/15 focus:border-primary/25 transition-all duration-200 resize-none font-mono leading-relaxed"
                   />
-                  <p className="mt-1 text-xs text-muted-foreground/40">Supports **bold**, *italic*, `code`, ### headings, - lists</p>
+                  <p className="mt-1 text-[10px] text-muted-foreground/30">
+                    Supports <code className="rounded bg-muted/60 px-1">**bold**</code>, <code className="rounded bg-muted/60 px-1">*italic*</code>, <code className="rounded bg-muted/60 px-1">`code`</code>, <code className="rounded bg-muted/60 px-1">### headings</code>, <code className="rounded bg-muted/60 px-1">- lists</code>
+                  </p>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="relative">
-                    <label className="mb-1.5 block text-sm font-medium text-foreground">Folder</label>
-                    <button
-                      onClick={() => setShowFolderDropdown(!showFolderDropdown)}
-                      className="w-full flex items-center justify-between rounded-xl border border-border bg-muted/30 px-4 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200"
-                    >
-                      <span className="flex items-center gap-2">
-                        <FolderOpen className="h-4 w-4 text-muted-foreground" />
-                        {editorFolder}
-                      </span>
-                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                    </button>
-                    {showFolderDropdown && (
-                      <div className="absolute z-10 mt-1 w-full rounded-xl border border-border bg-background shadow-lg">
-                        {folders.filter((f) => f !== "All").map((f) => (
-                          <button
-                            key={f}
-                            onClick={() => {
-                              setEditorFolder(f);
-                              setShowFolderDropdown(false);
-                            }}
-                            className={cn("w-full px-4 py-2.5 text-sm text-left hover:bg-muted/60 transition-colors first:rounded-t-xl last:rounded-b-xl", editorFolder === f && "bg-primary/10 text-primary font-medium")}
-                          >
-                            {f}
-                          </button>
-                        ))}
-                      </div>
-                    )}
+                {/* Tags */}
+                <div>
+                  <label className="mb-1.5 block text-xs font-semibold text-muted-foreground uppercase tracking-wider">Tags</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={tagInput}
+                      onChange={(e) => setTagInput(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addTag())}
+                      placeholder="Add tag and press Enter..."
+                      className="flex-1 rounded-xl border border-border/60 bg-muted/20 px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/30 focus:outline-none focus:ring-2 focus:ring-primary/15 transition-all duration-200"
+                    />
                   </div>
-
-                  <div>
-                    <label className="mb-1.5 block text-sm font-medium text-foreground">Tags</label>
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={tagInput}
-                        onChange={(e) => setTagInput(e.target.value)}
-                        onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addTag())}
-                        placeholder="Add tag..."
-                        className="flex-1 rounded-xl border border-border bg-muted/30 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200"
-                      />
-                      <button onClick={addTag} className="rounded-xl bg-muted px-3 py-2 text-sm font-medium text-foreground hover:bg-muted/80 transition-colors">
-                        Add
-                      </button>
-                    </div>
+                  <AnimatePresence>
                     {editorTags.length > 0 && (
-                      <div className="mt-2 flex flex-wrap gap-1.5">
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="mt-2.5 flex flex-wrap gap-1.5 overflow-hidden"
+                      >
                         {editorTags.map((tag) => (
-                          <span key={tag} className="inline-flex items-center gap-1 rounded-lg bg-primary/10 border border-primary/15 px-2.5 py-1 text-xs font-medium text-primary">
+                          <motion.span
+                            key={tag}
+                            layout
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.8 }}
+                            className="inline-flex items-center gap-1 rounded-lg bg-primary/8 border border-primary/12 px-2.5 py-1 text-xs font-semibold text-primary"
+                          >
                             #{tag}
-                            <button onClick={() => removeTag(tag)} className="hover:text-primary/70">
+                            <button
+                              onClick={() => setEditorTags((prev) => prev.filter((t) => t !== tag))}
+                              className="hover:text-primary/50 transition-colors"
+                            >
                               <X className="h-3 w-3" />
                             </button>
-                          </span>
+                          </motion.span>
                         ))}
-                      </div>
+                      </motion.div>
                     )}
-                  </div>
+                  </AnimatePresence>
                 </div>
 
-                {/* File Attachments */}
+                {/* Attachments */}
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-foreground">
-                    <Upload className="inline h-4 w-4 mr-1" />
-                    Attachments (PDF, Docs, MD, Images)
+                  <label className="mb-1.5 block text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    <Upload className="inline h-3.5 w-3.5 mr-1" /> Attachments
                   </label>
                   <div
-                    className="rounded-xl border-2 border-dashed border-border p-4 text-center hover:border-primary/30 hover:bg-muted/20 transition-all duration-200 cursor-pointer"
+                    className="rounded-xl border-2 border-dashed border-border/40 p-5 text-center hover:border-primary/25 hover:bg-primary/[0.02] transition-all duration-300 cursor-pointer group"
                     onClick={() => fileInputRef.current?.click()}
                   >
-                    <Upload className="h-6 w-6 mx-auto mb-2 text-muted-foreground/40" />
-                    <p className="text-sm text-muted-foreground/60">Click to upload or drag files here</p>
-                    <p className="text-xs text-muted-foreground/40 mt-1">PDF, DOC, MD, PNG, JPG up to 10MB</p>
+                    <Upload className="h-6 w-6 mx-auto mb-2 text-muted-foreground/25 group-hover:text-primary/40 transition-colors" />
+                    <p className="text-sm text-muted-foreground/50 font-medium">Drop files or click to upload</p>
+                    <p className="text-[10px] text-muted-foreground/30 mt-1">PDF, DOC, MD, PNG, JPG up to 10MB</p>
                   </div>
-                  <input ref={fileInputRef} type="file" multiple accept=".pdf,.doc,.docx,.md,.markdown,.png,.jpg,.jpeg,.gif,.txt" className="hidden" onChange={handleFileUpload} />
-
-                  {editorAttachments.length > 0 && (
-                    <div className="mt-3 space-y-2">
-                      {editorAttachments.map((att) => (
-                        <div key={att.id} className="flex items-center gap-3 rounded-xl border border-border bg-muted/20 p-3">
-                          {getAttachmentIcon(att.category)}
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-foreground truncate">{att.name}</p>
-                            <p className="text-xs text-muted-foreground/50">{formatFileSize(att.size)} • {att.category.toUpperCase()}</p>
-                          </div>
-                          <div className="flex gap-1">
-                            <button onClick={() => downloadAttachment(att)} className="rounded-lg p-1.5 hover:bg-muted/60 text-muted-foreground/60 hover:text-foreground transition-colors" title="Download">
-                              <Download className="h-4 w-4" />
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    multiple
+                    accept=".pdf,.doc,.docx,.md,.markdown,.png,.jpg,.jpeg,.gif,.txt"
+                    className="hidden"
+                    onChange={handleFileUpload}
+                  />
+                  <AnimatePresence>
+                    {editorAttachments.length > 0 && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="mt-3 space-y-2 overflow-hidden"
+                      >
+                        {editorAttachments.map((att) => (
+                          <motion.div
+                            key={att.id}
+                            layout
+                            initial={{ opacity: 0, x: -8 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -8 }}
+                            className="flex items-center gap-3 rounded-xl border border-border/40 bg-muted/15 p-3 group/att"
+                          >
+                            {getAttachmentIcon(att.category)}
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-foreground truncate">{att.name}</p>
+                              <p className="text-[10px] text-muted-foreground/40">{formatFileSize(att.size)}</p>
+                            </div>
+                            <button
+                              onClick={() => setEditorAttachments((prev) => prev.filter((a) => a.id !== att.id))}
+                              className="rounded-lg p-1.5 hover:bg-red-500/10 text-muted-foreground/30 hover:text-red-500 transition-colors opacity-0 group-hover/att:opacity-100"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
                             </button>
-                            <button onClick={() => removeAttachment(att)} className="rounded-lg p-1.5 hover:bg-red-500/10 text-muted-foreground/60 hover:text-red-500 transition-colors" title="Remove">
-                              <Trash2 className="h-4 w-4" />
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                          </motion.div>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
 
-                {/* Quick toggles */}
-                <div className="flex items-center gap-4">
-                  <button
+                {/* Pin & Star Toggles */}
+                <div className="flex items-center gap-3">
+                  <motion.button
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
                     onClick={() => setEditorPinned(!editorPinned)}
-                    className={cn("flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-medium transition-all duration-200", editorPinned ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:bg-muted/40")}
+                    className={cn(
+                      "flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-medium transition-all duration-300",
+                      editorPinned
+                        ? "border-primary/30 bg-primary/8 text-primary shadow-sm shadow-primary/10"
+                        : "border-border/60 text-muted-foreground hover:bg-muted/40 hover:border-primary/15"
+                    )}
                   >
                     <Pin className="h-4 w-4" /> Pin
-                  </button>
-                  <button
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
                     onClick={() => setEditorStarred(!editorStarred)}
-                    className={cn("flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-medium transition-all duration-200", editorStarred ? "border-yellow-400 bg-yellow-400/10 text-yellow-600" : "border-border text-muted-foreground hover:bg-muted/40")}
+                    className={cn(
+                      "flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-medium transition-all duration-300",
+                      editorStarred
+                        ? "border-amber-400/30 bg-amber-400/8 text-amber-600 dark:text-amber-400 shadow-sm shadow-amber-400/10"
+                        : "border-border/60 text-muted-foreground hover:bg-muted/40 hover:border-primary/15"
+                    )}
                   >
-                    <Star className={cn("h-4 w-4", editorStarred && "fill-yellow-400")} /> Star
-                  </button>
+                    <Star className={cn("h-4 w-4 transition-all duration-300", editorStarred && "fill-amber-400")} /> Star
+                  </motion.button>
                 </div>
               </div>
 
-              <div className="flex items-center justify-end gap-3 mt-6">
-                <button onClick={() => setShowEditor(false)} className="rounded-xl px-4 py-2.5 text-sm font-medium text-muted-foreground hover:bg-muted transition-colors">
-                  Cancel
-                </button>
+              {/* Footer */}
+              <div className="flex items-center justify-end gap-3 mt-6 pt-5 border-t border-border/30">
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
+                  onClick={() => setShowEditor(false)}
+                  className="rounded-xl px-4 py-2.5 text-sm font-medium text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-all duration-200"
+                >
+                  Cancel
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.03, y: -1 }}
+                  whileTap={{ scale: 0.97 }}
                   onClick={saveNote}
                   disabled={!editorTitle.trim()}
-                  className="flex items-center gap-2 rounded-xl bg-gradient-to-b from-primary to-primary/90 px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all duration-200 disabled:opacity-50"
+                  className="group flex items-center gap-2 rounded-xl bg-gradient-to-b from-primary to-primary/90 px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed relative overflow-hidden"
                 >
-                  <Save className="h-4 w-4" /> {editingNote ? "Update Note" : "Create Note"}
+                  <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out" />
+                  <Save className="h-4 w-4 relative" /> {editingNote ? "Update" : "Create"}
                 </motion.button>
               </div>
             </motion.div>
@@ -687,128 +1569,272 @@ export default function NotesPage() {
         )}
       </AnimatePresence>
 
-      {/* Preview Modal */}
+      {/* ═══════════════════════════════════════════════════════════════
+          PREVIEW MODAL
+         ═══════════════════════════════════════════════════════════════ */}
       <AnimatePresence>
         {showPreview && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+            variants={modalOverlay}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
             onClick={() => setShowPreview(null)}
           >
             <motion.div
-              initial={{ scale: 0.95, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.95, y: 20 }}
-              className="w-full max-w-3xl max-h-[90vh] overflow-hidden rounded-2xl border border-border bg-background shadow-2xl flex flex-col"
+              variants={modalContent}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className="w-full max-w-3xl max-h-[90vh] overflow-hidden rounded-2xl border border-border/50 bg-background/95 backdrop-blur-xl shadow-2xl flex flex-col"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Preview Header */}
-              <div className="flex items-center justify-between border-b border-border px-6 py-4">
+              <div className="flex items-center justify-between border-b border-border/30 px-6 py-4 bg-muted/10">
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-lg font-semibold text-foreground truncate">{showPreview.title}</h3>
-                  <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground/60">
-                    <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{showPreview.updatedAt}</span>
-                    <span>{showPreview.folder}</span>
+                  <div className="flex items-center gap-2 mb-1">
+                    {showPreview.pinned && (
+                      <span className="rounded-full bg-primary/10 p-0.5"><Pin className="h-3 w-3 text-primary" /></span>
+                    )}
+                    <h3 className="text-lg font-bold text-foreground truncate">{showPreview.title}</h3>
+                    {showPreview.starred && <Star className="h-4 w-4 fill-amber-400 text-amber-400 flex-shrink-0" />}
+                  </div>
+                  <div className="flex items-center gap-3 text-xs text-muted-foreground/50 flex-wrap">
+                    <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{timeAgo(showPreview.updatedAt)}</span>
+                    {showPreview.subject && <span>{subjects.find((s) => s.id === showPreview.subject)?.icon} {subjects.find((s) => s.id === showPreview.subject)?.name}</span>}
+                    {showPreview.chapter && <span className="flex items-center gap-1"><FolderOpen className="h-3 w-3" />{showPreview.chapter}</span>}
+                    <span>{showPreview.wordCount} words · {readingTime(showPreview.wordCount)}</span>
                     {showPreview.tags.length > 0 && (
-                      <span className="flex items-center gap-1">
-                        <Tag className="h-3 w-3" />
-                        {showPreview.tags.join(", ")}
-                      </span>
+                      <span className="flex items-center gap-1"><Tag className="h-3 w-3" />{showPreview.tags.join(", ")}</span>
                     )}
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <button onClick={() => { setShowPreview(null); openEditor(showPreview); }} className="flex items-center gap-1.5 rounded-lg bg-muted/60 px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted transition-colors">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => { setShowPreview(null); openEditor(showPreview); }}
+                    className="flex items-center gap-1.5 rounded-lg bg-primary/8 border border-primary/15 px-3 py-1.5 text-xs font-semibold text-primary hover:bg-primary/12 transition-colors"
+                  >
                     <Edit3 className="h-3.5 w-3.5" /> Edit
-                  </button>
-                  <button onClick={() => setShowPreview(null)} className="rounded-xl p-1.5 text-muted-foreground hover:bg-muted/60 transition-colors">
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.1, rotate: 90 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => setShowPreview(null)}
+                    className="rounded-xl p-2 text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors"
+                  >
                     <X className="h-5 w-5" />
-                  </button>
+                  </motion.button>
                 </div>
               </div>
 
               {/* Preview Content */}
               <div className="flex-1 overflow-y-auto p-6">
-                {/* Render markdown content */}
-                <div className="prose prose-sm max-w-none text-foreground leading-relaxed" dangerouslySetInnerHTML={{ __html: renderMarkdown(showPreview.content) }} />
+                <div
+                  className="prose prose-sm max-w-none text-foreground leading-relaxed"
+                  dangerouslySetInnerHTML={{ __html: renderMarkdown(showPreview.content) }}
+                />
 
-                {/* Attachments */}
+                {/* Attachments Section */}
                 {showPreview.attachments.length > 0 && (
-                  <div className="mt-8 border-t border-border pt-6">
-                    <h4 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-                      <Paperclip className="h-4 w-4" />
+                  <div className="mt-8 border-t border-border/30 pt-6">
+                    <h4 className="text-sm font-bold text-foreground mb-4 flex items-center gap-2">
+                      <Paperclip className="h-4 w-4 text-muted-foreground/50" />
                       Attachments ({showPreview.attachments.length})
                     </h4>
                     <div className="space-y-3">
                       {showPreview.attachments.map((att) => (
-                        <div key={att.id} className="rounded-xl border border-border bg-muted/20 overflow-hidden">
-                          {/* PDF Preview */}
-                          {att.category === "pdf" && (
-                            <div className="w-full h-[500px]">
-                              <iframe src={att.url} className="w-full h-full border-0" title={att.name} />
-                            </div>
-                          )}
-
-                          {/* Markdown Preview */}
+                        <motion.div
+                          key={att.id}
+                          initial={{ opacity: 0, y: 8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="rounded-xl border border-border/40 bg-muted/10 overflow-hidden"
+                        >
+                          {att.category === "pdf" && <div className="w-full h-[500px]"><iframe src={att.url} className="w-full h-full border-0" title={att.name} /></div>}
                           {att.category === "markdown" && (
                             <div className="p-4">
                               <div
                                 className="prose prose-sm max-w-none text-foreground leading-relaxed"
                                 dangerouslySetInnerHTML={{
-                                  __html: (() => {
-                                    try {
-                                      const content = atob(att.url.split(",")[1] || "");
-                                      return renderMarkdown(content);
-                                    } catch {
-                                      return "<p class='text-muted-foreground'>Could not render markdown content</p>";
-                                    }
-                                  })(),
+                                  __html: (() => { try { return renderMarkdown(atob(att.url.split(",")[1] || "")); } catch { return "<p class='text-muted-foreground'>Could not render markdown</p>"; } })()
                                 }}
                               />
                             </div>
                           )}
-
-                          {/* Image Preview */}
-                          {att.category === "image" && (
-                            <div className="p-4 flex justify-center">
-                              <img src={att.url} alt={att.name} className="max-w-full max-h-[400px] rounded-lg object-contain" />
-                            </div>
-                          )}
-
-                          {/* File info for non-previewable */}
+                          {att.category === "image" && <div className="p-4 flex justify-center"><img src={att.url} alt={att.name} className="max-w-full max-h-[400px] rounded-lg object-contain" /></div>}
                           {att.category !== "pdf" && att.category !== "markdown" && att.category !== "image" && (
                             <div className="p-4 flex items-center gap-4">
-                              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted/40">
-                                {getAttachmentIcon(att.category)}
-                              </div>
-                              <div className="flex-1">
-                                <p className="text-sm font-medium text-foreground">{att.name}</p>
-                                <p className="text-xs text-muted-foreground/50">{formatFileSize(att.size)}</p>
-                              </div>
+                              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted/30">{getAttachmentIcon(att.category)}</div>
+                              <div className="flex-1"><p className="text-sm font-medium text-foreground">{att.name}</p><p className="text-xs text-muted-foreground/50">{formatFileSize(att.size)}</p></div>
                             </div>
                           )}
-
-                          {/* Download bar */}
-                          <div className="flex items-center justify-between border-t border-border bg-muted/10 px-4 py-2.5">
-                            <span className="text-xs text-muted-foreground/60 font-medium">{att.name} • {formatFileSize(att.size)}</span>
+                          <div className="flex items-center justify-between border-t border-border/30 bg-muted/10 px-4 py-2.5">
+                            <span className="text-xs text-muted-foreground/40 font-medium">{att.name} · {formatFileSize(att.size)}</span>
                             <div className="flex gap-2">
-                              <button onClick={() => downloadAttachment(att)} className="flex items-center gap-1 rounded-lg bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary hover:bg-primary/20 transition-colors">
-                                <Download className="h-3 w-3" /> Download
-                              </button>
-                              {att.category === "pdf" && (
-                                <a href={att.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 rounded-lg bg-muted/60 px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted transition-colors">
-                                  <ExternalLink className="h-3 w-3" /> Open in New Tab
-                                </a>
-                              )}
+                              <a href={att.url} download={att.name} className="flex items-center gap-1 rounded-lg bg-primary/8 px-3 py-1.5 text-xs font-semibold text-primary hover:bg-primary/12 transition-colors"><Download className="h-3 w-3" /> Download</a>
+                              {att.category === "pdf" && <a href={att.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 rounded-lg bg-muted/40 px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted/60 transition-colors"><ExternalLink className="h-3 w-3" /> Open</a>}
                             </div>
                           </div>
-                        </div>
+                        </motion.div>
                       ))}
                     </div>
                   </div>
                 )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ═══════════════════════════════════════════════════════════════
+          SUBJECT MANAGER MODAL
+         ═══════════════════════════════════════════════════════════════ */}
+      <AnimatePresence>
+        {showSubjectManager && (
+          <motion.div
+            variants={modalOverlay}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+            onClick={() => setShowSubjectManager(false)}
+          >
+            <motion.div
+              variants={modalContent}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className="w-full max-w-lg rounded-2xl border border-border/50 bg-background/95 backdrop-blur-xl p-6 shadow-2xl max-h-[85vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 border border-primary/10">
+                    <BookOpen className="h-4 w-4 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-foreground">Manage Subjects</h3>
+                    <p className="text-xs text-muted-foreground/50">Add subjects and chapters for your notes</p>
+                  </div>
+                </div>
+                <motion.button
+                  whileHover={{ scale: 1.1, rotate: 90 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => setShowSubjectManager(false)}
+                  className="rounded-xl p-2 text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors"
+                >
+                  <X className="h-5 w-5" />
+                </motion.button>
+              </div>
+
+              {/* Add Subject */}
+              <div className="flex gap-2 mb-5">
+                <input
+                  type="text"
+                  value={newSubjectIcon}
+                  onChange={(e) => setNewSubjectIcon(e.target.value)}
+                  className="w-14 rounded-xl border border-border/60 bg-muted/20 px-3 py-2.5 text-center text-lg focus:outline-none focus:ring-2 focus:ring-primary/15 transition-all"
+                  placeholder="📚"
+                />
+                <input
+                  type="text"
+                  value={newSubjectName}
+                  onChange={(e) => setNewSubjectName(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && addSubject()}
+                  placeholder="New subject name..."
+                  className="flex-1 rounded-xl border border-border/60 bg-muted/20 px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/30 focus:outline-none focus:ring-2 focus:ring-primary/15 transition-all duration-200"
+                />
+                <motion.button
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={addSubject}
+                  disabled={!newSubjectName.trim()}
+                  className="rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-40"
+                >
+                  Add
+                </motion.button>
+              </div>
+
+              {/* Subject List */}
+              <div className="space-y-3">
+                <AnimatePresence>
+                  {subjects.map((s, i) => {
+                    const colors = subjectColorMap[s.color] || subjectColorMap.blue;
+                    const noteCountForSubject = notes.filter((n) => n.subject === s.id).length;
+                    return (
+                      <motion.div
+                        key={s.id}
+                        layout
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, x: -20 }}
+                        transition={{ delay: i * 0.03 }}
+                        className={cn("rounded-xl border p-4 transition-all duration-200 hover:shadow-sm", colors.bg, colors.border)}
+                      >
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-2.5">
+                            <span className="text-lg">{s.icon}</span>
+                            <span className={cn("font-bold text-sm", colors.text)}>{s.name}</span>
+                            <span className="text-xs opacity-50 font-medium">{s.chapters.length} ch · {noteCountForSubject} notes</span>
+                          </div>
+                          <motion.button
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            onClick={() => deleteSubject(s.id)}
+                            className="rounded-lg p-1.5 hover:bg-red-500/10 text-red-400/60 hover:text-red-500 transition-colors"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </motion.button>
+                        </div>
+
+                        <div className="flex flex-wrap gap-1.5 mb-3">
+                          {s.chapters.map((ch) => (
+                            <motion.span
+                              key={ch}
+                              layout
+                              initial={{ opacity: 0, scale: 0.9 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              className="inline-flex items-center gap-1 rounded-lg bg-background/50 border border-border/40 px-2.5 py-1 text-xs font-medium text-foreground/70 group/ch"
+                            >
+                              {ch}
+                              <button
+                                onClick={() => deleteChapter(s.id, ch)}
+                                className="opacity-0 group-hover/ch:opacity-100 hover:text-red-500 transition-all"
+                              >
+                                <X className="h-3 w-3" />
+                              </button>
+                            </motion.span>
+                          ))}
+                          {s.chapters.length === 0 && (
+                            <span className="text-xs text-muted-foreground/30 italic">No chapters yet</span>
+                          )}
+                        </div>
+
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={editingSubject === s.id ? newChapterName : ""}
+                            onChange={(e) => { setEditingSubject(s.id); setNewChapterName(e.target.value); }}
+                            onKeyDown={(e) => { if (e.key === "Enter") { addChapter(s.id); setEditingSubject(null); } }}
+                            onFocus={() => setEditingSubject(s.id)}
+                            placeholder="Add chapter..."
+                            className="flex-1 rounded-lg border border-border/30 bg-background/30 px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground/30 focus:outline-none focus:ring-1 focus:ring-primary/15 transition-all"
+                          />
+                          <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => { if (editingSubject === s.id && newChapterName.trim()) { addChapter(s.id); setEditingSubject(null); } }}
+                            className="rounded-lg bg-background/50 border border-border/30 px-3 py-2 text-xs font-semibold hover:bg-background/80 transition-colors"
+                          >
+                            +
+                          </motion.button>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </AnimatePresence>
               </div>
             </motion.div>
           </motion.div>

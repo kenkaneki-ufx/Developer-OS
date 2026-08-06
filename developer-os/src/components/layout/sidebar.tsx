@@ -127,26 +127,15 @@ const navGroups: NavGroup[] = [
       },
     ],
   },
-  {
-    title: "Insights",
-    items: [
-      {
-        label: "Analytics",
-        href: "/dashboard/analytics",
-        icon: BarChart3,
-      },
-      {
-        label: "Weekly Review",
-        href: "/dashboard/reviews/weekly",
-        icon: FileCode,
-      },
-      {
-        label: "Monthly Review",
-        href: "/dashboard/reviews/monthly",
-        icon: FileCode,
-      },
-    ],
-  },
+  // TEMPORARILY DISABLED - Insights tab removed pending data persistence fixes
+  // {
+  //   title: "Insights",
+  //   items: [
+  //     { label: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
+  //     { label: "Weekly Review", href: "/dashboard/reviews/weekly", icon: FileCode },
+  //     { label: "Monthly Review", href: "/dashboard/reviews/monthly", icon: FileCode },
+  //   ],
+  // },
 ];
 
 function NavGroupComponent({

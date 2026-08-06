@@ -32,13 +32,20 @@ export function useCollege() {
     setIsLoaded(true);
   }, []);
 
-  // Save to localStorage whenever data changes
-  const saveData = useCallback((newData: CollegeData) => {
+  // Save to localStorage whenever data changes. Returns true on success, false on failure.
+  const saveData = useCallback((newData: CollegeData): boolean => {
     setData(newData);
     
     if (typeof window !== "undefined") {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(newData));
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(newData));
+        return true;
+      } catch (e) {
+        console.warn("Failed to save college data to localStorage:", e);
+        return false;
+      }
     }
+    return true;
   }, []);
 
   // Syllabus Topics

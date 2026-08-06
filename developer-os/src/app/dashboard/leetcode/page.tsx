@@ -151,7 +151,11 @@ export default function LeetCodePage() {
 
   const setStoredUsername = (uname: string) => {
     if (typeof window === "undefined") return;
-    localStorage.setItem("leetcode_username", uname);
+    try {
+      localStorage.setItem("leetcode_username", uname);
+    } catch (e) {
+      console.warn("Failed to save LeetCode username to localStorage:", e);
+    }
   };
 
   const fetchLeetCodeData = async (uname: string, showAutoSyncIndicator = false) => {
