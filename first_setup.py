@@ -109,9 +109,7 @@ Developer OS - Launcher
 Run this file any time you want to start the app.
 """
 
-import ctypes
-import os
-import subprocess
+import ctypes, os, subprocess
 
 # Hide the console window (Windows only)
 ctypes.windll.user32.ShowWindow(ctypes.windll.kernel32.GetConsoleWindow(), 6)
