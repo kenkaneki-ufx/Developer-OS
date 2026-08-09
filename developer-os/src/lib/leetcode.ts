@@ -68,7 +68,7 @@ export async function fetchLeetCodeGraphQL(
   query: string,
   variables: Record<string, string | number>,
   retries = 2
-): Promise<Record<string, unknown>> {
+): Promise<{ data?: Record<string, unknown>; errors?: Array<{ message: string }> }> {
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
       const controller = new AbortController();
@@ -132,6 +132,7 @@ export async function fetchLeetCodeGraphQL(
         : new Error("Failed to connect to LeetCode API");
     }
   }
+  return { data: undefined, errors: [{ message: "Max retries exceeded" }] };
 }
 
 export interface LeetCodeUser {
@@ -309,7 +310,7 @@ export async function fetchLeetCodeDataWithFallback(
       fetchLeetCodeGraphQL(RECENT_SUBMISSIONS_QUERY, { username, limit: 10 }).catch(() => null),
     ]);
 
-    const profile = profileData.data?.matchedUser as LeetCodeUser | null;
+    const profile = (profileData.data as Record<string, unknown>)?.matchedUser as LeetCodeUser | undefined | null;
 
     if (!profile) {
       // User not found, return fallback
@@ -320,7 +321,7 @@ export async function fetchLeetCodeDataWithFallback(
       };
     }
 
-    const stats = processLeetCodeData(profile, statsData?.data, submissionsData?.data?.recentAcSubmissionList || []);
+    const stats = processLeetCodeData(profile, (statsData?.data as LeetCodeStatsData | undefined) ?? null, ((submissionsData?.data as Record<string, unknown>)?.recentAcSubmissionList as LeetCodeSubmission[] | undefined) || []);
 
     return {
       user: profile,

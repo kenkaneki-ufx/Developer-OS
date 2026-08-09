@@ -132,7 +132,8 @@ export async function GET() {
     });
 
     const duration = Date.now() - test2Start;
-    const hasProfile = !!profileData?.data?.matchedUser;
+    const profileResult = (profileData.data as Record<string, unknown>)?.matchedUser as Record<string, unknown> | undefined;
+    const hasProfile = !!profileResult;
 
     result.tests.push({
       name: "User Profile Query",
@@ -143,7 +144,7 @@ export async function GET() {
         queryName: "userProfile",
         hasData: !!profileData?.data,
         hasUser: hasProfile,
-        username: profileData?.data?.matchedUser?.username,
+        username: profileResult?.username,
       },
     });
   } catch (error) {
@@ -164,7 +165,8 @@ export async function GET() {
     });
 
     const duration = Date.now() - test3Start;
-    const hasStats = !!statsData?.data?.allQuestionsCount;
+    const allQuestions = (statsData.data as Record<string, unknown>)?.allQuestionsCount as Array<{ difficulty: string; count: number }> | undefined;
+    const hasStats = !!allQuestions;
 
     result.tests.push({
       name: "Problem Stats Query",
@@ -173,9 +175,9 @@ export async function GET() {
       error: hasStats ? undefined : "Query returned no stats data",
       details: {
         queryName: "userProblems",
-        hasAllQuestions: !!statsData?.data?.allQuestionsCount,
-        totalQuestions: statsData?.data?.allQuestionsCount?.reduce(
-          (sum: number, q: any) => sum + (q.count || 0),
+        hasAllQuestions: !!allQuestions,
+        totalQuestions: allQuestions?.reduce(
+          (sum: number, q: { count: number }) => sum + (q.count || 0),
           0
         ),
       },
@@ -199,9 +201,8 @@ export async function GET() {
     });
 
     const duration = Date.now() - test4Start;
-    const hasSubmissions = Array.isArray(
-      submissionsData?.data?.recentAcSubmissionList
-    );
+    const recentSubs = (submissionsData.data as Record<string, unknown>)?.recentAcSubmissionList as Array<unknown> | undefined;
+    const hasSubmissions = Array.isArray(recentSubs);
 
     result.tests.push({
       name: "Recent Submissions Query",
@@ -210,7 +211,7 @@ export async function GET() {
       error: hasSubmissions ? undefined : "Query returned no submissions data",
       details: {
         queryName: "recentSubmissions",
-        submissionCount: submissionsData?.data?.recentAcSubmissionList?.length || 0,
+        submissionCount: recentSubs?.length || 0,
       },
     });
   } catch (error) {

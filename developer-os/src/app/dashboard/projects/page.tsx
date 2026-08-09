@@ -159,6 +159,19 @@ const projectTemplates: ProjectTemplate[] = [
   },
 ];
 
+interface ProjectFormData {
+  name: string;
+  description: string;
+  status: "active" | "completed" | "paused";
+  progress: number;
+  technologies: string[];
+  tasks: { total: number; completed: number };
+  deadline: string;
+  github: string;
+  gradient: string;
+  starred: boolean;
+}
+
 const defaultFormData: ProjectFormData = {
   name: "",
   description: "",

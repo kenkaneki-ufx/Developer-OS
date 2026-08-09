@@ -141,11 +141,11 @@ export function useCollege() {
 
   // Get overall attendance percentage
   const getOverallAttendance = useCallback(() => {
-    const subjectsWithClasses = data.subjects.filter(s => s.totalClasses > 0);
+    const subjectsWithClasses = data.subjects.filter(s => (s.totalClasses ?? 0) > 0);
     if (subjectsWithClasses.length === 0) return 0;
     
-    const totalClasses = subjectsWithClasses.reduce((acc, s) => acc + s.totalClasses, 0);
-    const attendedClasses = subjectsWithClasses.reduce((acc, s) => acc + s.attendedClasses, 0);
+    const totalClasses = subjectsWithClasses.reduce((acc, s) => acc + (s.totalClasses ?? 0), 0);
+    const attendedClasses = subjectsWithClasses.reduce((acc, s) => acc + (s.attendedClasses ?? 0), 0);
     
     return totalClasses > 0 ? Math.round((attendedClasses / totalClasses) * 100) : 0;
   }, [data.subjects]);

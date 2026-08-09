@@ -39,6 +39,19 @@ export interface GitHubContributionDay {
   level: 0 | 1 | 2 | 3 | 4;
 }
 
+interface GitHubErrorResponse {
+  code?: string;
+  message?: string;
+}
+
+interface GitHubEvent {
+  type: string;
+  created_at: string;
+  payload?: {
+    commits?: Array<{ message: string }>;
+  };
+}
+
 const GITHUB_API_BASE = "https://api.github.com";
 
 /**

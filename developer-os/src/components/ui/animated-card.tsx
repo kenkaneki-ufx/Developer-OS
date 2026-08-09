@@ -46,16 +46,14 @@ const AnimatedCard = forwardRef<HTMLDivElement, AnimatedCardProps>(
     return (
       <motion.div
         ref={ref}
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
+        initial="rest"
+        animate="rest"
+        whileHover="hover"
         transition={{
           duration: 0.5,
           delay,
           ease: [0.21, 0.47, 0.32, 0.98],
         }}
-        whileHover="hover"
-        initial="rest"
-        animate="rest"
         variants={hoverVariants[hoverEffect]}
         className={cn(
           "rounded-xl border border-border bg-card text-card-foreground shadow-sm",

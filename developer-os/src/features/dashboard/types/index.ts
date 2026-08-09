@@ -171,7 +171,7 @@ export interface MotivationQuote {
   id: string;
   text: string;
   author: string;
-  category: "motivation" | "productivity" | "coding" | "life";
+  category: "motivation" | "productivity" | "coding" | "life" | "learning";
 }
 
 

@@ -20,6 +20,7 @@ import {
   X,
 } from "lucide-react";
 import { FeatureMockup } from "@/components/feature-mockup";
+type FeatureName = "AI-Powered Tasks" | "DSA Tracking" | "ML Roadmaps" | "Project Management" | "Smart Notes" | "Analytics Dashboard";
 
 interface Feature {
   icon: React.ElementType;
@@ -418,8 +419,7 @@ export default function HomePage() {
                 whileHover={{ y: -12, scale: 1.03, rotateX: 2, rotateY: -2 }}
                 onClick={() => setSelectedFeature(feature)}
                 className="group relative overflow-hidden rounded-2xl border border-border/50 bg-card/50 backdrop-blur-sm p-8 cursor-pointer"
-                style={{ perspective: "1000px" }}
-                style={{ transformStyle: "preserve-3d" }}
+                style={{ perspective: "1000px", transformStyle: "preserve-3d" }}
               >
                 {/* Gradient Background on Hover */}
                 <div className={`absolute -right-10 -top-10 h-40 w-40 rounded-full bg-gradient-to-br ${feature.gradient} opacity-0 blur-3xl transition-all duration-700 group-hover:opacity-25 group-hover:scale-110 pointer-events-none`} />
@@ -482,7 +482,7 @@ export default function HomePage() {
 
               {/* Interactive Mockup */}
               <div className="mb-6 aspect-video rounded-xl border border-border/50 overflow-hidden">
-                <FeatureMockup feature={selectedFeature.title} gradient={selectedFeature.gradient} />
+                <FeatureMockup feature={selectedFeature.title as FeatureName} gradient={selectedFeature.gradient} />
               </div>
 
               <p className="text-muted-foreground leading-relaxed mb-6">{selectedFeature.detailedDescription}</p>

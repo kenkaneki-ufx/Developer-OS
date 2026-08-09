@@ -21,6 +21,11 @@ const priorityColors: Record<string, string> = {
   low: "border-l-blue-500",
 };
 
+const itemVariants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.3 } },
+};
+
 function DeadlineCard({ deadline }: { deadline: Deadline; index: number }) {
   const Icon = typeIcons[deadline.type] || Calendar;
   const isUrgent = deadline.daysRemaining <= 3;

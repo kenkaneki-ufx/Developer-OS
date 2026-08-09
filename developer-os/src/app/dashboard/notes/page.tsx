@@ -211,6 +211,78 @@ function renderMarkdown(text: string): string {
   return html;
 }
 
+// ─── Markdown Toolbar Helper ──────────────────────────────────────
+function insertMarkdown(
+  textarea: HTMLTextAreaElement | null,
+  content: string,
+  setContent: (val: string) => void,
+  syntax: string,
+  placeholder?: string
+): void {
+  if (!textarea) return;
+  const start = textarea.selectionStart;
+  const end = textarea.selectionEnd;
+  const selected = content.substring(start, end);
+  const before = content.substring(0, start);
+  const after = content.substring(end);
+
+  let insertion = "";
+  let cursorOffset = 0;
+
+  if (syntax === "heading1") {
+    insertion = `# ${selected || placeholder || "Heading 1"}`;
+    cursorOffset = selected ? insertion.length : 2;
+  } else if (syntax === "heading2") {
+    insertion = `## ${selected || placeholder || "Heading 2"}`;
+    cursorOffset = selected ? insertion.length : 3;
+  } else if (syntax === "heading3") {
+    insertion = `### ${selected || placeholder || "Heading 3"}`;
+    cursorOffset = selected ? insertion.length : 4;
+  } else if (syntax === "bold") {
+    insertion = `**${selected || placeholder || "bold text"}**`;
+    cursorOffset = selected ? insertion.length : 2;
+  } else if (syntax === "italic") {
+    insertion = `*${selected || placeholder || "italic text"}*`;
+    cursorOffset = selected ? insertion.length : 1;
+  } else if (syntax === "code") {
+    insertion = "`" + (selected || placeholder || "code") + "`";
+    cursorOffset = selected ? insertion.length : 1;
+  } else if (syntax === "codeblock") {
+    insertion = "```\n" + (selected || placeholder || "code here") + "\n```";
+    cursorOffset = selected ? insertion.length : 4;
+  } else if (syntax === "list") {
+    insertion = "- " + (selected || placeholder || "list item");
+    cursorOffset = selected ? insertion.length : 2;
+  } else if (syntax === "ordered") {
+    insertion = "1. " + (selected || placeholder || "list item");
+    cursorOffset = selected ? insertion.length : 3;
+  } else if (syntax === "quote") {
+    insertion = "> " + (selected || placeholder || "quote");
+    cursorOffset = selected ? insertion.length : 2;
+  } else if (syntax === "link") {
+    insertion = `[${selected || placeholder || "link text"}](url)`;
+    cursorOffset = selected ? insertion.length - 4 : 1;
+  } else if (syntax === "hr") {
+    insertion = "\n---\n";
+    cursorOffset = insertion.length;
+  } else {
+    insertion = selected;
+    cursorOffset = 0;
+  }
+
+  const newContent = before + insertion + after;
+  setContent(newContent);
+
+  // Restore cursor position after React re-render
+  setTimeout(() => {
+    if (textarea) {
+      const pos = start + cursorOffset;
+      textarea.focus();
+      textarea.setSelectionRange(pos, pos);
+    }
+  }, 0);
+}
+
 // ─── Storage ─────────────────────────────────────────────────────────
 const useIDB = typeof window !== "undefined" && isIndexedDBSupported();
 
@@ -301,6 +373,10 @@ export default function NotesPage() {
 
   // Preview
   const [showPreview, setShowPreview] = useState<Note | null>(null);
+  const [editorPreview, setEditorPreview] = useState(false);
+  const [editorFullscreen, setEditorFullscreen] = useState(false);
+  const [editorSaveStatus, setEditorSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
+  const editorContentRef = useRef<HTMLTextAreaElement>(null);
 
   // Subject management
   const [showSubjectManager, setShowSubjectManager] = useState(false);
@@ -369,9 +445,14 @@ export default function NotesPage() {
   // Auto-save notes (debounced, only after initial load)
   useEffect(() => {
     if (!isLoadedRef.current) return;
+    setEditorSaveStatus("saving");
     const timer = setTimeout(async () => {
       const ok = await saveNotesStorage(notes);
-      if (!ok) {
+      if (ok) {
+        setEditorSaveStatus("saved");
+        setTimeout(() => setEditorSaveStatus("idle"), 2000);
+      } else {
+        setEditorSaveStatus("idle");
         addToast("Failed to save notes — storage may be full", "error", {
           label: "Retry",
           onClick: () => retrySaveNotes(),
@@ -540,6 +621,42 @@ export default function NotesPage() {
     setNotes((prev) => [dup, ...prev]);
     addToast("Note duplicated", "success");
   }, [addToast]);
+
+  // ─── Keyboard Shortcuts ─────────────────────────────────────────
+  const saveNoteRef = useRef(saveNote);
+  const editorContentValRef = useRef(editorContent);
+  saveNoteRef.current = saveNote;
+  editorContentValRef.current = editorContent;
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (!showEditor) return;
+      const isMod = e.ctrlKey || e.metaKey;
+      if (isMod && e.key === "b") {
+        e.preventDefault();
+        insertMarkdown(editorContentRef.current, editorContentValRef.current, setEditorContent, "bold", "bold text");
+      } else if (isMod && e.key === "i") {
+        e.preventDefault();
+        insertMarkdown(editorContentRef.current, editorContentValRef.current, setEditorContent, "italic", "italic text");
+      } else if (isMod && e.key === "k") {
+        e.preventDefault();
+        insertMarkdown(editorContentRef.current, editorContentValRef.current, setEditorContent, "link", "link text");
+      } else if (isMod && e.key === "s") {
+        e.preventDefault();
+        saveNoteRef.current();
+      } else if (isMod && e.shiftKey && e.key === "P") {
+        e.preventDefault();
+        setEditorPreview((p) => !p);
+      } else if (isMod && e.shiftKey && e.key === "F") {
+        e.preventDefault();
+        setEditorFullscreen((f) => !f);
+      } else if (e.key === "Escape" && editorFullscreen) {
+        e.preventDefault();
+        setEditorFullscreen(false);
+      }
+    };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [showEditor, editorFullscreen, setEditorContent]);
 
   // ─── Backup / Restore ────────────────────────────────────────────
   const exportNotes = useCallback(() => {
@@ -1263,7 +1380,12 @@ export default function NotesPage() {
               initial="hidden"
               animate="visible"
               exit="exit"
-              className="w-full max-w-2xl rounded-2xl border border-border/50 bg-background/95 backdrop-blur-xl p-6 shadow-2xl max-h-[90vh] overflow-y-auto"
+              className={cn(
+                "rounded-2xl border border-border/50 bg-background/95 backdrop-blur-xl shadow-2xl overflow-y-auto transition-all duration-300",
+                editorFullscreen
+                  ? "fixed inset-4 z-50 max-h-none"
+                  : "w-full max-w-2xl p-6 max-h-[90vh]"
+              )}
               onClick={(e) => e.stopPropagation()}
             >
               {/* Modal Header */}
@@ -1392,21 +1514,117 @@ export default function NotesPage() {
                   </div>
                 </div>
 
-                {/* Content */}
+                {/* Content with Toolbar & Live Preview */}
                 <div>
+                  {/* Toolbar Row */}
                   <div className="flex items-center justify-between mb-1.5">
                     <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Content</label>
-                    <span className="text-[10px] text-muted-foreground/30 font-medium">
-                      {countWords(editorContent)} words · {readingTime(countWords(editorContent))}
-                    </span>
+                    <div className="flex items-center gap-1">
+                      <span className="text-[10px] text-muted-foreground/30 font-medium mr-2">
+                        {countWords(editorContent)} words · {readingTime(countWords(editorContent))}
+                      </span>
+                      <button
+                        onClick={() => setEditorFullscreen(!editorFullscreen)}
+                        className={cn(
+                          "rounded-lg p-1.5 text-muted-foreground/40 hover:text-foreground hover:bg-muted/50 transition-all duration-200",
+                          editorFullscreen && "text-primary bg-primary/10"
+                        )}
+                        title="Full-screen (Ctrl+Shift+F)"
+                      >
+                        {editorFullscreen ? (
+                          <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 9V4.5M9 9H4.5M9 9L3.75 3.75M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 9h4.5M15 9V4.5M15 9l5.25-5.25M15 15h4.5M15 15v4.5m0-4.5l5.25 5.25" /></svg>
+                        ) : (
+                          <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" /></svg>
+                        )}
+                      </button>
+                      <button
+                        onClick={() => setEditorPreview(!editorPreview)}
+                        className={cn(
+                          "rounded-lg p-1.5 text-muted-foreground/40 hover:text-foreground hover:bg-muted/50 transition-all duration-200",
+                          editorPreview && "text-primary bg-primary/10"
+                        )}
+                        title="Toggle preview (Ctrl+Shift+P)"
+                      >
+                        <Eye className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
                   </div>
-                  <textarea
-                    value={editorContent}
-                    onChange={(e) => setEditorContent(e.target.value)}
-                    placeholder="Write your notes here... (Markdown supported)"
-                    rows={12}
-                    className="w-full rounded-xl border border-border/60 bg-muted/20 px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/30 focus:outline-none focus:ring-2 focus:ring-primary/15 focus:border-primary/25 transition-all duration-200 resize-none font-mono leading-relaxed"
-                  />
+
+                  {/* Formatting Toolbar */}
+                  <div className="flex items-center gap-0.5 p-1.5 rounded-t-xl border border-border/60 border-b-0 bg-muted/30">
+                    <button onClick={() => insertMarkdown(editorContentRef.current, editorContent, setEditorContent, "heading1")} className="rounded-md p-1.5 text-muted-foreground/50 hover:text-foreground hover:bg-muted/50 transition-colors" title="Heading 1">
+                      <span className="text-xs font-bold">H1</span>
+                    </button>
+                    <button onClick={() => insertMarkdown(editorContentRef.current, editorContent, setEditorContent, "heading2")} className="rounded-md p-1.5 text-muted-foreground/50 hover:text-foreground hover:bg-muted/50 transition-colors" title="Heading 2">
+                      <span className="text-xs font-bold">H2</span>
+                    </button>
+                    <button onClick={() => insertMarkdown(editorContentRef.current, editorContent, setEditorContent, "heading3")} className="rounded-md p-1.5 text-muted-foreground/50 hover:text-foreground hover:bg-muted/50 transition-colors" title="Heading 3">
+                      <span className="text-xs font-bold">H3</span>
+                    </button>
+                    <div className="w-px h-4 bg-border/40 mx-1" />
+                    <button onClick={() => insertMarkdown(editorContentRef.current, editorContent, setEditorContent, "bold")} className="rounded-md p-1.5 text-muted-foreground/50 hover:text-foreground hover:bg-muted/50 transition-colors" title="Bold (Ctrl+B)">
+                      <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6.5 4h7a3.5 3.5 0 010 7H6.5V4zM6.5 11h8a3.5 3.5 0 010 7H6.5v-7z" /></svg>
+                    </button>
+                    <button onClick={() => insertMarkdown(editorContentRef.current, editorContent, setEditorContent, "italic")} className="rounded-md p-1.5 text-muted-foreground/50 hover:text-foreground hover:bg-muted/50 transition-colors" title="Italic (Ctrl+I)">
+                      <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 4h4m-2 0v16m-4 0h8" /></svg>
+                    </button>
+                    <button onClick={() => insertMarkdown(editorContentRef.current, editorContent, setEditorContent, "code")} className="rounded-md p-1.5 text-muted-foreground/50 hover:text-foreground hover:bg-muted/50 transition-colors" title="Inline code">
+                      <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" /></svg>
+                    </button>
+                    <button onClick={() => insertMarkdown(editorContentRef.current, editorContent, setEditorContent, "codeblock")} className="rounded-md p-1.5 text-muted-foreground/50 hover:text-foreground hover:bg-muted/50 transition-colors" title="Code block">
+                      <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h10M4 18h6" /></svg>
+                    </button>
+                    <div className="w-px h-4 bg-border/40 mx-1" />
+                    <button onClick={() => insertMarkdown(editorContentRef.current, editorContent, setEditorContent, "list")} className="rounded-md p-1.5 text-muted-foreground/50 hover:text-foreground hover:bg-muted/50 transition-colors" title="Bullet list">
+                      <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
+                    </button>
+                    <button onClick={() => insertMarkdown(editorContentRef.current, editorContent, setEditorContent, "ordered")} className="rounded-md p-1.5 text-muted-foreground/50 hover:text-foreground hover:bg-muted/50 transition-colors" title="Numbered list">
+                      <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 6h10M7 12h10M7 18h10" /></svg>
+                    </button>
+                    <button onClick={() => insertMarkdown(editorContentRef.current, editorContent, setEditorContent, "quote")} className="rounded-md p-1.5 text-muted-foreground/50 hover:text-foreground hover:bg-muted/50 transition-colors" title="Blockquote">
+                      <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h12M4 18h12M8 6v12" /></svg>
+                    </button>
+                    <div className="w-px h-4 bg-border/40 mx-1" />
+                    <button onClick={() => insertMarkdown(editorContentRef.current, editorContent, setEditorContent, "link")} className="rounded-md p-1.5 text-muted-foreground/50 hover:text-foreground hover:bg-muted/50 transition-colors" title="Link (Ctrl+K)">
+                      <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.172 13.828a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.102 1.101" /></svg>
+                    </button>
+                    <button onClick={() => insertMarkdown(editorContentRef.current, editorContent, setEditorContent, "hr")} className="rounded-md p-1.5 text-muted-foreground/50 hover:text-foreground hover:bg-muted/50 transition-colors" title="Horizontal rule">
+                      <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14" /></svg>
+                    </button>
+                  </div>
+
+                  {/* Editor & Preview Split */}
+                  {editorPreview ? (
+                    <div className="grid grid-cols-2 gap-0 border border-border/60 border-t-0 rounded-b-xl overflow-hidden">
+                      <textarea
+                        ref={editorContentRef}
+                        value={editorContent}
+                        onChange={(e) => setEditorContent(e.target.value)}
+                        placeholder="Write your notes here..."
+                        className="w-full h-[400px] bg-muted/10 px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/30 focus:outline-none resize-none font-mono leading-relaxed border-r border-border/40"
+                      />
+                      <div className="h-[400px] overflow-y-auto bg-muted/5 px-4 py-3">
+                        {editorContent ? (
+                          <div
+                            className="prose prose-sm max-w-none text-foreground leading-relaxed"
+                            dangerouslySetInnerHTML={{ __html: renderMarkdown(editorContent) }}
+                          />
+                        ) : (
+                          <p className="text-sm text-muted-foreground/30 italic">Preview will appear here...</p>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <textarea
+                      ref={editorContentRef}
+                      value={editorContent}
+                      onChange={(e) => setEditorContent(e.target.value)}
+                      placeholder="Write your notes here... (Markdown supported)"
+                      rows={editorFullscreen ? 24 : 12}
+                      className="w-full rounded-b-xl border border-border/60 border-t-0 bg-muted/20 px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/30 focus:outline-none focus:ring-2 focus:ring-primary/15 focus:border-primary/25 transition-all duration-200 resize-none font-mono leading-relaxed"
+                    />
+                  )}
+
                   <p className="mt-1 text-[10px] text-muted-foreground/30">
                     Supports <code className="rounded bg-muted/60 px-1">**bold**</code>, <code className="rounded bg-muted/60 px-1">*italic*</code>, <code className="rounded bg-muted/60 px-1">`code`</code>, <code className="rounded bg-muted/60 px-1">### headings</code>, <code className="rounded bg-muted/60 px-1">- lists</code>
                   </p>
@@ -1544,25 +1762,64 @@ export default function NotesPage() {
               </div>
 
               {/* Footer */}
-              <div className="flex items-center justify-end gap-3 mt-6 pt-5 border-t border-border/30">
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => setShowEditor(false)}
-                  className="rounded-xl px-4 py-2.5 text-sm font-medium text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-all duration-200"
-                >
-                  Cancel
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.03, y: -1 }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={saveNote}
-                  disabled={!editorTitle.trim()}
-                  className="group flex items-center gap-2 rounded-xl bg-gradient-to-b from-primary to-primary/90 px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed relative overflow-hidden"
-                >
-                  <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out" />
-                  <Save className="h-4 w-4 relative" /> {editingNote ? "Update" : "Create"}
-                </motion.button>
+              <div className="flex items-center justify-between mt-6 pt-5 border-t border-border/30">
+                {/* Left side: save status + keyboard shortcut hints */}
+                <div className="flex items-center gap-3">
+                  <AnimatePresence mode="wait">
+                    {editorSaveStatus === "saving" && (
+                      <motion.div
+                        key="saving"
+                        initial={{ opacity: 0, y: 4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -4 }}
+                        className="flex items-center gap-1.5 text-xs text-muted-foreground/50"
+                      >
+                        <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }}>
+                          <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                        </motion.div>
+                        Saving...
+                      </motion.div>
+                    )}
+                    {editorSaveStatus === "saved" && (
+                      <motion.div
+                        key="saved"
+                        initial={{ opacity: 0, y: 4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -4 }}
+                        className="flex items-center gap-1.5 text-xs text-emerald-500/70"
+                      >
+                        <CheckCircle2 className="h-3 w-3" />
+                        Saved
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                  <div className="hidden sm:flex items-center gap-1.5 text-[10px] text-muted-foreground/30">
+                    <kbd className="rounded border border-border/40 bg-muted/30 px-1 py-0.5 font-mono">Ctrl+B</kbd><span>Bold</span>
+                    <kbd className="rounded border border-border/40 bg-muted/30 px-1 py-0.5 font-mono">Ctrl+I</kbd><span>Italic</span>
+                    <kbd className="rounded border border-border/40 bg-muted/30 px-1 py-0.5 font-mono">Ctrl+S</kbd><span>Save</span>
+                  </div>
+                </div>
+                {/* Right side: action buttons */}
+                <div className="flex items-center gap-3">
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => setShowEditor(false)}
+                    className="rounded-xl px-4 py-2.5 text-sm font-medium text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-all duration-200"
+                  >
+                    Cancel
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.03, y: -1 }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={saveNote}
+                    disabled={!editorTitle.trim()}
+                    className="group flex items-center gap-2 rounded-xl bg-gradient-to-b from-primary to-primary/90 px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed relative overflow-hidden"
+                  >
+                    <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out" />
+                    <Save className="h-4 w-4 relative" /> {editingNote ? "Update" : "Create"}
+                  </motion.button>
+                </div>
               </div>
             </motion.div>
           </motion.div>

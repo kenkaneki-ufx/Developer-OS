@@ -27,7 +27,7 @@ async function findLeetCodeUserByEmail(
     const profileData = await fetchLeetCodeGraphQL(USER_PROFILE_QUERY, {
       username: emailPrefix,
     });
-    const profile = profileData.data?.matchedUser;
+    const profile = (profileData.data as Record<string, unknown>)?.matchedUser as { username: string } | undefined;
 
     if (profile && profile.username) {
       return profile.username;

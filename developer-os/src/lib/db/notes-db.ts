@@ -8,7 +8,7 @@
  * Install: npm install idb
  */
 
-import { openDB, type DBSchema, type IDBPDatabase } from "idb";
+import { openDB, type IDBPDatabase } from "idb";
 
 // ─── Types ───────────────────────────────────────────────────────────
 export interface NoteAttachment {
@@ -46,15 +46,15 @@ export interface Subject {
 }
 
 // ─── Database Schema ─────────────────────────────────────────────────
-interface DeveloperOSDB extends DBSchema {
+interface DeveloperOSDB {
   notes: {
     key: string;
     value: Note;
     indexes: {
       "by-subject": string;
       "by-updated": string;
-      "by-pinned": boolean;
-      "by-archived": boolean;
+      "by-pinned": string;
+      "by-archived": string;
     };
   };
   subjects: {

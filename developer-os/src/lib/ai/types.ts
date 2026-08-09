@@ -6,7 +6,7 @@
  * by changing only the configuration.
  */
 
-export type AIProvider = "devai";
+export type AIProvider = "devai" | "anthropic" | "cohere" | "gemini" | "openai";
 
 export type AIModel = "dev-ai";
 
