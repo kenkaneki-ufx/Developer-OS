@@ -1,0 +1,2420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Notes — Pointers, Memory &amp; Beyond</title>
+    <style>
+        /* ============ Base ============ */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #0d1117;
+            --card: #161b22;
+            --card-2: #1c2128;
+            --border: #30363d;
+            --text: #e6edf3;
+            --muted: #9aa5b1;
+            --accent: #58a6ff;
+            --purple: #a371f7;
+            --cyan: #39c5cf;
+            --green: #7ee787;
+            --yellow: #d29922;
+            --red: #f85149;
+            --code-bg: #0d1117;
+            --preview-bg: #ffffff;
+            --preview-text: #1f2328;
+            --cblue: #0ea5e9;
+            --cdarkblue: #2563eb;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        /* ============ Hero ============ */
+        .hero {
+            padding: 56px 20px 40px;
+            text-align: center;
+            background:
+                radial-gradient(600px 200px at 20% 0%, rgba(14, 165, 233, 0.16), transparent),
+                radial-gradient(600px 200px at 80% 0%, rgba(37, 99, 235, 0.14), transparent);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .hero h1 {
+            font-size: clamp(28px, 5vw, 46px);
+            background: linear-gradient(90deg, var(--cblue), var(--cdarkblue), var(--cyan));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: -0.5px;
+        }
+
+        .hero p {
+            color: var(--muted);
+            max-width: 680px;
+            margin: 12px auto 0;
+            font-size: 17px;
+        }
+
+        .hero .badge {
+            display: inline-block;
+            margin-top: 16px;
+            padding: 6px 14px;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            font-size: 13px;
+            color: var(--accent);
+            background: rgba(88, 166, 255, 0.08);
+        }
+
+        /* ============ Sticky TOC ============ */
+        nav.toc {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: rgba(13, 17, 23, 0.92);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid var(--border);
+            padding: 10px 16px;
+            overflow-x: auto;
+            white-space: nowrap;
+            display: flex;
+            gap: 8px;
+            scrollbar-width: thin;
+        }
+
+        nav.toc a {
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 13px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        nav.toc a:hover {
+            color: var(--text);
+            border-color: var(--accent);
+            background: rgba(88, 166, 255, 0.1);
+        }
+
+        /* ============ Layout ============ */
+        main {
+            max-width: 1080px;
+            margin: 0 auto;
+            padding: 28px 20px 60px;
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 28px;
+            scroll-margin-top: 70px;
+        }
+
+        .card h2 {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 22px;
+            margin-bottom: 10px;
+        }
+
+        .card h2 .num {
+            flex-shrink: 0;
+            width: 34px;
+            height: 34px;
+            display: grid;
+            place-items: center;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--bg);
+            background: linear-gradient(135deg, var(--cblue), var(--cdarkblue));
+            border-radius: 9px;
+        }
+
+        .card > p { color: var(--muted); margin-bottom: 16px; }
+        .card h3 { font-size: 16px; color: var(--accent); margin: 18px 0 8px; }
+        .card ul, .card ol { padding-left: 22px; margin-bottom: 14px; }
+        .card li { margin-bottom: 4px; }
+
+        .card table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12px 0;
+            font-size: 14px;
+        }
+
+        .card th, .card td {
+            border: 1px solid var(--border);
+            padding: 8px 12px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        .card th { background: var(--card-2); color: var(--accent); }
+
+        code.inline {
+            background: var(--card-2);
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            padding: 1px 7px;
+            font-family: 'Cascadia Code', 'Consolas', 'Courier New', monospace;
+            font-size: 0.88em;
+            color: var(--cyan);
+        }
+
+        /* ============ Demo: code + preview ============ */
+        .demo {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        @media (max-width: 800px) {
+            .demo { grid-template-columns: 1fr; }
+        }
+
+        .panel {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+            min-width: 0;
+        }
+
+        .panel-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 7px 12px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            border-bottom: 1px solid var(--border);
+            background: var(--card-2);
+        }
+
+        .panel-bar .tag-code { color: var(--green); }
+        .panel-bar .tag-result { color: var(--cblue); }
+
+        .copy-btn {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            color: var(--muted);
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 3px 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .copy-btn:hover {
+            color: var(--text);
+            border-color: var(--accent);
+            background: rgba(88, 166, 255, 0.12);
+        }
+
+        pre {
+            background: var(--code-bg);
+            padding: 16px;
+            overflow-x: auto;
+            font-size: 13.5px;
+            line-height: 1.55;
+        }
+
+        pre code {
+            font-family: 'Cascadia Code', 'Consolas', 'Courier New', monospace;
+            color: var(--text);
+            white-space: pre;
+        }
+
+        /* C syntax colors */
+        pre code .k { color: #ff7b72; font-weight: 600; }
+        pre code .st { color: #ffa657; }
+        pre code .n { color: #d29922; }
+        pre code .c { color: var(--green); font-style: italic; }
+        pre code .s { color: var(--purple); font-weight: 600; }
+        pre code .t { color: #79c0ff; } /* types */
+
+        .preview {
+            background: var(--preview-bg);
+            color: var(--preview-text);
+            padding: 16px;
+            min-height: 60px;
+            font-size: 14px;
+        }
+
+        .preview p { margin: 0 0 8px; }
+        .preview h1, .preview h2, .preview h3 { color: var(--preview-text); margin: 0 0 6px; }
+        .preview button {
+            background: #0969da; color: #fff; border: 0; padding: 8px 16px;
+            border-radius: 8px; cursor: pointer; font-size: 13px; transition: opacity 0.2s;
+        }
+        .preview button:hover { opacity: 0.85; }
+        .preview button.secondary { background: #8250df; }
+        .preview button.green { background: #1a7f37; }
+        .preview input, .preview select, .preview textarea {
+            padding: 8px; border: 1px solid #d0d7de; border-radius: 8px; font-size: 13px; font-family: inherit;
+        }
+        .preview .out {
+            background: #f6f8fa; border: 1px solid #d0d7de; border-radius: 8px;
+            padding: 10px 12px; font-family: 'Cascadia Code', 'Consolas', monospace;
+            font-size: 13px; margin-top: 8px; min-height: 20px; white-space: pre-wrap;
+        }
+
+        /* ============ Terminal output (simulated) ============ */
+        .terminal {
+            background: #0d1117;
+            color: #e6edf3;
+            font-family: 'Cascadia Code', 'Consolas', 'Courier New', monospace;
+            font-size: 13px;
+            padding: 14px 16px;
+            min-height: 60px;
+            white-space: pre-wrap;
+            overflow-x: auto;
+        }
+        .terminal .p { color: #58a6ff; }
+        .terminal .o { color: #7ee787; }
+
+        /* ============ Memory boxes ============ */
+        .membox {
+            display: flex; gap: 14px; flex-wrap: wrap; margin-top: 10px;
+        }
+        .membox .box {
+            border: 2px solid #d0d7de; border-radius: 8px; padding: 8px 12px;
+            font-family: 'Cascadia Code', monospace; font-size: 12px; text-align: center;
+            background: #f6f8fa; min-width: 110px;
+        }
+        .membox .box .addr { color: #57606a; font-size: 10px; }
+        .membox .box .val { font-size: 16px; font-weight: 700; color: #0969da; margin-top: 2px; }
+        .membox .box.ptr .val { color: #8250df; }
+
+        /* ============ Theme toggle ============ */
+        body.light {
+            --bg: #ffffff;
+            --card: #f6f8fa;
+            --card-2: #eaeef2;
+            --border: #d0d7de;
+            --text: #1f2328;
+            --muted: #57606a;
+            --code-bg: #f6f8fa;
+        }
+        body.light nav.toc { background: rgba(255,255,255,0.92); }
+        body.light pre { color: #1f2328; }
+        body.light .panel-bar { background: #eaeef2; }
+
+        /* ============ Plain code mode (view-source friendly) ============ */
+        .plain-btn {
+            position: fixed;
+            right: 18px;
+            bottom: 70px;
+            z-index: 60;
+            border: 1px solid var(--border);
+            background: var(--card);
+            color: var(--text);
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(0,0,0,.25);
+            transition: border-color .2s, transform .15s;
+        }
+        .plain-btn:hover { border-color: var(--accent); transform: translateY(-2px); }
+        .plain-btn[aria-pressed="true"] { border-color: var(--accent); }
+        /* Neutralize every token color so code reads as plain source text */
+        body.plain-mode pre code,
+        body.plain-mode pre code span,
+        body.plain-mode .terminal span {
+            color: var(--text) !important;
+            background: none !important;
+            font-weight: normal !important;
+            font-style: normal !important;
+            text-decoration: none !important;
+            text-shadow: none !important;
+        }
+        .theme-btn {
+            position: fixed;
+            right: 18px;
+            bottom: 18px;
+            z-index: 60;
+            border: 1px solid var(--border);
+            background: var(--card);
+            color: var(--text);
+            padding: 10px 16px;
+            border-radius: 999px;
+            font-size: 14px;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.35);
+            transition: all 0.2s;
+        }
+        .theme-btn:hover { border-color: var(--accent); }
+
+        /* ============ Search ============ */
+        .search-wrap { max-width: 1080px; margin: 0 auto; padding: 18px 20px 0; }
+        #search {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--card);
+            color: var(--text);
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        #search:focus { border-color: var(--accent); }
+        #search::placeholder { color: var(--muted); }
+
+        /* ============ Quiz ============ */
+        .quiz-q {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 14px;
+            background: var(--card-2);
+        }
+        .quiz-q p { font-weight: 700; margin-bottom: 8px; }
+        .quiz-q label {
+            display: block;
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.15s;
+            font-weight: 400;
+        }
+        .quiz-q label:hover { background: rgba(88,166,255,0.12); }
+        .quiz-q.correct { border-color: var(--green); }
+        .quiz-q.wrong { border-color: var(--red); }
+        .quiz-btn {
+            background: linear-gradient(135deg, var(--cblue), var(--cdarkblue));
+            color: #fff;
+            font-weight: 700;
+            border: 0;
+            padding: 12px 28px;
+            border-radius: 10px;
+            font-size: 15px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .quiz-btn:hover { opacity: 0.88; }
+        #quizScore { display: inline-block; margin-left: 14px; font-weight: 700; font-size: 16px; }
+
+        /* ============ Tip / warn ============ */
+        .tip {
+            border-left: 4px solid var(--green);
+            background: rgba(126, 231, 135, 0.08);
+            padding: 12px 16px;
+            border-radius: 0 8px 8px 0;
+            margin: 16px 0;
+            font-size: 14px;
+        }
+        .tip strong { color: var(--green); }
+
+        .warn {
+            border-left: 4px solid var(--yellow);
+            background: rgba(210, 153, 34, 0.08);
+            padding: 12px 16px;
+            border-radius: 0 8px 8px 0;
+            margin: 16px 0;
+            font-size: 14px;
+        }
+        .warn strong { color: var(--yellow); }
+
+        /* ============ Footer ============ */
+        footer {
+            text-align: center;
+            color: var(--muted);
+            padding: 30px 20px 50px;
+            border-top: 1px solid var(--border);
+            font-size: 14px;
+        }
+        footer a { color: var(--accent); text-decoration: none; }
+        footer a:hover { text-decoration: underline; }
+
+        /* ============ List / record demos ============ */
+        .listviz { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; align-items: center; }
+        .listviz .node {
+            border: 2px solid #0969da; color: #0969da; border-radius: 8px;
+            padding: 6px 12px; font-family: 'Cascadia Code', monospace; font-size: 13px;
+            background: #f0f6ff; font-weight: 700;
+        }
+        .listviz .arrow { color: #57606a; font-family: 'Cascadia Code', monospace; font-size: 16px; }
+        .rec-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 8px; }
+        .rec-table th, .rec-table td { border: 1px solid #d0d7de; padding: 5px 8px; text-align: left; }
+        .rec-table th { background: #f6f8fa; }
+    </style>
+</head>
+<body>
+
+    <header class="hero">
+        <h1>💻 C Notes — Pointers, Memory &amp; Beyond</h1>
+        <p>The language that runs your operating system. C is small, fast, and
+           <strong style="color:var(--green)">close to the machine</strong> — you manage
+           <strong style="color:var(--cblue)">memory yourself</strong>. Every topic has the
+           code on the left and the output or a <strong style="color:var(--cdarkblue)">live demo</strong> on the right.</p>
+        <span class="badge">C · 36 sections · Live demos · Search 🔍 · Quiz 🧠 · Dark/Light 🌙</span>
+    </header>
+
+    <nav class="toc">
+        <a href="#what">01 What is C</a>
+        <a href="#setup">02 Setup &amp; gcc</a>
+        <a href="#printf">03 printf</a>
+        <a href="#variables">04 Variables</a>
+        <a href="#constants">05 Constants</a>
+        <a href="#operators">06 Operators</a>
+        <a href="#conditions">07 Conditions</a>
+        <a href="#loops">08 Loops</a>
+        <a href="#functions">09 Functions</a>
+        <a href="#scope">10 Scope</a>
+        <a href="#arrays">11 Arrays</a>
+        <a href="#strings">12 Strings</a>
+        <a href="#pointers">13 Pointers</a>
+        <a href="#ptr-arithmetic">14 Ptr arithmetic</a>
+        <a href="#ptr-arrays">15 Ptr &amp; arrays</a>
+        <a href="#ptr-functions">16 Ptr &amp; functions</a>
+        <a href="#memory">17 malloc/free</a>
+        <a href="#stackheap">18 Stack vs heap</a>
+        <a href="#structs">19 Structs</a>
+        <a href="#structptr">20 Struct pointers</a>
+        <a href="#typedef">21 typedef</a>
+        <a href="#unions">22 Unions/Enums</a>
+        <a href="#bitwise">23 Bitwise</a>
+        <a href="#conversion">24 Casting</a>
+        <a href="#preprocessor">25 Preprocessor</a>
+        <a href="#multifile">26 Multi-file</a>
+        <a href="#fileio">27 File I/O</a>
+        <a href="#argcargv">28 argv</a>
+        <a href="#recursion">29 Recursion</a>
+        <a href="#functptr">30 Function ptrs</a>
+        <a href="#strings2">31 Strings deep</a>
+        <a href="#ptr2">32 Ptr arrays</a>
+        <a href="#linkedlist">33 Linked list</a>
+        <a href="#project">34 Mini project</a>
+        <a href="#debug">35 Debugging</a>
+        <a href="#quiz">36 Quiz</a>
+    </nav>
+
+    <div class="search-wrap">
+        <input id="search" type="search" placeholder="🔍 Search the notes… (e.g. 'pointer', 'struct', 'malloc', 'loop')">
+    </div>
+
+    <main>
+
+        <!-- ================= 01 WHAT IS C ================= -->
+        <section class="card" id="what">
+            <h2><span class="num">01</span>What is C?</h2>
+            <p><strong>C</strong> is a compiled, systems-level language created in 1972 by Dennis Ritchie. The Linux
+            kernel, Windows, databases, game engines and every other language's runtime are written in it.
+            Learning C teaches you <em>how computers actually work</em> — memory, addresses, and all.</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE — hello.c</span></div>
+                    <pre><code>#include &lt;stdio.h&gt;
+
+int main(void) {
+    printf("Hello, world!\n");
+    return 0;
+}</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">OUTPUT</span></div>
+                    <div class="terminal">$ gcc hello.c -o hello
+$ ./hello
+Hello, world!</div>
+                </div>
+            </div>
+            <table>
+                <tr><th>Why C?</th><th>What it means</th></tr>
+                <tr><td>Fast &amp; small</td><td>No hidden runtime — the code you write is close to the machine</td></tr>
+                <tr><td>Manual memory</td><td>You decide when to allocate and free — full control, full responsibility</td></tr>
+                <tr><td>The foundation</td><td>Python, Java, JS runtimes are written in C</td></tr>
+                <tr><td>Pointers</td><td>C's superpower — direct access to memory addresses</td></tr>
+            </table>
+            <div class="warn"><strong>C does NOT protect you.</strong> No automatic memory management, no bounds checking.
+            This is a feature for professionals — and a trap for beginners. That's what these notes teach you to handle.</div>
+        </section>
+
+        <!-- ================= 02 SETUP & COMPILING ================= -->
+        <section class="card" id="setup">
+            <h2><span class="num">02</span>Setup &amp; Compiling</h2>
+            <p>C has no interpreter — every change means <strong>compiling</strong>. Install a compiler once:
+            <strong>Windows</strong> → MinGW-w64 (or use VS Code + the C/C++ extension), <strong>Mac</strong> →
+            Xcode Command Line Tools, <strong>Linux</strong> → <code class="inline">sudo apt install gcc</code>.</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">TERMINAL — the daily loop</span></div>
+                    <div class="terminal">$ gcc hello.c -o hello      # compile → binary
+$ ./hello                       # run it
+Hello, world!
+$ gcc -Wall -Wextra hello.c -o hello  # warnings on!
+$ gcc -g hello.c -o hello      # debug symbols for gdb</div>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">THE PIPELINE</span></div>
+                    <div class="terminal">hello.c ──compiler──&gt; hello.o ──linker──&gt; hello
+
+# 1. preprocessor: pulls in #include files
+# 2. compile: .c → machine code (.o)
+# 3. link: glue .o files + libraries → executable</div>
+                </div>
+            </div>
+            <h3>Every program needs these two things</h3>
+            <pre><code>#include &lt;stdio.h&gt;   // standard input/output functions
+
+int main(void) {        // execution starts here
+    return 0;            // 0 = success (to the OS)
+}</code></pre>
+            <div class="tip"><strong>Compile errors are normal.</strong> The compiler tells you the file and line — read it,
+            fix it, recompile. Speed comes from this loop: edit → <code class="inline">gcc</code> → run.</div>
+        </section>
+
+        <!-- ================= 03 PRINTF ================= -->
+        <section class="card" id="printf">
+            <h2><span class="num">03</span>printf() — Your First Function</h2>
+            <p><code class="inline">printf("format", values)</code> prints text with <strong>format specifiers</strong> —
+            the placeholders that decide how a value is displayed. The specifier MUST match the type:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>#include &lt;stdio.h&gt;
+
+int main(void) {
+    int age = 17;
+    float pi = 3.14159;
+    char letter = 'A';
+
+    printf("I am %d years old\n", age);
+    printf("Pi is %.2f\n", pi);
+    printf("Letter %c comes before %c\n", letter, letter + 1);
+    printf("In hex: %x\n", age);
+    return 0;
+}</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">LIVE — same program</span></div>
+                    <div class="preview">
+                        <p><strong>age</strong> <input id="pfAge" type="number" value="17" style="width:70px">
+                           <strong>letter</strong> <input id="pfCh" value="A" maxlength="1" style="width:50px"></p>
+                        <div class="out" id="pfOut"></div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                (function () {
+                    function render() {
+                        var a = parseInt(document.getElementById('pfAge').value, 10) || 0;
+                        var c = document.getElementById('pfCh').value || 'A';
+                        document.getElementById('pfOut').textContent =
+                            'I am ' + a + ' years old\n' +
+                            'Pi is 3.14\n' +
+                            'Letter ' + c + ' comes before ' + String.fromCharCode(c.charCodeAt(0) + 1) + '\n' +
+                            'In hex: ' + a.toString(16);
+                    }
+                    document.getElementById('pfAge').addEventListener('input', render);
+                    document.getElementById('pfCh').addEventListener('input', render);
+                    render();
+                })();
+            </script>
+            <table>
+                <tr><th>Specifier</th><th>Prints</th><th>Specifier</th><th>Prints</th></tr>
+                <tr><td><code class="inline">%d</code></td><td>int</td><td><code class="inline">%c</code></td><td>char</td></tr>
+                <tr><td><code class="inline">%f</code></td><td>float/double</td><td><code class="inline">%s</code></td><td>string</td></tr>
+                <tr><td><code class="inline">%.2f</code></td><td>2 decimals</td><td><code class="inline">%p</code></td><td>pointer (address)</td></tr>
+                <tr><td><code class="inline">%x</code></td><td>hex</td><td><code class="inline">%zu</code></td><td>size_t (sizeof)</td></tr>
+            </table>
+            <div class="warn"><strong>Mismatch = undefined behavior:</strong> <code class="inline">printf("%d", 3.14)</code>
+            doesn't convert — it reads garbage bits. Always match the specifier to the type.</div>
+        </section>
+
+        <!-- ================= 04 VARIABLES & TYPES ================= -->
+        <section class="card" id="variables">
+            <h2><span class="num">04</span>Variables &amp; Data Types</h2>
+            <p>C is <strong>statically typed</strong>: you declare the type up front, and it never changes. Every variable
+            reserves a fixed amount of memory — that's the whole story of section 13:</p>
+            <table>
+                <tr><th>Type</th><th>Typical size</th><th>Range (typical)</th><th>Use for</th></tr>
+                <tr><td><code class="inline">int</code></td><td>4 bytes</td><td>−2.1B … 2.1B</td><td>whole numbers</td></tr>
+                <tr><td><code class="inline">char</code></td><td>1 byte</td><td>−128 … 127</td><td>letters / small numbers</td></tr>
+                <tr><td><code class="inline">float</code></td><td>4 bytes</td><td>~7 digits</td><td>decimals</td></tr>
+                <tr><td><code class="inline">double</code></td><td>8 bytes</td><td>~15 digits</td><td>precise decimals</td></tr>
+                <tr><td><code class="inline">long</code></td><td>8 bytes</td><td>huge</td><td>big numbers</td></tr>
+                <tr><td><code class="inline">_Bool</code></td><td>1 byte</td><td>0 / 1</td><td>true / false</td></tr>
+            </table>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>int age = 17;
+char grade = 'A';
+float gpa = 3.8;
+double precise = 3.14159265358979;
+unsigned int count = 100;  // no negatives
+
+int x;                    // declared, NOT set — garbage! ⚠️
+printf("%d %c %.1f\n", age, grade, gpa);</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">OUTPUT</span></div>
+                    <div class="terminal">17 A 3.8</div>
+                </div>
+            </div>
+            <h3>Naming rules</h3>
+            <ul>
+                <li>Letters, digits, underscores — must not start with a digit</li>
+                <li>Case-sensitive: <code class="inline">Age</code> <span class="inline">≠</span> <code class="inline">age</code></li>
+                <li>Convention: <code class="inline">snake_case</code> or <code class="inline">camelCase</code> — pick one</li>
+            </ul>
+            <div class="warn"><strong>Uninitialized variables hold garbage</strong> (whatever was in memory).
+            Always initialize: <code class="inline">int x = 0;</code>. Compiler flags like <code class="inline">-Wall</code> warn about it.</div>
+        </section>
+
+        <!-- ================= 05 CONSTANTS & SIZEOF ================= -->
+        <section class="card" id="constants">
+            <h2><span class="num">05</span>Constants &amp; sizeof()</h2>
+            <p>Three ways to make a value that can't change, plus <code class="inline">sizeof()</code> — the operator that
+            tells you exactly how many bytes anything uses:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>#define MAX_SCORE 100          // preprocessor constant
+
+const int PASS = 40;          // const variable
+
+enum { RED, GREEN, BLUE };     // enum constants 0,1,2
+
+int main(void) {
+    printf("int: %zu bytes\n", sizeof(int));
+    printf("char: %zu byte\n", sizeof(char));
+    printf("double: %zu bytes\n", sizeof(double));
+    printf("score: %d, pass? %d\n", MAX_SCORE, PASS);
+    return 0;
+}</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">OUTPUT</span></div>
+                    <div class="terminal">int: 4 bytes
+char: 1 byte
+double: 8 bytes
+score: 100, pass? 40</div>
+                </div>
+            </div>
+            <h3>sizeof works on variables too</h3>
+            <pre><code>int arr[10];
+printf("array: %zu bytes → %zu elements\n",
+        sizeof(arr), sizeof(arr) / sizeof(arr[0]));
+// 40 bytes → 10 elements — the classic length trick!</code></pre>
+            <div class="tip"><strong>Which to use?</strong> <code class="inline">const</code> for typed constants in C code,
+            <code class="inline">#define</code> for values used by the preprocessor (arrays sizes), <code class="inline">enum</code>
+            for groups of related named values.</div>
+        </section>
+
+        <!-- ================= 06 OPERATORS ================= -->
+        <section class="card" id="operators">
+            <h2><span class="num">06</span>Operators</h2>
+            <p>Arithmetic works like math — with two traps: <strong>integer division</strong> truncates, and
+            <code class="inline">%</code> is remainder. Then come comparison, logic, and the sneaky <code class="inline">++</code>:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>int a = 5, b = 2;
+
+printf("%d\n", a / b);        // 2 — integer division TRUNCATES!
+printf("%.1f\n", a / (float)b); // 2.5 — cast makes it float
+printf("%d\n", a % b);        // 1 — remainder
+printf("%d\n", a &lt; b || a == 5);  // 1 (true) — OR
+printf("%d\n", a &gt; b &amp;&amp; b &gt; 0); // 1 (true) — AND
+printf("%d %d\n", a++, ++b); // post: 5 then 6 | pre: b is 3 now
+printf("%d\n", !a &gt; 0 ? a : -a); // ternary</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">OUTPUT</span></div>
+                    <div class="terminal">2
+2.5
+1
+1
+1
+5 3
+5</div>
+                </div>
+            </div>
+            <table>
+                <tr><th>Category</th><th>Operators</th></tr>
+                <tr><td>Arithmetic</td><td><code class="inline">+ - * / %</code></td></tr>
+                <tr><td>Assignment</td><td><code class="inline">= += -= *= /= %=</code></td></tr>
+                <tr><td>Increment</td><td><code class="inline">i++ ++i i-- --i</code> (post vs pre)</td></tr>
+                <tr><td>Comparison</td><td><code class="inline">== != &lt; &gt; &lt;= &gt;=</code></td></tr>
+                <tr><td>Logical</td><td><code class="inline">&amp;&amp; || !</code></td></tr>
+                <tr><td>Bitwise</td><td><code class="inline">&amp; | ^ ~ &lt;&lt; &gt;&gt;</code> (section 23)</td></tr>
+            </table>
+            <div class="warn"><strong>== vs =:</strong> <code class="inline">if (x = 5)</code> ASSIGNS 5 and is always true!
+            The compiler warns with <code class="inline">-Wall</code>. Write <code class="inline">if (5 == x)</code> to catch it instantly.</div>
+        </section>
+
+        <!-- ================= 07 CONDITIONS ================= -->
+        <section class="card" id="conditions">
+            <h2><span class="num">07</span>Conditions — if / else / switch</h2>
+            <p>In C, <code class="inline">if</code> takes a number: <strong>0 = false, anything else = true</strong>.
+            Use braces even for one-liners — it saves real bugs:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>int age = 17;
+
+if (age &lt; 13) {
+    printf("Child\n");
+} else if (age &lt; 20) {
+    printf("Teenager\n");
+} else if (age &lt; 65) {
+    printf("Adult\n");
+} else {
+    printf("Senior\n");
+}
+
+// switch — for many exact values
+switch (age / 10) {
+    case 1: printf("Teen\n"); break;
+    default: printf("Other\n"); break;
+}</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">LIVE — slide the age</span></div>
+                    <div class="preview">
+                        <p><strong>age</strong> <input id="cAge" type="range" min="1" max="90" value="17" style="width:140px"> <span id="cAgeShow" style="font-weight:700">17</span></p>
+                        <div class="out" id="cAgeOut" style="font-size:15px"></div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                (function () {
+                    function update() {
+                        var a = parseInt(document.getElementById('cAge').value, 10);
+                        document.getElementById('cAgeShow').textContent = a;
+                        var msg;
+                        if (a < 13) msg = 'Child';
+                        else if (a < 20) msg = 'Teenager';
+                        else if (a < 65) msg = 'Adult';
+                        else msg = 'Senior';
+                        document.getElementById('cAgeOut').textContent = msg;
+                    }
+                    document.getElementById('cAge').addEventListener('input', update);
+                    update();
+                })();
+            </script>
+            <div class="warn"><strong>switch falls through!</strong> Forgetting <code class="inline">break</code> runs the next
+            case too — the classic C bug. Always break (or use <code class="inline">return</code>).</div>
+        </section>
+
+        <!-- ================= 08 LOOPS ================= -->
+        <section class="card" id="loops">
+            <h2><span class="num">08</span>Loops — for / while / do-while</h2>
+            <p>Three loops, one rule of thumb: <code class="inline">for</code> when you know the count,
+            <code class="inline">while</code> when you're waiting for a condition, <code class="inline">do-while</code> when
+            the body must run at least once:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>// for: init; condition; step
+for (int i = 0; i &lt; 5; i++) {
+    printf("%d ", i);          // 0 1 2 3 4
+}
+
+// while: keep asking until the right answer
+int guess = -1;
+while (guess != 42) {
+    scanf("%d", &amp;guess);  // &amp;guess = "address of guess"
+}
+
+// do-while: runs once no matter what
+int n = 0;
+do { printf("n=%d ", n); n++; } while (n &lt; 3);</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">OUTPUT</span></div>
+                    <div class="terminal">0 1 2 3 4
+n=0 n=1 n=2</div>
+                </div>
+            </div>
+            <h3>break / continue / nested</h3>
+            <pre><code>// sum 1..100 but skip multiples of 3, stop at 90
+int total = 0;
+for (int i = 1; i &lt;= 100; i++) {
+    if (i % 3 == 0) continue;   // skip this round
+    if (i &gt; 90) break;          // exit the loop
+    total += i;
+}
+printf("%d\n", total);</code></pre>
+            <div class="warn"><strong>Infinite loop:</strong> <code class="inline">while (1)</code> never stops unless something
+            inside breaks out. Make sure the condition can actually become false.</div>
+        </section>
+
+        <!-- ================= 09 FUNCTIONS ================= -->
+        <section class="card" id="functions">
+            <h2><span class="num">09</span>Functions — return type, name, params</h2>
+            <p>A function in C is declared as <code class="inline">return_type name(params)</code>. Arguments are passed
+            <strong>by value</strong> — the function gets copies. To change the caller's data you need pointers (section 16):</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>#include &lt;stdio.h&gt;
+
+int add(int a, int b);    // prototype: tells main what exists
+
+int main(void) {
+    int sum = add(2, 3);
+    printf("%d\n", sum);        // 5
+    return 0;
+}
+
+int add(int a, int b) {
+    return a + b;             // result handed back
+}</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">OUTPUT</span></div>
+                    <div class="terminal">5</div>
+                </div>
+            </div>
+            <h3>Shapes of functions</h3>
+            <table>
+                <tr><th>Signature</th><th>Returns</th><th>Example</th></tr>
+                <tr><td><code class="inline">int f(int x)</code></td><td>an int</td><td><code class="inline">square(4) → 16</code></td></tr>
+                <tr><td><code class="inline">void f(void)</code></td><td>nothing</td><td><code class="inline">print_menu()</code></td></tr>
+                <tr><td><code class="inline">void f(int *p)</code></td><td>nothing, modifies *p</td><td><code class="inline">swap(&amp;a, &amp;b)</code></td></tr>
+                <tr><td><code class="inline">double f(double)</code></td><td>a double</td><td><code class="inline">sqrt(9) → 3.0</code></td></tr>
+            </table>
+            <div class="tip"><strong>Prototypes exist so</strong> <code class="inline">main</code> can call a function defined later
+            in the file. Without it, the compiler guesses — and that's where bugs are born. In multi-file projects, prototypes
+            live in header files (section 26).</div>
+        </section>
+
+        <!-- ================= 10 SCOPE & STORAGE ================= -->
+        <section class="card" id="scope">
+            <h2><span class="num">10</span>Scope &amp; Storage Classes</h2>
+            <p>Where a variable lives decides <em>who can see it</em> and <em>how long it survives</em>. Three keywords
+            cover 95% of real code: <code class="inline">auto</code> (default), <code class="inline">static</code>, <code class="inline">extern</code>:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>int global = 10;            // global: visible everywhere
+
+int counter(void) {
+    static int n = 0;    // static: keeps value between calls!
+    n++;
+    return n;
+}
+
+int main(void) {
+    printf("%d %d %d\n", counter(), counter(), counter());
+    printf("global=%d\n", global);
+    return 0;
+}</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">LIVE — watch the counter</span></div>
+                    <div class="preview">
+                        <button onclick="cRun()">▶ Call counter() 3×</button>
+                        <div class="out" id="cRunOut"></div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                (function () {
+                    var n = 0;  // plays the role of 'static int n'
+                    window.cRun = function () {
+                        n++; n++; n++;
+                        document.getElementById('cRunOut').textContent =
+                            'counter() → ' + (n - 2) + ' | ' + (n - 1) + ' | ' + n;
+                    };
+                })();
+            </script>
+            <table>
+                <tr><th>Keyword</th><th>Lifetime</th><th>Scope</th></tr>
+                <tr><td><code class="inline">auto</code> (default)</td><td>until the block ends</td><td>the block</td></tr>
+                <tr><td><code class="inline">static</code> (local)</td><td>whole program run</td><td>the block</td></tr>
+                <tr><td><code class="inline">static</code> (global)</td><td>whole program run</td><td>this FILE only</td></tr>
+                <tr><td><code class="inline">extern</code></td><td>whole program run</td><td>linked across files</td></tr>
+                <tr><td><code class="inline">register</code></td><td>hint to keep in CPU</td><td>the block</td></tr>
+            </table>
+            <div class="warn"><strong>Globals are seductive and dangerous:</strong> any function can change them, so
+            bugs get hard to trace. Use them sparingly — pass values instead.</div>
+        </section>
+
+        <!-- ================= 11 ARRAYS ================= -->
+        <section class="card" id="arrays">
+            <h2><span class="num">11</span>Arrays — Blocks of Same-Type Data</h2>
+            <p>An array is a <strong>contiguous block of memory</strong> holding N values of one type.
+            Indexing starts at <strong>0</strong>, and there's no built-in bounds check — go past the end and you
+            corrupt memory:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>int scores[5] = {90, 85, 78, 92, 88};
+
+scores[0] = 95;                 // update first element
+
+int total = 0;
+for (int i = 0; i &lt; 5; i++) {
+    total += scores[i];
+}
+printf("avg: %.1f\n", total / 5.0);
+
+// 2D array: rows × cols
+int grid[2][3] = {{1, 2, 3}, {4, 5, 6}};
+printf("%d\n", grid[1][2]);   // 6</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">OUTPUT</span></div>
+                    <div class="terminal">avg: 87.6
+6</div>
+                </div>
+            </div>
+            <h3>The length trick</h3>
+            <pre><code>int arr[] = {3, 1, 4, 1, 5};
+size_t n = sizeof(arr) / sizeof(arr[0]);  // 5
+// Works where the array is declared. NOT inside functions
+// that receive it as a parameter — it decays to a pointer (sec 15).</code></pre>
+            <div class="warn"><strong>Out of bounds:</strong> <code class="inline">scores[9] = 1</code> compiles fine and may
+            work for a while — then corrupts memory mysteriously. No exception is thrown in C. Check your indexes!</div>
+        </section>
+
+        <!-- ================= 12 STRINGS ================= -->
+        <section class="card" id="strings">
+            <h2><span class="num">12</span>Strings — char Arrays with a Secret</h2>
+            <p>There is no <code class="inline">string</code> type in C. A string is an <strong>array of chars ending
+            with <code class="inline">'\0'</code></strong> (the null terminator). Every string function walks the array
+            until it finds that zero byte:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>#include &lt;string.h&gt;
+
+char name[20] = "Lina";   // {'L','i','n','a','\0', ...}
+
+printf("%zu\n", strlen(name));      // 4 — NOT counting '\0'
+printf("%zu\n", sizeof(name));      // 20 — the array capacity
+
+char full[40];
+strcpy(full, name);               // copy (not = !)
+strcat(full, " Khan");            // append
+printf("%s\n", full);             // Lina Khan
+printf("%d\n", strcmp(name, "Mina"));  // &gt; 0 → name is bigger</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">OUTPUT</span></div>
+                    <div class="terminal">4
+20
+Lina Khan
+1</div>
+                </div>
+            </div>
+            <table>
+                <tr><th>Function</th><th>Does</th></tr>
+                <tr><td><code class="inline">strlen(s)</code></td><td>length without <code class="inline">'\0'</code></td></tr>
+                <tr><td><code class="inline">strcpy(dst, src)</code></td><td>copy (dst must be big enough!)</td></tr>
+                <tr><td><code class="inline">strcat(dst, src)</code></td><td>append to dst</td></tr>
+                <tr><td><code class="inline">strcmp(a, b)</code></td><td>0 if equal, &lt;0 / &gt;0 otherwise</td></tr>
+                <tr><td><code class="inline">sprintf(buf, fmt, …)</code></td><td>printf into a string</td></tr>
+            </table>
+            <div class="warn"><strong>Buffer overflow:</strong> <code class="inline">strcpy</code> doesn't check space.
+            Copying 40 chars into a 20-char buffer corrupts memory. Prefer <code class="inline">strncpy(dst, src, size-1)</code>
+            and always keep room for <code class="inline">'\0'</code>.</div>
+        </section>
+
+        <!-- ================= 13 POINTERS ================= -->
+        <section class="card" id="pointers">
+            <h2><span class="num">13</span>Pointers — The Core Idea</h2>
+            <p>Every variable lives at a <strong>memory address</strong>. A pointer is just a variable that
+            <strong>stores an address</strong>. Two operators run the show: <code class="inline">&amp;</code> (address-of)
+            and <code class="inline">*</code> (dereference — "go to that address"):</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>int x = 42;
+int *p = &amp;x;    // p stores the ADDRESS of x
+
+printf("x = %d\n", x);
+printf("&amp;x = %p\n", (void*)&amp;x);  // address
+printf("p = %p\n", (void*)p);      // same address!
+printf("*p = %d\n", *p);          // 42 — go get the value
+
+*p = 99;          // change x THROUGH the pointer
+printf("x = %d\n", x);   // 99!</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">LIVE — the memory picture</span></div>
+                    <div class="preview">
+                        <div class="membox">
+                            <div class="box"><div class="addr">x @ 0x7ffc4a</div><div class="val" id="mxVal">42</div></div>
+                            <div class="box ptr"><div class="addr">p</div><div class="val" id="mpVal">→ x</div></div>
+                        </div>
+                        <p style="margin-top:10px">
+                            <button onclick="ptrShow()">🔍 Show &amp;x</button>
+                            <button onclick="ptrChange()" class="green">*p = 99</button>
+                        </p>
+                        <div class="out" id="ptrOut"></div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                (function () {
+                    var x = 42;
+                    var box = document.getElementById('mxVal');
+                    var pbox = document.getElementById('mpVal');
+                    window.ptrShow = function () {
+                        document.getElementById('ptrOut').textContent =
+                            'x = ' + x + '  |  &x = 0x7ffc4a  |  p = 0x7ffc4a  |  *p = ' + x;
+                    };
+                    window.ptrChange = function () {
+                        x = 99;
+                        box.textContent = x;
+                        document.getElementById('ptrOut').textContent = '*p = 99 → x is now 99 (changed through the pointer!)';
+                    };
+                })();
+            </script>
+            <h3>Read pointer declarations inside-out</h3>
+            <table>
+                <tr><th>Declaration</th><th>Read as</th></tr>
+                <tr><td><code class="inline">int *p;</code></td><td>"p is a pointer to int" — <code class="inline">*p</code> is an int</td></tr>
+                <tr><td><code class="inline">char *s;</code></td><td>pointer to char (string!)</td></tr>
+                <tr><td><code class="inline">int **pp;</code></td><td>pointer to pointer — <code class="inline">**pp</code> is an int</td></tr>
+                <tr><td><code class="inline">int (*fp)(int);</code></td><td>pointer to function (section 30)</td></tr>
+            </table>
+            <div class="warn"><strong>Uninitialized pointer = wild pointer:</strong> <code class="inline">int *p;</code> then
+            <code class="inline">*p = 5;</code> writes to a random address → crash or corruption. Set it to a real address or
+            <code class="inline">NULL</code> first.</div>
+        </section>
+
+        <!-- ================= 14 POINTER ARITHMETIC ================= -->
+        <section class="card" id="ptr-arithmetic">
+            <h2><span class="num">14</span>Pointer Arithmetic — p+1 is NOT address+1</h2>
+            <p>Adding to a pointer moves by the size of what it points to. <code class="inline">int *p</code> →
+            <code class="inline">p + 1</code> jumps 4 bytes; <code class="inline">char *c</code> → <code class="inline">c + 1</code>
+            jumps 1 byte. This is why <code class="inline">p[i]</code> is exactly <code class="inline">*(p + i)</code>:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>int arr[3] = {10, 20, 30};
+int *p = arr;              // arr == &amp;arr[0]
+
+printf("%d\n", *p);             // 10
+printf("%d\n", *(p + 1));       // 20 — 4 bytes forward
+printf("%d\n", p[2]);          // 30 — same thing
+
+// walk the array with a pointer
+for (int *q = arr; q &lt; arr + 3; q++) {
+    printf("%d ", *q);
+}</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">OUTPUT</span></div>
+                    <div class="terminal">10
+20
+30
+10 20 30</div>
+                </div>
+            </div>
+            <table>
+                <tr><th>Expression</th><th>Means</th></tr>
+                <tr><td><code class="inline">p + 1</code></td><td>next element (sizeof(int) bytes later)</td></tr>
+                <tr><td><code class="inline">p - arr</code></td><td>element index (pointer difference)</td></tr>
+                <tr><td><code class="inline">p++</code></td><td>advance to next element</td></tr>
+                <tr><td><code class="inline">*p++</code></td><td>use value, then advance (idiom!)</td></tr>
+            </table>
+            <div class="warn"><strong>Only within the array:</strong> arithmetic past one-past-the-end is undefined
+            behavior. <code class="inline">q &lt; arr + 3</code> above is safe; <code class="inline">q &lt;= arr + 3</code>
+            and dereferencing at the end is not.</div>
+        </section>
+
+        <!-- ================= 15 POINTERS & ARRAYS ================= -->
+        <section class="card" id="ptr-arrays">
+            <h2><span class="num">15</span>Pointers &amp; Arrays — The Decay</h2>
+            <p>An array's name <strong>decays to a pointer to its first element</strong> in most expressions. That's why
+            passing an array to a function really passes a pointer — and why the function can modify the caller's data:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>void double_all(int *a, int n) {
+    for (int i = 0; i &lt; n; i++)
+        a[i] *= 2;            // changes the ORIGINAL array
+}
+
+int main(void) {
+    int nums[] = {1, 2, 3};
+    double_all(nums, 3);   // nums decays → int*
+    for (int i = 0; i &lt; 3; i++)
+        printf("%d ", nums[i]);  // 2 4 6
+    return 0;
+}</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">OUTPUT</span></div>
+                    <div class="terminal">2 4 6</div>
+                </div>
+            </div>
+            <h3>Key rule: you can't get the length of a passed array</h3>
+            <pre><code>void bad(int a[]) {   // looks like an array…
+    sizeof(a) / sizeof(a[0]);  // …but a is a POINTER → wrong!
+}
+
+// Always pass the length alongside the array:
+void good(int a[], size_t n) { /* … */ }</code></pre>
+            <div class="warn"><strong>Constant vs pointer:</strong> <code class="inline">char *s</code> can point anywhere;
+            <code class="inline">const char *s</code> promises not to modify what's pointed at — use it for strings you only read.</div>
+        </section>
+
+        <!-- ================= 16 POINTERS & FUNCTIONS ================= -->
+        <section class="card" id="ptr-functions">
+            <h2><span class="num">16</span>Pointers &amp; Functions — Pass by Reference</h2>
+            <p>Arguments are <strong>copied</strong> (pass by value). To let a function change the caller's variables,
+            pass their <strong>addresses</strong>. The eternal example — <code class="inline">swap()</code>:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>void swap(int *a, int *b) {
+    int tmp = *a;   // read what a points to
+    *a = *b;
+    *b = tmp;
+}
+
+int main(void) {
+    int x = 1, y = 2;
+    swap(&amp;x, &amp;y);     // pass addresses!
+    printf("x=%d y=%d\n", x, y);   // x=2 y=1
+    return 0;
+}</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">LIVE — try both versions</span></div>
+                    <div class="preview">
+                        <p><strong>a</strong> = <span id="swA" style="font-weight:700">1</span> &nbsp; <strong>b</strong> = <span id="swB" style="font-weight:700">2</span></p>
+                        <button onclick="swByValue()">swap(a, b) — by value</button>
+                        <button onclick="swByPtr()" class="green">swap(&amp;a, &amp;b) — pointers</button>
+                        <div class="out" id="swOut"></div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                (function () {
+                    var a = 1, b = 2;
+                    function render() {
+                        document.getElementById('swA').textContent = a;
+                        document.getElementById('swB').textContent = b;
+                    }
+                    window.swByValue = function () {
+                        var ta = a, tb = b, tmp = ta;
+                        ta = tb; tb = tmp;                 // copies swapped — originals untouched
+                        document.getElementById('swOut').textContent =
+                            'Inside: a=' + ta + ' b=' + tb + ' → caller still has a=' + a + ' b=' + b;
+                    };
+                    window.swByPtr = function () {
+                        var tmp = a; a = b; b = tmp;       // simulates writing through pointers
+                        render();
+                        document.getElementById('swOut').textContent = 'swap(&a, &b) → caller now has a=' + a + ' b=' + b;
+                    };
+                })();
+            </script>
+            <div class="tip"><strong>When do you need pointers as parameters?</strong> (1) to modify a caller variable,
+            (2) to avoid copying a huge struct, (3) to return something from a helper via an out-parameter
+            like <code class="inline">scanf("%d", &amp;age)</code>.</div>
+        </section>
+
+        <!-- ================= 17 DYNAMIC MEMORY ================= -->
+        <section class="card" id="memory">
+            <h2><span class="num">17</span>Dynamic Memory — malloc, calloc, free</h2>
+            <p>Arrays are fixed at compile time. When you need a size <em>you only know at runtime</em>, ask the heap:
+            <code class="inline">malloc</code> hands back a block of memory (or <code class="inline">NULL</code> on failure).
+            <strong>Every malloc needs a matching free:</strong></p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>#include &lt;stdlib.h&gt;
+
+int n;
+scanf("%d", &amp;n);
+
+int *nums = malloc(n * sizeof(int));
+if (nums == NULL) {            // always check!
+    printf("Out of memory\n");
+    return 1;
+}
+
+for (int i = 0; i &lt; n; i++)
+    nums[i] = i * i;              // use it like an array!
+
+printf("%d\n", nums[n - 1]);
+free(nums);                      // give it back — or it leaks
+nums = NULL;                     // avoid dangling pointer</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">LIVE — size it yourself</span></div>
+                    <div class="preview">
+                        <p>n = <input id="mmN" type="range" min="1" max="10" value="5" style="width:140px"> <span id="mmNShow" style="font-weight:700">5</span></p>
+                        <button onclick="mmRun()">▶ malloc(n) &amp; fill</button>
+                        <div class="out" id="mmOut"></div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                (function () {
+                    var mmN = document.getElementById('mmN');
+                    mmN.addEventListener('input', function () { document.getElementById('mmNShow').textContent = mmN.value; });
+                    window.mmRun = function () {
+                        var n = parseInt(mmN.value, 10);
+                        var arr = [];
+                        for (var i = 0; i < n; i++) arr.push(i * i);
+                        document.getElementById('mmOut').textContent =
+                            'malloc(' + n + ' * 4 bytes) = ' + (n * 4) + ' bytes\n' +
+                            'nums = [' + arr.join(', ') + ']  →  nums[' + (n - 1) + '] = ' + arr[n - 1] +
+                            '\nfree(nums) ✅  nums = NULL';
+                    };
+                })();
+            </script>
+            <table>
+                <tr><th>Function</th><th>Does</th></tr>
+                <tr><td><code class="inline">malloc(n)</code></td><td>n raw bytes, uninitialized</td></tr>
+                <tr><td><code class="inline">calloc(n, size)</code></td><td>n × size bytes, zeroed</td></tr>
+                <tr><td><code class="inline">realloc(p, n)</code></td><td>resize an existing block</td></tr>
+                <tr><td><code class="inline">free(p)</code></td><td>release the block</td></tr>
+            </table>
+            <div class="warn"><strong>The golden rules:</strong> check for <code class="inline">NULL</code>, free exactly once,
+            free in the same layer you allocated, and always use <code class="inline">sizeof</code> — never hardcode byte counts.</div>
+        </section>
+
+        <!-- ================= 18 STACK VS HEAP ================= -->
+        <section class="card" id="stackheap">
+            <h2><span class="num">18</span>Stack vs Heap — Where Things Live</h2>
+            <p>Your program's memory has two regions you touch constantly. Know which is which and half of C's
+            mysteries disappear:</p>
+            <table>
+                <tr><th></th><th>Stack</th><th>Heap</th></tr>
+                <tr><td>Who manages it</td><td>automatically (function calls)</td><td>you (malloc/free)</td></tr>
+                <tr><td>Speed</td><td>⚡ instant</td><td>slower</td></tr>
+                <tr><td>Size</td><td>small (MBs) — overflows crash</td><td>big (GBs available)</td></tr>
+                <tr><td>Lifetime</td><td>until the function returns</td><td>until you free() it</td></tr>
+                <tr><td>Local variables</td><td>✅</td><td>—</td></tr>
+                <tr><td>Runtime-sized data</td><td>❌ fixed sizes only</td><td>✅ malloc(n)</td></tr>
+            </table>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE — the three classic mistakes</span></div>
+                    <pre><code>int* oops1(void) {
+    int x = 5;         // stack — dies on return!
+    return &amp;x;         // ⚠️ dangling pointer
+}
+
+int* oops2(void) {
+    int *p = malloc(sizeof(int));
+    return p;            // ✅ fine — heap survives
+    // …but caller MUST free(p)
+}</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">LIVE — spot the bug</span></div>
+                    <div class="preview">
+                        <button onclick="mmBug()">🐛 Find the bug</button>
+                        <div class="out" id="mmBugOut"></div>
+                        <p style="font-size:12px;color:#57606a;margin-top:6px">Hint: where does the variable live?</p>
+                    </div>
+                </div>
+            </div>
+            <script>
+                (function () {
+                    var bugs = [
+                        'returning the address of a local → dangling pointer',
+                        'malloc without free → memory leak',
+                        'free(p) then using *p → use-after-free',
+                        'writing past a malloc\'d block → heap corruption'
+                    ];
+                    var i = 0;
+                    window.mmBug = function () {
+                        document.getElementById('mmBugOut').textContent = 'Bug #' + (i + 1) + ': ' + bugs[i];
+                        i = (i + 1) % bugs.length;
+                    };
+                })();
+            </script>
+            <div class="warn"><strong>Valgrind is your lie detector:</strong> run
+            <code class="inline">valgrind ./program</code> and it reports every leak, invalid read and use-after-free.
+            Run it on everything while learning (section 35).</div>
+        </section>
+
+        <!-- ================= 19 STRUCTS ================= -->
+        <section class="card" id="structs">
+            <h2><span class="num">19</span>Structs — Your Own Data Types</h2>
+            <p>A <code class="inline">struct</code> bundles related fields into one type. It's C's way of making a
+            "student", "point", or "bank account" — one variable, many attributes:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>struct Student {
+    char name[30];
+    int age;
+    float gpa;
+};                    // note the semicolon!
+
+int main(void) {
+    struct Student s1 = {"Lina", 17, 3.8};
+    struct Student s2;
+    strcpy(s2.name, "Sam");
+    s2.age = 16;
+    s2.gpa = 3.5;
+
+    printf("%s %d %.1f\n", s1.name, s1.age, s1.gpa);
+
+    struct Student class[30];   // array of structs!
+    class[0] = s1;
+    return 0;
+}</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">OUTPUT</span></div>
+                    <div class="terminal">Lina 17 3.8</div>
+                </div>
+            </div>
+            <h3>Nested structs &amp; copying</h3>
+            <pre><code>struct Point { int x, y; };
+struct Rect  { struct Point tl, br; };
+
+struct Rect r = {{0, 0}, {10, 10}};
+struct Rect copy = r;   // structs copy wholesale with =</code></pre>
+            <div class="tip"><strong>Padding:</strong> the compiler may insert unused bytes between fields so the CPU
+            reads fast. <code class="inline">sizeof(struct)</code> can be bigger than the sum of its fields — that's normal.</div>
+        </section>
+
+        <!-- ================= 20 POINTERS TO STRUCTS ================= -->
+        <section class="card" id="structptr">
+            <h2><span class="num">20</span>Pointers to Structs — The -&gt; Arrow</h2>
+            <p>Structs get big fast. Passing by value <em>copies the whole struct</em>; passing a <strong>pointer</strong>
+            passes 8 bytes. The arrow <code class="inline">-&gt;</code> is shorthand for <code class="inline">(*p).field</code>:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>struct Student { char name[30]; int age; float gpa; };
+
+void print_student(const struct Student *s) {
+    printf("%s — %d — %.1f\n", s-&gt;name, s-&gt;age, s-&gt;gpa);
+    // const = promise not to modify (read-only)
+}
+
+void birthday(struct Student *s) {
+    s-&gt;age++;               // modifies the ORIGINAL
+}
+
+int main(void) {
+    struct Student s = {"Lina", 17, 3.8};
+    print_student(&amp;s);
+    birthday(&amp;s);
+    printf("age now: %d\n", s.age);   // 18
+    return 0;
+}</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">OUTPUT</span></div>
+                    <div class="terminal">Lina — 17 — 3.8
+age now: 18</div>
+                </div>
+            </div>
+            <h3>The arrow is just sugar</h3>
+            <pre><code>s-&gt;age    ==  (*s).age
+// dereference s, then access the field</code></pre>
+            <div class="tip"><strong>Rule of thumb:</strong> structs by value in <code class="inline">printf</code>-style small cases,
+            pointers everywhere else — especially in arrays, linked lists (section 33) and recursive types.</div>
+        </section>
+
+        <!-- ================= 21 TYPEDEF ================= -->
+        <section class="card" id="typedef">
+            <h2><span class="num">21</span>typedef — Cleaner Names</h2>
+            <p><code class="inline">typedef</code> gives a type a new name. It doesn't create a new type — just a
+            <em>shorter, clearer alias</em>. Real codebases typedef their structs so you rarely type <code class="inline">struct</code> again:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>typedef unsigned long ulong;
+typedef struct Student Student;  // alias for 'struct Student'
+
+struct Student {                 // define after? No — define first:
+    char name[30];
+    int age;
+};
+typedef struct Student Student;   // now 'Student' alone works
+
+Student s = {"Lina", 17};    // no 'struct' keyword!
+
+// combine definition + alias in one step (most common):
+typedef struct {
+    float x, y;
+} Point;</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">OUTPUT</span></div>
+                    <div class="terminal">Lina 17</div>
+                </div>
+            </div>
+            <div class="tip"><strong>Style guide:</strong> typedef'd structs are usually named in
+            <code class="inline">CamelCase</code> (<code class="inline">Student</code>, <code class="inline">Point</code>) while
+            plain variables stay <code class="inline">snake_case</code>. Consistency beats cleverness.</div>
+        </section>
+
+        <!-- ================= 22 UNIONS & ENUMS ================= -->
+        <section class="card" id="unions">
+            <h2><span class="num">22</span>Unions &amp; Enums</h2>
+            <p><code class="inline">enum</code> gives names to numbers (readable switches). <code class="inline">union</code>
+            lets several fields <strong>share the same memory</strong> — its size is the largest member, and only one field
+            is valid at a time:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>enum Status { PENDING, ACTIVE, DONE };
+
+enum Status st = ACTIVE;      // st == 1
+switch (st) {
+    case PENDING: printf("waiting\n"); break;
+    case ACTIVE:  printf("running\n"); break;
+    case DONE:    printf("finished\n"); break;
+}
+
+union Value {                 // 4 bytes — not 12!
+    int i;
+    float f;
+    char c[4];
+};
+printf("%zu bytes\n", sizeof(union Value));  // 4</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">OUTPUT</span></div>
+                    <div class="terminal">running
+4 bytes</div>
+                </div>
+            </div>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">The classic union trick</span></div>
+                    <pre><code>union Value v;
+v.f = 1.5f;
+for (int i = 0; i &lt; 4; i++)
+    printf("%02x ", v.c[i]);  // read the raw bytes of the float!</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">OUTPUT</span></div>
+                    <div class="terminal">00 00 c0 3f  // 1.5 in IEEE 754 — little-endian</div>
+                </div>
+            </div>
+            <div class="warn"><strong>Union danger:</strong> writing <code class="inline">v.i</code> then reading
+            <code class="inline">v.f</code> is undefined behavior — the bytes are the same but the meaning changed.
+            Track which member is "active" yourself, or use tagged unions (a struct with an enum + union).</div>
+        </section>
+
+        <!-- ================= 23 BITWISE ================= -->
+        <section class="card" id="bitwise">
+            <h2><span class="num">23</span>Bitwise Operators — Working with Bits</h2>
+            <p>C lets you manipulate the <strong>individual bits</strong> of an integer — the same trick used for
+            permissions, flags and low-level hardware. <code class="inline">&amp;</code> AND, <code class="inline">|</code> OR,
+            <code class="inline">^</code> XOR, <code class="inline">~</code> NOT, <code class="inline">&lt;&lt;</code> <code class="inline">&gt;&gt;</code> shift:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>unsigned int a = 0b1100;   // 12
+unsigned int b = 0b1010;   // 10
+
+printf("%04x\n", a &amp; b);    // 1000 = 8 (both bits)
+printf("%04x\n", a | b);    // 1110 = 14 (either bit)
+printf("%04x\n", a ^ b);    // 0110 = 6 (different bits)
+printf("%04x\n", a &lt;&lt; 1);   // 11000 = 24 (×2!)
+printf("%04x\n", b &gt;&gt; 1);   // 101 = 5 (÷2)
+
+// flag pattern: one bit per permission
+#define READ  (1 &lt;&lt; 0)   // 0001
+#define WRITE (1 &lt;&lt; 1)   // 0010
+unsigned int perms = READ | WRITE;   // 0011
+if (perms &amp; WRITE) printf("can write\n");</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">LIVE — try it</span></div>
+                    <div class="preview">
+                        <p>a = <input id="bwA" type="number" value="12" style="width:70px"> &nbsp; b = <input id="bwB" type="number" value="10" style="width:70px"></p>
+                        <button onclick="bwRun()">▶ Compute</button>
+                        <div class="out" id="bwOut"></div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                (function () {
+                    window.bwRun = function () {
+                        var a = parseInt(document.getElementById('bwA').value, 10) || 0;
+                        var b = parseInt(document.getElementById('bwB').value, 10) || 0;
+                        var pad = function (n) { return n.toString(2).padStart(4, '0'); };
+                        var out = document.getElementById('bwOut');
+                        out.textContent =
+                            '  a = 0b' + pad(a) + '   b = 0b' + pad(b) + '\n' +
+                            'a & b  = 0b' + pad(a & b) + '   (' + (a & b) + ')\n' +
+                            'a | b = 0b' + pad(a | b) + '   (' + (a | b) + ')\n' +
+                            'a ^ b = 0b' + pad(a ^ b) + '   (' + (a ^ b) + ')\n' +
+                            'a<<1  = 0b' + pad(a << 1) + '   (' + (a << 1) + ')\n' +
+                            'b>>1  = 0b' + pad(b >> 1) + '   (' + (b >> 1) + ')  → shift = ×2 / ÷2';
+                    };
+                })();
+            </script>
+            <div class="tip"><strong>Cheat sheet:</strong> <code class="inline">x &amp; 1</code> = last bit (odd/even),
+            <code class="inline">x &amp; (x-1)</code> clears the lowest set bit, <code class="inline">1 &lt;&lt; n</code> = bit n,
+            <code class="inline">x &lt;&lt; 1</code> = x × 2. And XOR swaps two numbers without a temp!</div>
+        </section>
+
+        <!-- ================= 24 TYPE CONVERSION ================= -->
+        <section class="card" id="conversion">
+            <h2><span class="num">24</span>Type Conversion — Casting</h2>
+            <p>Conversions happen <strong>implicitly</strong> (int → float, char → int) and <strong>explicitly</strong>
+            with a cast <code class="inline">(type)value</code>. Casts don't change the value — they change how it's
+            interpreted, and truncation can bite:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>int x = 7;
+int y = 2;
+
+printf("%d\n", x / y);                // 3 — int division!
+printf("%.1f\n", (float)x / y);       // 3.5 — cast x first
+printf("%d\n", (int)3.99);          // 3 — truncates, not rounds
+printf("%c\n", 65);               // A — int → char
+printf("%d\n", (char)300);        // 44 — overflow wraps! ⚠️
+
+int big = 2000000000 + 2000000000;  // UB — overflows int</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">OUTPUT</span></div>
+                    <div class="terminal">3
+3.5
+3
+A
+44</div>
+                </div>
+            </div>
+            <h3>The promotion ladder (implicit)</h3>
+            <pre><code>char → int → long → long long → float → double
+// smaller types get promoted to the larger before arithmetic</code></pre>
+            <div class="warn"><strong>Signed overflow is undefined behavior</strong> — the compiler may do anything.
+            Use <code class="inline">unsigned</code> or <code class="inline">long long</code> when values can get large, and
+            check <code class="inline">-Wconversion</code> warnings.</div>
+        </section>
+
+        <!-- ================= 25 PREPROCESSOR ================= -->
+        <section class="card" id="preprocessor">
+            <h2><span class="num">25</span>The Preprocessor — #include, #define</h2>
+            <p>Before compiling, the <strong>preprocessor</strong> edits your source: lines starting with <code class="inline">#</code>
+            are text-replacement commands. Three you'll use daily:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>#include &lt;stdio.h&gt;     // paste in a header file
+
+#define PI 3.14159        // replace PI with the text
+#define AREA(r) (PI * (r) * (r))   // macro with a parameter
+
+#ifdef DEBUG            // compile-time if
+  printf("debugging…\n");
+#endif
+
+int main(void) {
+    printf("%.2f\n", AREA(3));   // 28.27
+    return 0;
+}</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">OUTPUT</span></div>
+                    <div class="terminal">28.27
+$ gcc -DDEBUG app.c -o app   # defines DEBUG → debug prints on</div>
+                </div>
+            </div>
+            <h3>Macro pitfalls (why const is safer)</h3>
+            <pre><code>#define BAD(x) x * x
+BAD(2 + 3)   // → 2 + 3 * 2 + 3 = 11 😱 (expected 25)
+
+#define GOOD(x) ((x) * (x))   // always wrap params in parens
+GOOD(2 + 3)   // → 25 ✅</code></pre>
+            <div class="tip"><strong>Rule:</strong> use <code class="inline">#define</code> for constants the preprocessor needs
+            (array sizes, DEBUG flags, header guards) — prefer <code class="inline">const</code> and functions for everything else.</div>
+        </section>
+
+        <!-- ================= 26 MULTI-FILE ================= -->
+        <section class="card" id="multifile">
+            <h2><span class="num">26</span>Multi-File Programs — Headers &amp; Linking</h2>
+            <p>Real projects split into <strong>.c files</strong> (code) and <strong>.h headers</strong> (prototypes, structs,
+            constants). The compiler compiles each .c separately; the linker glues them:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">math_util.h — the interface</span></div>
+                    <pre><code>#ifndef MATH_UTIL_H      // header guard — include once
+#define MATH_UTIL_H
+
+int add(int a, int b);
+int fact(int n);
+
+#endif   // end guard</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">math_util.c — the implementation</span></div>
+                    <pre><code>#include "math_util.h"   // quotes = our file, not &lt;&gt;
+
+int add(int a, int b) { return a + b; }
+int fact(int n) {
+    return n &lt;= 1 ? 1 : n * fact(n - 1);
+}</code></pre>
+                </div>
+            </div>
+            <pre><code>// main.c — only needs the header to use the functions
+#include "math_util.h"
+#include &lt;stdio.h&gt;
+
+int main(void) {
+    printf("%d %d\n", add(2, 3), fact(5));  // 5 120
+    return 0;
+}</code></pre>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">TERMINAL — compile both files</span></div>
+                    <div class="terminal">$ gcc main.c math_util.c -o app
+$ ./app
+5 120</div>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">Why the guard matters</span></div>
+                    <div class="terminal"># two files both #include "math_util.h"
+# without the guard → double declaration error
+# with #ifndef → included exactly once ✅</div>
+                </div>
+            </div>
+            <div class="tip"><strong>Convention:</strong> headers declare (prototypes, structs); .c files define
+            (bodies). A header is a <em>contract</em> — other files trust it and never see the implementation.</div>
+        </section>
+
+        <!-- ================= 27 FILE I/O ================= -->
+        <section class="card" id="fileio">
+            <h2><span class="num">27</span>File I/O — Reading &amp; Writing</h2>
+            <p><code class="inline">fopen</code> opens a file (or fails), then it's <code class="inline">fprintf</code> to write
+            and <code class="inline">fscanf</code>/<code class="inline">fgets</code> to read. Always <code class="inline">fclose</code> and
+            check the return of <code class="inline">fopen</code>:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>FILE *f = fopen("notes.txt", "w");  // write mode
+if (!f) { perror("open"); return 1; }
+
+fprintf(f, "Hello, file!\n");
+fprintf(f, "score: %d\n", 99);
+fclose(f);
+
+// read it back line by line
+char line[100];
+FILE *r = fopen("notes.txt", "r");
+while (fgets(line, sizeof(line), r)) {
+    printf("→ %s", line);
+}
+fclose(r);</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">OUTPUT</span></div>
+                    <div class="terminal">$ cat notes.txt
+Hello, file!
+score: 99
+$ ./app
+→ Hello, file!
+→ score: 99</div>
+                </div>
+            </div>
+            <table>
+                <tr><th>Mode</th><th>Meaning</th></tr>
+                <tr><td><code class="inline">"r"</code></td><td>read (error if missing)</td></tr>
+                <tr><td><code class="inline">"w"</code></td><td>write — creates or <strong>empties</strong></td></tr>
+                <tr><td><code class="inline">"a"</code></td><td>append — adds to the end</td></tr>
+                <tr><td><code class="inline">"r+"</code> / <code class="inline">"w+"</code></td><td>read and write</td></tr>
+            </table>
+            <div class="warn"><strong>Always check fopen:</strong> <code class="inline">fopen</code> returns
+            <code class="inline">NULL</code> when the file doesn't exist or you lack permission — using it unguarded crashes.</div>
+        </section>
+
+        <!-- ================= 28 COMMAND-LINE ARGS ================= -->
+        <section class="card" id="argcargv">
+            <h2><span class="num">28</span>Command-Line Arguments — argc &amp; argv</h2>
+            <p>Programs read their arguments through <code class="inline">main</code>:
+            <code class="inline">argc</code> = argument count, <code class="inline">argv</code> = array of strings
+            (a <strong>pointer to pointers</strong> — char**!). <code class="inline">argv[0]</code> is always the program name:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>int main(int argc, char *argv[]) {
+    printf("program: %s\n", argv[0]);
+    printf("%d arguments\n", argc - 1);
+
+    for (int i = 1; i &lt; argc; i++)
+        printf("arg %d: %s\n", i, argv[i]);
+
+    return 0;
+}</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">LIVE — ./app hello world 42</span></div>
+                    <div class="preview">
+                        <input id="argvIn" value="hello world 42" style="width:100%">
+                        <button onclick="argvRun()" style="margin-top:8px">▶ Run with args</button>
+                        <div class="out" id="argvOut"></div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                (function () {
+                    window.argvRun = function () {
+                        var parts = document.getElementById('argvIn').value.trim().split(/\s+/).filter(Boolean);
+                        var lines = ['program: ./app', parts.length + ' arguments'];
+                        parts.forEach(function (p, i) { lines.push('arg ' + (i + 1) + ': ' + p); });
+                        document.getElementById('argvOut').textContent = lines.join('\n');
+                    };
+                })();
+            </script>
+            <h3>Convert args to numbers</h3>
+            <pre><code>#include &lt;stdlib.h&gt;
+int n = atoi(argv[1]);       // "42" → 42 (0 if invalid)
+long x = strtol(argv[1], NULL, 10);  // safer + error detection</code></pre>
+            <div class="tip"><strong>Why char**?</strong> <code class="inline">argv</code> is an array of strings; each string is a
+            <code class="inline">char*</code>; so the array is <code class="inline">char*[]</code>, which decays to
+            <code class="inline">char**</code> — the classic two-star pointer.</div>
+        </section>
+
+        <!-- ================= 29 RECURSION ================= -->
+        <section class="card" id="recursion">
+            <h2><span class="num">29</span>Recursion — Functions That Call Themselves</h2>
+            <p>A recursive function solves a problem by calling itself on a smaller version, until it hits a
+            <strong>base case</strong>. Each call gets its own stack frame — too deep and you overflow the stack:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>int fib(int n) {
+    if (n &lt; 2) return n;   // base case — stop
+    return fib(n - 1) + fib(n - 2);
+}
+
+int fact(int n) {
+    if (n &lt;= 1) return 1;
+    return n * fact(n - 1);
+}
+
+int main(void) {
+    for (int i = 0; i &lt; 8; i++)
+        printf("%d ", fib(i));      // 0 1 1 2 3 5 8 13
+    printf("\n%d\n", fact(5));      // 120
+    return 0;
+}</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">LIVE — fib(n) step by step</span></div>
+                    <div class="preview">
+                        <p>n = <input id="fibN" type="range" min="1" max="30" value="10" style="width:130px"> <span id="fibShow" style="font-weight:700">10</span></p>
+                        <button onclick="fibRun()">▶ Run fib(n)</button>
+                        <div class="out" id="fibOut" style="font-family:'Cascadia Code',monospace"></div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                (function () {
+                    var fibN = document.getElementById('fibN');
+                    fibN.addEventListener('input', function () { document.getElementById('fibShow').textContent = fibN.value; });
+                    window.fibRun = function () {
+                        var n = parseInt(fibN.value, 10);
+                        var calls = 0, seq = [];
+                        function fib(k) {
+                            calls++;
+                            if (k < 2) return k;
+                            return fib(k - 1) + fib(k - 2);
+                        }
+                        for (var i = 0; i <= n; i++) seq.push(fib(i));
+                        document.getElementById('fibOut').textContent =
+                            'fib(' + n + ') = ' + seq[n] + '\nsequence: ' + seq.join(' ') + '\nfunction calls: ' + calls;
+                    };
+                })();
+            </script>
+            <div class="warn"><strong>Every recursion needs a base case,</strong> or it runs until the stack overflows
+            (segfault). And naive <code class="inline">fib(40)</code> is exponential — memoize or use a loop.
+            Some compilers optimize tail calls; most don't — prefer loops for deep recursion.</div>
+        </section>
+
+        <!-- ================= 30 FUNCTION POINTERS ================= -->
+        <section class="card" id="functptr">
+            <h2><span class="num">30</span>Function Pointers — Code as Data</h2>
+            <p>A pointer can also point at a <strong>function</strong>. Then you can pass behavior around — the secret
+            behind callbacks and <code class="inline">qsort</code>'s comparator:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>int add(int a, int b) { return a + b; }
+int mul(int a, int b) { return a * b; }
+
+int apply(int (*op)(int, int), int x, int y) {
+    return op(x, y);             // call through the pointer
+}
+
+int main(void) {
+    int (*fp)(int, int) = add;  // fp = add
+    printf("%d\n", fp(2, 3));         // 5
+    printf("%d\n", apply(mul, 4, 5)); // 20 — pass behavior
+    return 0;
+}</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">LIVE — pick the operation</span></div>
+                    <div class="preview">
+                        <p>op = <select id="fpSel">
+                            <option>add</option><option>mul</option><option>sub</option><option>max</option>
+                        </select> &nbsp; apply(op, <span id="fpX">4</span>, <span id="fpY">5</span>)</p>
+                        <button onclick="fpRun()">▶ Call through the pointer</button>
+                        <div class="out" id="fpOut"></div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                (function () {
+                    window.fpRun = function () {
+                        var op = document.getElementById('fpSel').value;
+                        var x = 4, y = 5, r;
+                        if (op === 'add') r = x + y;
+                        else if (op === 'mul') r = x * y;
+                        else if (op === 'sub') r = x - y;
+                        else r = Math.max(x, y);
+                        document.getElementById('fpOut').textContent =
+                            'int (*fp)(int,int) = ' + op + ';\nfp(' + x + ', ' + y + ') = ' + r;
+                    };
+                })();
+            </script>
+            <h3>qsort — the real-world use</h3>
+            <pre><code>int cmp(const void *a, const void *b) {
+    return *(int*)a - *(int*)b;  // cast, deref, compare
+}
+int arr[] = {3, 1, 4, 2};
+qsort(arr, 4, sizeof(int), cmp);
+// arr → {1, 2, 3, 4} — sorted by YOUR rule</code></pre>
+            <div class="tip"><strong>Read it inside-out:</strong> <code class="inline">int (*op)(int, int)</code> =
+            "*op is a function taking two ints and returning int". Without the parens,
+            <code class="inline">int *op(int,int)</code> would be a function <em>returning</em> int*.</div>
+        </section>
+
+        <!-- ================= 31 STRINGS DEEP ================= -->
+        <section class="card" id="strings2">
+            <h2><span class="num">31</span>Strings Deep — Buffers, Parsing, Danger</h2>
+            <p>Strings are the #1 source of C bugs because they're <strong>fixed-size buffers</strong> with no built-in
+            length. Master these and you'll dodge a decade of segfaults:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>#include &lt;string.h&gt;
+
+char name[10];
+strncpy(name, "Alexander", sizeof(name) - 1);
+name[sizeof(name) - 1] = '\0';   // guarantee termination!
+printf("%s\n", name);           // Alexand" truncated safely
+
+// parsing with strtok (splits a string)
+char csv[] = "apple,banana,cherry";
+char *tok = strtok(csv, ",");
+while (tok) {
+    printf("%s\n", tok);
+    tok = strtok(NULL, ",");
+}</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">LIVE — strtok in action</span></div>
+                    <div class="preview">
+                        <input id="strIn" value="apple,banana,cherry" style="width:100%">
+                        <button onclick="strRun()" style="margin-top:8px">▶ strtok(csv, ",")</button>
+                        <div class="out" id="strOut"></div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                (function () {
+                    window.strRun = function () {
+                        var v = document.getElementById('strIn').value;
+                        document.getElementById('strOut').textContent =
+                            v.split(',').map(function (t) { return 'token: ' + t.trim(); }).join('\n');
+                    };
+                })();
+            </script>
+            <h3>String literals vs arrays — a classic trap</h3>
+            <pre><code>char *s = "hello";   // points to a READ-ONLY literal
+s[0] = 'H';        // ⚠️ undefined behavior (often segfault)
+
+char a[] = "hello"; // a WRITABLE copy (6 bytes incl. '\0')
+a[0] = 'H';        // ✅ fine</code></pre>
+            <div class="warn"><strong>The <code class="inline">gets()</code> function is gone for a reason</strong> — it
+            overflowed everything. Use <code class="inline">fgets(buf, size, stdin)</code> and always keep the last byte for
+            <code class="inline">'\0'</code>.</div>
+        </section>
+
+        <!-- ================= 32 ARRAYS OF POINTERS & SORTING ================= -->
+        <section class="card" id="ptr2">
+            <h2><span class="num">32</span>Arrays of Pointers — &amp; Sorting</h2>
+            <p>An array of <code class="inline">char*</code> is how C stores a <strong>list of strings</strong> — each element
+            points to its own string. Sorting such a list swaps <em>pointers</em>, not the data:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>const char *names[] = {"kiwi", "apple", "pear"};
+size_t n = sizeof(names) / sizeof(names[0]);
+
+// bubble sort by strcmp — swap the POINTERS
+for (size_t i = 0; i &lt; n - 1; i++)
+    for (size_t j = 0; j &lt; n - i - 1; j++)
+        if (strcmp(names[j], names[j + 1]) &gt; 0) {
+            const char *tmp = names[j];
+            names[j] = names[j + 1];
+            names[j + 1] = tmp;
+        }
+
+for (size_t i = 0; i &lt; n; i++)
+    printf("%s ", names[i]);   // apple kiwi pear</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">LIVE — sort the pointers</span></div>
+                    <div class="preview">
+                        <button onclick="sortRun()">🔀 Sort with strcmp</button>
+                        <div class="out" id="sortOut"></div>
+                        <p style="font-size:12px;color:#57606a;margin-top:6px">Each box is a char* pointing at its string — sorting swaps the arrows</p>
+                    </div>
+                </div>
+            </div>
+            <script>
+                (function () {
+                    var sorted = false;
+                    var names = ['kiwi', 'apple', 'pear'];
+                    window.sortRun = function () {
+                        if (!sorted) { names.sort(); sorted = true; }
+                        document.getElementById('sortOut').textContent =
+                            'names[] = { ' + names.map(function (x) { return '"' + x + '"'; }).join(', ') + ' }';
+                    };
+                })();
+            </script>
+            <div class="tip"><strong>Same trick, easier:</strong> the standard library's <code class="inline">qsort</code>
+            (section 30) does this for you with a comparator. Understanding the pointer-swap version first is what
+            makes qsort feel obvious.</div>
+        </section>
+
+        <!-- ================= 33 LINKED LIST ================= -->
+        <section class="card" id="linkedlist">
+            <h2><span class="num">33</span>Linked Lists — Pointers in Action</h2>
+            <p>The rite of passage. A <strong>node</strong> holds data + a pointer to the next node. The list grows and
+            shrinks at runtime with <code class="inline">malloc</code> — no fixed size. Every node must be freed:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE — list.c</span></div>
+                    <pre><code>typedef struct Node {
+    int data;
+    struct Node *next;    // pointer to the next node
+} Node;
+
+void append(Node **head, int value) {
+    Node *n = malloc(sizeof(Node));
+    n-&gt;data = value;
+    n-&gt;next = NULL;
+
+    if (*head == NULL) { *head = n; return; }
+
+    Node *cur = *head;
+    while (cur-&gt;next) cur = cur-&gt;next;  // walk to the end
+    cur-&gt;next = n;
+}
+
+void print_list(Node *head) {
+    for (Node *cur = head; cur; cur = cur-&gt;next)
+        printf("%d → ", cur-&gt;data);
+    printf("NULL\n");
+}</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">LIVE — build a list</span></div>
+                    <div class="preview">
+                        <p>value <input id="llIn" type="number" value="7" style="width:70px">
+                        <button onclick="llAdd()">append()</button>
+                        <button onclick="llPop()" class="secondary">remove last</button></p>
+                        <div class="listviz" id="llViz"></div>
+                        <div class="out" id="llOut" style="font-size:12px"></div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                (function () {
+                    var list = [];
+                    function render() {
+                        var viz = document.getElementById('llViz');
+                        viz.innerHTML = list.map(function (v, i) {
+                            return '<span class="node">' + v + '</span>' + (i < list.length - 1 ? '<span class="arrow">→</span>' : '');
+                        }).join('');
+                        if (!list.length) viz.innerHTML = '<span style="color:#57606a;font-size:12px">head = NULL (empty list)</span>';
+                        document.getElementById('llOut').textContent =
+                            'head → ' + (list.length ? list.join(' → ') : 'NULL') + ' · ' + list.length + ' node' + (list.length === 1 ? '' : 's');
+                    }
+                    window.llAdd = function () {
+                        var v = parseInt(document.getElementById('llIn').value, 10);
+                        if (!isNaN(v)) { list.push(v); render(); }
+                    };
+                    window.llPop = function () {
+                        if (list.length) { list.pop(); render(); }
+                    };
+                    render();
+                })();
+            </script>
+            <h3>Free the whole list</h3>
+            <pre><code>void free_list(Node *head) {
+    while (head) {
+        Node *next = head-&gt;next;   // save next BEFORE freeing
+        free(head);
+        head = next;
+    }
+}</code></pre>
+            <div class="warn"><strong>Why Node**?</strong> <code class="inline">append(&amp;head, 5)</code> needs to change the
+            caller's <code class="inline">head</code> — so it takes a pointer to head (a <code class="inline">Node**</code>).
+            Same reason as swap() in section 16.</div>
+        </section>
+
+        <!-- ================= 34 MINI PROJECT ================= -->
+        <section class="card" id="project">
+            <h2><span class="num">34</span>Mini Project — Student Records</h2>
+            <p>Everything so far — structs, arrays, functions, pointers — in one program: a tiny gradebook that
+            adds students and prints the class average. Type it, run it, then use the live version:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE — students.c</span></div>
+                    <pre><code>#define MAX 50
+
+typedef struct {
+    char name[30];
+    int  marks[3];       // 3 subjects
+} Student;
+
+float average(const Student *s) {
+    int total = 0;
+    for (int i = 0; i &lt; 3; i++) total += s-&gt;marks[i];
+    return total / 3.0f;
+}
+
+void add_student(Student *class, int *count,
+                  const char *name, int m1, int m2, int m3) {
+    strcpy(class[*count].name, name);
+    class[*count].marks[0] = m1;
+    class[*count].marks[1] = m2;
+    class[*count].marks[2] = m3;
+    (*count)++;
+}
+
+int main(void) {
+    Student class[MAX];
+    int n = 0;
+    add_student(class, &amp;n, "Lina", 90, 85, 92);
+    add_student(class, &amp;n, "Sam",  78, 88, 95);
+    for (int i = 0; i &lt; n; i++)
+        printf("%s: %.1f\n", class[i].name, average(&amp;class[i]));
+    return 0;
+}</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">LIVE — the gradebook</span></div>
+                    <div class="preview">
+                        <p>name <input id="stName" value="Lina" style="width:90px">
+                        marks <input id="stM1" type="number" value="90" style="width:55px">
+                        <input id="stM2" type="number" value="85" style="width:55px">
+                        <input id="stM3" type="number" value="92" style="width:55px">
+                        <button onclick="stAdd()" style="margin-top:6px">add_student()</button></p>
+                        <table class="rec-table" id="stTable"><tr><th>name</th><th>avg</th></tr></table>
+                        <div class="out" id="stOut"></div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                (function () {
+                    var rows = [];
+                    function render() {
+                        var t = document.getElementById('stTable');
+                        var html = '<tr><th>name</th><th>avg</th></tr>';
+                        rows.forEach(function (r) {
+                            html += '<tr><td>' + r.name + '</td><td>' + r.avg.toFixed(1) + '</td></tr>';
+                        });
+                        t.innerHTML = html;
+                        var classAvg = rows.length ? (rows.reduce(function (a, r) { return a + r.avg; }, 0) / rows.length) : 0;
+                        document.getElementById('stOut').textContent = rows.length + ' student(s) · class average: ' + classAvg.toFixed(1);
+                    }
+                    window.stAdd = function () {
+                        var name = document.getElementById('stName').value.trim() || 'X';
+                        var m1 = parseInt(document.getElementById('stM1').value, 10) || 0;
+                        var m2 = parseInt(document.getElementById('stM2').value, 10) || 0;
+                        var m3 = parseInt(document.getElementById('stM3').value, 10) || 0;
+                        rows.push({ name: name, avg: (m1 + m2 + m3) / 3 });
+                        render();
+                    };
+                    render();
+                })();
+            </script>
+            <div class="tip"><strong>Now upgrade it:</strong> sort by average, save to a file with
+            <code class="inline">fprintf</code>, or store the students in a linked list (section 33).
+            You have every tool you need.</div>
+        </section>
+
+        <!-- ================= 35 DEBUGGING & BEST PRACTICES ================= -->
+        <section class="card" id="debug">
+            <h2><span class="num">35</span>Debugging &amp; Best Practices</h2>
+            <p>You'll spend more time debugging C than writing it. Arm yourself: compile with warnings, run under
+            valgrind, and step through with gdb:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">TERMINAL — the toolkit</span></div>
+                    <div class="terminal">$ gcc -Wall -Wextra -g app.c -o app   # -g = debug info
+$ valgrind ./app                 # find leaks &amp; bad reads
+==10== ERROR SUMMARY: 0 errors
+$ gdb ./app
+(gdb) break main
+(gdb) run
+(gdb) print x          # inspect variables live
+(gdb) next             # step one line
+(gdb) bt               # backtrace — where are we?</div>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">The segfault recipe</span></div>
+                    <div class="terminal">Segmentation fault almost always means:
+• dereferencing NULL
+• writing past an array
+• using a freed pointer
+• returning a local's address
+→ compile with -g, run in gdb, 'bt' shows the exact line.</div>
+                </div>
+            </div>
+            <h3>Habits that save you</h3>
+            <ul>
+                <li>Compile with <code class="inline">-Wall -Wextra -Werror</code> — warnings are bugs waiting to happen</li>
+                <li>Initialize every variable; check every <code class="inline">malloc</code> and <code class="inline">fopen</code></li>
+                <li>Use <code class="inline">const</code> for parameters you only read — the compiler then guards you</li>
+                <li>Free in the layer that allocated; set pointers to <code class="inline">NULL</code> after freeing</li>
+                <li>Name things honestly: <code class="inline">count</code>, not <code class="inline">n</code>; functions do ONE job</li>
+                <li>No magic numbers — <code class="inline">#define MAX_STUDENTS 50</code>, not <code class="inline">50</code></li>
+            </ul>
+            <div class="tip"><strong>When stuck:</strong> reduce. Copy the failing snippet into a tiny test program,
+            add <code class="inline">printf</code> at each step, and watch where the value goes wrong. Bisect, don't guess.</div>
+        </section>
+
+        <!-- ================= 36 QUIZ ================= -->
+        <section class="card" id="quiz">
+            <h2><span class="num">36</span>Quiz — Test Yourself 🧠</h2>
+            <p>12 questions covering everything above. Answer, then press <strong>Check</strong>.</p>
+
+            <div class="quiz-q" data-answer="2">
+                <p>1. Which operator gets the <em>address</em> of a variable?</p>
+                <label><input type="radio" name="q1" value="0"> *</label>
+                <label><input type="radio" name="q1" value="1"> #</label>
+                <label><input type="radio" name="q1" value="2"> &amp;</label>
+                <label><input type="radio" name="q1" value="3"> -&gt;</label>
+            </div>
+
+            <div class="quiz-q" data-answer="0">
+                <p>2. What does <code class="inline">malloc(n)</code> return?</p>
+                <label><input type="radio" name="q2" value="0"> a pointer to n bytes (or NULL)</label>
+                <label><input type="radio" name="q2" value="1"> an int</label>
+                <label><input type="radio" name="q2" value="2"> a char</label>
+                <label><input type="radio" name="q2" value="3"> the stack address</label>
+            </div>
+
+            <div class="quiz-q" data-answer="3">
+                <p>3. How is a string stored in memory?</p>
+                <label><input type="radio" name="q3" value="0"> as a single int</label>
+                <label><input type="radio" name="q3" value="1"> in a linked list</label>
+                <label><input type="radio" name="q3" value="2"> with a length prefix</label>
+                <label><input type="radio" name="q3" value="3"> chars ending with '\0'</label>
+            </div>
+
+            <div class="quiz-q" data-answer="2">
+                <p>4. Which function releases malloc'd memory?</p>
+                <label><input type="radio" name="q4" value="0"> delete</label>
+                <label><input type="radio" name="q4" value="1"> release</label>
+                <label><input type="radio" name="q4" value="2"> free</label>
+                <label><input type="radio" name="q4" value="3"> destroy</label>
+            </div>
+
+            <div class="quiz-q" data-answer="1">
+                <p>5. What does <code class="inline">int *p;</code> declare?</p>
+                <label><input type="radio" name="q5" value="0"> an int named *p</label>
+                <label><input type="radio" name="q5" value="1"> a pointer to int</label>
+                <label><input type="radio" name="q5" value="2"> a pointer to pointer</label>
+                <label><input type="radio" name="q5" value="3"> an array</label>
+            </div>
+
+            <div class="quiz-q" data-answer="0">
+                <p>6. Which keyword gives a type a new name?</p>
+                <label><input type="radio" name="q6" value="0"> typedef</label>
+                <label><input type="radio" name="q6" value="1"> alias</label>
+                <label><input type="radio" name="q6" value="2"> rename</label>
+                <label><input type="radio" name="q6" value="3"> using</label>
+            </div>
+
+            <div class="quiz-q" data-answer="3">
+                <p>7. What does <code class="inline">p-&gt;data</code> access?</p>
+                <label><input type="radio" name="q7" value="0"> the address of p</label>
+                <label><input type="radio" name="q7" value="1"> a function</label>
+                <label><input type="radio" name="q7" value="2"> the pointer p itself</label>
+                <label><input type="radio" name="q7" value="3"> the data field of the struct p points to</label>
+            </div>
+
+            <div class="quiz-q" data-answer="1">
+                <p>8. Which loop runs its body at least once?</p>
+                <label><input type="radio" name="q8" value="0"> for</label>
+                <label><input type="radio" name="q8" value="1"> do-while</label>
+                <label><input type="radio" name="q8" value="2"> while</label>
+                <label><input type="radio" name="q8" value="3"> foreach</label>
+            </div>
+
+            <div class="quiz-q" data-answer="0">
+                <p>9. In <code class="inline">main(int argc, char *argv[])</code>, what is <code class="inline">argv[0]</code>?</p>
+                <label><input type="radio" name="q9" value="0"> the program's name</label>
+                <label><input type="radio" name="q9" value="1"> the first argument</label>
+                <label><input type="radio" name="q9" value="2"> always NULL</label>
+                <label><input type="radio" name="q9" value="3"> the argument count</label>
+            </div>
+
+            <div class="quiz-q" data-answer="3">
+                <p>10. Which operator <em>dereferences</em> a pointer?</p>
+                <label><input type="radio" name="q10" value="0"> &amp;</label>
+                <label><input type="radio" name="q10" value="1"> -&gt;</label>
+                <label><input type="radio" name="q10" value="2"> .</label>
+                <label><input type="radio" name="q10" value="3"> *</label>
+            </div>
+
+            <div class="quiz-q" data-answer="2">
+                <p>11. What is <code class="inline">7 / 2</code> in C?</p>
+                <label><input type="radio" name="q11" value="0"> 3.5</label>
+                <label><input type="radio" name="q11" value="1"> 3.0</label>
+                <label><input type="radio" name="q11" value="2"> 3</label>
+                <label><input type="radio" name="q11" value="3"> 4</label>
+            </div>
+
+            <div class="quiz-q" data-answer="1">
+                <p>12. What does <code class="inline">#include &lt;stdio.h&gt;</code> do?</p>
+                <label><input type="radio" name="q12" value="0"> runs the file</label>
+                <label><input type="radio" name="q12" value="1"> pastes the header's declarations into the file</label>
+                <label><input type="radio" name="q12" value="2"> links a library</label>
+                <label><input type="radio" name="q12" value="3"> prints stdio.h</label>
+            </div>
+
+            <div style="margin-top:6px;">
+                <button class="quiz-btn" onclick="checkQuiz()">Check my answers ✅</button>
+                <span id="quizScore"></span>
+            </div>
+        </section>
+
+    </main>
+
+    <footer>
+        <p>Made with ♥ for learning · Part 5 of your notes: <a href="HTML-Complete-Notes.html">HTML</a> · <a href="CSS-Notes.html">CSS</a> · <a href="JavaScript-Notes.html">JS</a> · <a href="Python-Notes.html">Python</a> · C</p>
+        <p>Full documentation: <a href="https://en.cppreference.com/w/c" target="_blank">cppreference — C</a> · <a href="https://www.learn-c.org/" target="_blank">learn-c.org</a></p>
+    </footer>
+
+    <button class="theme-btn" id="themeBtn" type="button">☀️ Light mode</button>
+    <button class="plain-btn" id="plainBtn" type="button" aria-pressed="false">📄 Plain code</button>
+
+    <script>
+        // --- Theme toggle ---
+        document.getElementById('themeBtn').addEventListener('click', function () {
+            document.body.classList.toggle('light');
+            this.textContent = document.body.classList.contains('light') ? '🌙 Dark mode' : '☀️ Light mode';
+        });
+        // --- Plain code mode (view-source friendly): strip colors, keep code plain ---
+        var plainBtn = document.getElementById('plainBtn');
+        function applyPlain(on) {
+            document.body.classList.toggle('plain-mode', on);
+            plainBtn.textContent = on ? '🎨 Colored code' : '📄 Plain code';
+            plainBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+            try { localStorage.setItem('notesPlain', on ? '1' : '0'); } catch (e) {}
+        }
+        plainBtn.addEventListener('click', function () {
+            applyPlain(!document.body.classList.contains('plain-mode'));
+        });
+        try { if (localStorage.getItem('notesPlain') === '1') applyPlain(true); } catch (e) {}
+
+
+        // --- Copy buttons: inject one into every code panel ---
+        document.querySelectorAll('.panel').forEach(function (panel) {
+            var pre = panel.querySelector('pre');
+            var bar = panel.querySelector('.panel-bar');
+            if (!pre || !bar) return;
+            var btn = document.createElement('button');
+            btn.className = 'copy-btn';
+            btn.textContent = 'Copy';
+            btn.addEventListener('click', function () {
+                var code = pre.querySelector('code');
+                navigator.clipboard.writeText(code.textContent).then(function () {
+                    btn.textContent = 'Copied!';
+                    setTimeout(function () { btn.textContent = 'Copy'; }, 1500);
+                });
+            });
+            bar.appendChild(btn);
+        });
+
+        // --- Search: filter sections ---
+        var searchBox = document.getElementById('search');
+        searchBox.addEventListener('input', function () {
+            var q = searchBox.value.toLowerCase().trim();
+            document.querySelectorAll('.card').forEach(function (card) {
+                var show = !q || card.textContent.toLowerCase().indexOf(q) !== -1;
+                card.style.display = show ? '' : 'none';
+            });
+        });
+
+        // --- Quiz ---
+        function checkQuiz() {
+            var score = 0, total = 0;
+            document.querySelectorAll('.quiz-q').forEach(function (q) {
+                q.classList.remove('correct', 'wrong');
+                var chosen = q.querySelector('input:checked');
+                if (!chosen) return;
+                total++;
+                var right = chosen.value === q.getAttribute('data-answer');
+                q.classList.add(right ? 'correct' : 'wrong');
+                if (right) score++;
+            });
+            var box = document.getElementById('quizScore');
+            if (total === 12) {
+                box.textContent = 'Your score: ' + score + '/12 ' + (score >= 10 ? '🏆 Amazing!' : score >= 7 ? '👍 Good job!' : '💪 Keep practicing!');
+            } else {
+                box.textContent = 'Answered ' + total + '/12 — ' + score + ' correct so far. Answer all 12!';
+            }
+        }
+
+        // --- C syntax highlighting ---
+        var C_RE = /(\/\*[\s\S]*?\*\/|\/\/[^\n]*|"(?:\\.|[^"\\\n])*"|'(?:\\.|[^'\\\n])*'|\b(?:int|char|float|double|void|long|short|unsigned|signed|struct|union|enum|typedef|const|static|extern|volatile|register|auto|return|if|else|for|while|do|switch|case|break|continue|default|sizeof|goto|include|define|ifdef|ifndef|endif|defined)\b|\b(?:printf|scanf|malloc|calloc|free|realloc|fopen|fclose|fprintf|fscanf|fgets|fputs|fputs|strcpy|strcat|strlen|strcmp|strncpy|sprintf|puts|getchar|perror|exit|qsort|memcpy|memset)\b|\b(?:main|NULL|stdin|stdout|stderr)\b|\b0x[0-9a-fA-F]+\b|\b\d+(?:\.\d+)?\b)/g;
+
+        function colorC(match) {
+            var first = match.charAt(0);
+            if (first === '/') return '<span class="c">' + match + '</span>';
+            if (first === '"' || first === "'") return '<span class="st">' + match + '</span>';
+            if (/^0x/.test(match) || /^\d/.test(match)) return '<span class="n">' + match + '</span>';
+            if (/^(?:main|NULL|stdin|stdout|stderr)$/.test(match)) return '<span class="s">' + match + '</span>';
+            if (/^(?:printf|scanf|malloc|calloc|free|realloc|fopen|fclose|fprintf|fscanf|fgets|fputs|strcpy|strcat|strlen|strcmp|strncpy|sprintf|puts|getchar|perror|exit|qsort|memcpy|memset)$/.test(match)) return '<span class="s">' + match + '</span>';
+            return '<span class="k">' + match + '</span>';
+        }
+
+        document.querySelectorAll('pre code').forEach(function (code) {
+            var html = code.innerHTML;
+            if (code.className.indexOf('lang-text') !== -1) {
+                code.innerHTML = html;
+            } else {
+                code.innerHTML = html.replace(C_RE, colorC);
+            }
+        });
+    </script>
+
+</body>
+</html>

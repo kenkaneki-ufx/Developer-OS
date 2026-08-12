@@ -24,6 +24,7 @@ import {
   GraduationCap,
   BookOpen,
   Github,
+  Languages,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -124,6 +125,12 @@ const navGroups: NavGroup[] = [
         label: "ML Roadmap",
         href: "/dashboard/roadmaps/ml",
         icon: Map,
+      },
+      {
+        label: "Learning Hub",
+        href: "/dashboard/learning",
+        icon: Languages,
+        badge: "New",
       },
     ],
   },

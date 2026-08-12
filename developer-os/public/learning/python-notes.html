@@ -1,0 +1,2277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python Notes — From Zero to Hero</title>
+    <style>
+        /* ============ Base ============ */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #0d1117;
+            --card: #161b22;
+            --card-2: #1c2128;
+            --border: #30363d;
+            --text: #e6edf3;
+            --muted: #9aa5b1;
+            --accent: #58a6ff;
+            --purple: #a371f7;
+            --cyan: #39c5cf;
+            --green: #7ee787;
+            --yellow: #d29922;
+            --red: #f85149;
+            --code-bg: #0d1117;
+            --preview-bg: #ffffff;
+            --preview-text: #1f2328;
+            --pyblue: #4b8bbe;
+            --pyyellow: #ffd43b;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        /* ============ Hero ============ */
+        .hero {
+            padding: 56px 20px 40px;
+            text-align: center;
+            background:
+                radial-gradient(600px 200px at 20% 0%, rgba(75, 139, 190, 0.18), transparent),
+                radial-gradient(600px 200px at 80% 0%, rgba(255, 212, 59, 0.12), transparent);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .hero h1 {
+            font-size: clamp(28px, 5vw, 46px);
+            background: linear-gradient(90deg, var(--pyyellow), var(--pyblue), var(--cyan));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: -0.5px;
+        }
+
+        .hero p {
+            color: var(--muted);
+            max-width: 680px;
+            margin: 12px auto 0;
+            font-size: 17px;
+        }
+
+        .hero .badge {
+            display: inline-block;
+            margin-top: 16px;
+            padding: 6px 14px;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            font-size: 13px;
+            color: var(--accent);
+            background: rgba(88, 166, 255, 0.08);
+        }
+
+        /* ============ Sticky TOC ============ */
+        nav.toc {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: rgba(13, 17, 23, 0.92);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid var(--border);
+            padding: 10px 16px;
+            overflow-x: auto;
+            white-space: nowrap;
+            display: flex;
+            gap: 8px;
+            scrollbar-width: thin;
+        }
+
+        nav.toc a {
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 13px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        nav.toc a:hover {
+            color: var(--text);
+            border-color: var(--accent);
+            background: rgba(88, 166, 255, 0.1);
+        }
+
+        /* ============ Layout ============ */
+        main {
+            max-width: 1080px;
+            margin: 0 auto;
+            padding: 28px 20px 60px;
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 28px;
+            scroll-margin-top: 70px;
+        }
+
+        .card h2 {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 22px;
+            margin-bottom: 10px;
+        }
+
+        .card h2 .num {
+            flex-shrink: 0;
+            width: 34px;
+            height: 34px;
+            display: grid;
+            place-items: center;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--bg);
+            background: linear-gradient(135deg, var(--pyblue), var(--pyyellow));
+            border-radius: 9px;
+        }
+
+        .card > p { color: var(--muted); margin-bottom: 16px; }
+        .card h3 { font-size: 16px; color: var(--accent); margin: 18px 0 8px; }
+        .card ul, .card ol { padding-left: 22px; margin-bottom: 14px; }
+        .card li { margin-bottom: 4px; }
+
+        .card table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12px 0;
+            font-size: 14px;
+        }
+
+        .card th, .card td {
+            border: 1px solid var(--border);
+            padding: 8px 12px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        .card th { background: var(--card-2); color: var(--accent); }
+
+        code.inline {
+            background: var(--card-2);
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            padding: 1px 7px;
+            font-family: 'Cascadia Code', 'Consolas', 'Courier New', monospace;
+            font-size: 0.88em;
+            color: var(--cyan);
+        }
+
+        /* ============ Demo: code + preview ============ */
+        .demo {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        @media (max-width: 800px) {
+            .demo { grid-template-columns: 1fr; }
+        }
+
+        .panel {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+            min-width: 0;
+        }
+
+        .panel-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 7px 12px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            border-bottom: 1px solid var(--border);
+            background: var(--card-2);
+        }
+
+        .panel-bar .tag-code { color: var(--green); }
+        .panel-bar .tag-result { color: var(--pyyellow); }
+
+        .copy-btn {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            color: var(--muted);
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 3px 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .copy-btn:hover {
+            color: var(--text);
+            border-color: var(--accent);
+            background: rgba(88, 166, 255, 0.12);
+        }
+
+        pre {
+            background: var(--code-bg);
+            padding: 16px;
+            overflow-x: auto;
+            font-size: 13.5px;
+            line-height: 1.55;
+        }
+
+        pre code {
+            font-family: 'Cascadia Code', 'Consolas', 'Courier New', monospace;
+            color: var(--text);
+            white-space: pre;
+        }
+
+        /* Python syntax colors */
+        pre code .k { color: #ff7b72; font-weight: 600; }
+        pre code .st { color: #ffa657; }
+        pre code .n { color: #d29922; }
+        pre code .c { color: var(--green); font-style: italic; }
+        pre code .s { color: var(--purple); font-weight: 600; }
+
+        .preview {
+            background: var(--preview-bg);
+            color: var(--preview-text);
+            padding: 16px;
+            min-height: 60px;
+            font-size: 14px;
+        }
+
+        .preview p { margin: 0 0 8px; }
+        .preview h1, .preview h2, .preview h3 { color: var(--preview-text); margin: 0 0 6px; }
+        .preview button {
+            background: #0969da; color: #fff; border: 0; padding: 8px 16px;
+            border-radius: 8px; cursor: pointer; font-size: 13px; transition: opacity 0.2s;
+        }
+        .preview button:hover { opacity: 0.85; }
+        .preview button.secondary { background: #8250df; }
+        .preview button.green { background: #1a7f37; }
+        .preview button.yellow { background: #9a6700; color: #fff; }
+        .preview input, .preview select, .preview textarea {
+            padding: 8px; border: 1px solid #d0d7de; border-radius: 8px; font-size: 13px; font-family: inherit;
+        }
+        .preview .out {
+            background: #f6f8fa; border: 1px solid #d0d7de; border-radius: 8px;
+            padding: 10px 12px; font-family: 'Cascadia Code', 'Consolas', monospace;
+            font-size: 13px; margin-top: 8px; min-height: 20px; white-space: pre-wrap;
+        }
+
+        /* ============ Terminal output (simulated REPL) ============ */
+        .terminal {
+            background: #0d1117;
+            color: #e6edf3;
+            font-family: 'Cascadia Code', 'Consolas', 'Courier New', monospace;
+            font-size: 13px;
+            padding: 14px 16px;
+            min-height: 60px;
+            white-space: pre-wrap;
+            overflow-x: auto;
+        }
+        .terminal .p { color: #58a6ff; }
+        .terminal .o { color: #7ee787; }
+
+        /* ============ Theme toggle ============ */
+        body.light {
+            --bg: #ffffff;
+            --card: #f6f8fa;
+            --card-2: #eaeef2;
+            --border: #d0d7de;
+            --text: #1f2328;
+            --muted: #57606a;
+            --code-bg: #f6f8fa;
+        }
+        body.light nav.toc { background: rgba(255,255,255,0.92); }
+        body.light pre { color: #1f2328; }
+        body.light .panel-bar { background: #eaeef2; }
+
+        /* ============ Plain code mode (view-source friendly) ============ */
+        .plain-btn {
+            position: fixed;
+            right: 18px;
+            bottom: 70px;
+            z-index: 60;
+            border: 1px solid var(--border);
+            background: var(--card);
+            color: var(--text);
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(0,0,0,.25);
+            transition: border-color .2s, transform .15s;
+        }
+        .plain-btn:hover { border-color: var(--accent); transform: translateY(-2px); }
+        .plain-btn[aria-pressed="true"] { border-color: var(--accent); }
+        /* Neutralize every token color so code reads as plain source text */
+        body.plain-mode pre code,
+        body.plain-mode pre code span,
+        body.plain-mode .terminal span {
+            color: var(--text) !important;
+            background: none !important;
+            font-weight: normal !important;
+            font-style: normal !important;
+            text-decoration: none !important;
+            text-shadow: none !important;
+        }
+        .theme-btn {
+            position: fixed;
+            right: 18px;
+            bottom: 18px;
+            z-index: 60;
+            border: 1px solid var(--border);
+            background: var(--card);
+            color: var(--text);
+            padding: 10px 16px;
+            border-radius: 999px;
+            font-size: 14px;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.35);
+            transition: all 0.2s;
+        }
+        .theme-btn:hover { border-color: var(--accent); }
+
+        /* ============ Search ============ */
+        .search-wrap { max-width: 1080px; margin: 0 auto; padding: 18px 20px 0; }
+        #search {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--card);
+            color: var(--text);
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        #search:focus { border-color: var(--accent); }
+        #search::placeholder { color: var(--muted); }
+
+        /* ============ Quiz ============ */
+        .quiz-q {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 14px;
+            background: var(--card-2);
+        }
+        .quiz-q p { font-weight: 700; margin-bottom: 8px; }
+        .quiz-q label {
+            display: block;
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.15s;
+            font-weight: 400;
+        }
+        .quiz-q label:hover { background: rgba(88,166,255,0.12); }
+        .quiz-q.correct { border-color: var(--green); }
+        .quiz-q.wrong { border-color: var(--red); }
+        .quiz-btn {
+            background: linear-gradient(135deg, var(--pyblue), var(--pyyellow));
+            color: var(--bg);
+            font-weight: 700;
+            border: 0;
+            padding: 12px 28px;
+            border-radius: 10px;
+            font-size: 15px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .quiz-btn:hover { opacity: 0.88; }
+        #quizScore { display: inline-block; margin-left: 14px; font-weight: 700; font-size: 16px; }
+
+        /* ============ Tip / warn ============ */
+        .tip {
+            border-left: 4px solid var(--green);
+            background: rgba(126, 231, 135, 0.08);
+            padding: 12px 16px;
+            border-radius: 0 8px 8px 0;
+            margin: 16px 0;
+            font-size: 14px;
+        }
+        .tip strong { color: var(--green); }
+
+        .warn {
+            border-left: 4px solid var(--yellow);
+            background: rgba(210, 153, 34, 0.08);
+            padding: 12px 16px;
+            border-radius: 0 8px 8px 0;
+            margin: 16px 0;
+            font-size: 14px;
+        }
+        .warn strong { color: var(--yellow); }
+
+        /* ============ Footer ============ */
+        footer {
+            text-align: center;
+            color: var(--muted);
+            padding: 30px 20px 50px;
+            border-top: 1px solid var(--border);
+            font-size: 14px;
+        }
+        footer a { color: var(--accent); text-decoration: none; }
+        footer a:hover { text-decoration: underline; }
+
+        /* ============ Game / list demos ============ */
+        .game-demo .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+        .game-demo .chip {
+            background: #0969da; color: #fff; border-radius: 999px;
+            padding: 4px 12px; font-size: 12px; font-family: 'Cascadia Code', monospace;
+        }
+        .game-demo .guess-history { margin-top: 10px; font-size: 12px; color: #57606a; }
+        .game-demo .guess-history span { display: inline-block; margin: 0 4px 4px 0; }
+    </style>
+</head>
+<body>
+
+    <header class="hero">
+        <h1>🐍 Python Notes — From Zero to Hero</h1>
+        <p>The most readable programming language on Earth. From your first <code class="inline">print()</code>
+           to classes, decorators and a real game — every topic has the
+           <strong style="color:var(--green)">code</strong> on the left and the
+           <strong style="color:var(--pyyellow)">output or a live demo</strong> on the right.</p>
+        <span class="badge">Python · 36 sections · Live demos · Search 🔍 · Quiz 🧠 · Dark/Light 🌙</span>
+    </header>
+
+    <nav class="toc">
+        <a href="#what">01 What is Python</a>
+        <a href="#install">02 Install</a>
+        <a href="#hello">03 print/input</a>
+        <a href="#variables">04 Variables</a>
+        <a href="#types">05 Types</a>
+        <a href="#strings">06 Strings</a>
+        <a href="#numbers">07 Numbers</a>
+        <a href="#bool">08 Booleans</a>
+        <a href="#conditions">09 Conditions</a>
+        <a href="#for">10 For loops</a>
+        <a href="#while">11 While loops</a>
+        <a href="#lists">12 Lists</a>
+        <a href="#tuples">13 Tuples/Sets</a>
+        <a href="#dicts">14 Dicts</a>
+        <a href="#functions">15 Functions</a>
+        <a href="#args">16 Arguments</a>
+        <a href="#lambda">17 Lambda</a>
+        <a href="#scope">18 Scope</a>
+        <a href="#fstrings">19 f-strings</a>
+        <a href="#errors">20 Errors</a>
+        <a href="#files">21 Files</a>
+        <a href="#modules">22 Modules</a>
+        <a href="#classes">23 Classes</a>
+        <a href="#inheritance">24 Inheritance</a>
+        <a href="#magic">25 Magic methods</a>
+        <a href="#generators">26 Generators</a>
+        <a href="#comprehensions">27 Comprehensions</a>
+        <a href="#typing">28 Type hints</a>
+        <a href="#stdlib">29 Std library</a>
+        <a href="#json">30 JSON</a>
+        <a href="#regex">31 Regex</a>
+        <a href="#venv">32 venv & pip</a>
+        <a href="#decorators">33 Decorators</a>
+        <a href="#recursion">34 Recursion</a>
+        <a href="#project">35 Mini project</a>
+        <a href="#quiz">36 Quiz</a>
+    </nav>
+
+    <div class="search-wrap">
+        <input id="search" type="search" placeholder="🔍 Search the notes… (e.g. 'list', 'function', 'class', 'loop', 'json')">
+    </div>
+
+    <main>
+
+        <!-- ================= 01 WHAT IS PYTHON ================= -->
+        <section class="card" id="what">
+            <h2><span class="num">01</span>What is Python?</h2>
+            <p><strong>Python</strong> is a general-purpose programming language designed for <em>readability</em> —
+            code that reads almost like English. It's used for web apps (Django, Flask), data science, AI, automation,
+            games and more. It's the #1 language for beginners <em>and</em> one of the most used in industry.</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code># The same idea in two languages
+print("Hello, world!")
+print(2 + 3 * 4)</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">OUTPUT</span></div>
+                    <div class="terminal">$ python hello.py
+Hello, world!
+14</div>
+                </div>
+            </div>
+            <table>
+                <tr><th>Why Python?</th><th>What it means</th></tr>
+                <tr><td>Readable</td><td>No curly braces, no semicolons — indentation <em>is</em> the structure</td></tr>
+                <tr><td>Beginner-friendly</td><td>You think about the problem, not the syntax</td></tr>
+                <tr><td>Huge ecosystem</td><td><code class="inline">pip install</code> gives you 500,000+ libraries</td></tr>
+                <tr><td>In-demand</td><td>AI, data, web, automation — Python pays well</td></tr>
+            </table>
+            <div class="tip"><strong>Fun fact:</strong> Python is named after Monty Python, not the snake. That's why tutorials
+            often use <em>spam</em> and <em>eggs</em> as example data.</div>
+        </section>
+
+        <!-- ================= 02 INSTALL & RUN ================= -->
+        <section class="card" id="install">
+            <h2><span class="num">02</span>Installing &amp; Running Python</h2>
+            <p>Download from <a href="https://python.org" target="_blank" style="color:var(--accent)">python.org</a>
+            (check <strong>Add Python to PATH</strong> during install). Then you have two ways to run code:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">REPL — type code, get answers instantly</span></div>
+                    <div class="terminal">$ python
+&gt;&gt;&gt; 1 + 1
+2
+&gt;&gt;&gt; "hi" * 3
+'hihihi'
+&gt;&gt;&gt; exit()</div>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">.py FILE — for real programs</span></div>
+                    <pre><code># save as hello.py
+name = input("What's your name? ")
+print(f"Hi {name}!")</code></pre>
+                </div>
+            </div>
+            <p style="margin-top:14px">Run a file from the terminal:</p>
+            <pre><code>$ python hello.py
+Hi Alex!</code></pre>
+            <div class="warn"><strong>Indentation matters!</strong> Python uses 4 spaces per level. Mixing spaces and tabs
+            throws <code class="inline">IndentationError</code>. Press Tab once and your editor does the rest.</div>
+        </section>
+
+        <!-- ================= 03 PRINT & INPUT ================= -->
+        <section class="card" id="hello">
+            <h2><span class="num">03</span>print() &amp; input() — Your First Program</h2>
+            <p><code class="inline">print()</code> sends text to the screen. <code class="inline">input()</code> reads
+            what the user types. Together they make every beginner's first program — try it live:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>name = input("Your name? ")
+age = int(input("Your age? "))
+print(f"Hello {name}!")
+print(f"In 10 years you'll be {age + 10}.")</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">LIVE — run the Python above</span></div>
+                    <div class="preview">
+                        <p><strong>Your name?</strong> <input id="demoName" value="Alex" style="width:110px"></p>
+                        <p><strong>Your age?</strong> <input id="demoAge" type="number" value="15" style="width:70px"></p>
+                        <button onclick="runHello()">▶ Run the program</button>
+                        <div class="out" id="helloOut"></div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                (function () {
+                    window.runHello = function () {
+                        var n = document.getElementById('demoName').value.trim() || 'there';
+                        var a = parseInt(document.getElementById('demoAge').value, 10);
+                        if (isNaN(a)) a = 0;
+                        document.getElementById('helloOut').textContent =
+                            'Hello ' + n + '!\nIn 10 years you\'ll be ' + (a + 10) + '.';
+                    };
+                })();
+            </script>
+            <div class="tip"><strong>Remember:</strong> <code class="inline">input()</code> always returns a <em>string</em>.
+            Wrap it in <code class="inline">int()</code> to use it as a number — you'll see why in section 08.</div>
+        </section>
+
+        <!-- ================= 04 VARIABLES ================= -->
+        <section class="card" id="variables">
+            <h2><span class="num">04</span>Variables — Named Boxes</h2>
+            <p>A variable is a <strong>name for a value</strong>. No declaration needed — just assign. Python is
+            <em>dynamically typed</em>: the same name can hold a number now and a string later.</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>name = "Lina"      # string
+age = 25           # int
+pi = 3.14        # float
+skills = ["py", "sql"]  # list
+
+# swap two values — one line, no temp variable!
+a, b = 1, 2
+a, b = b, a
+print(a, b)   # 2 1</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">OUTPUT</span></div>
+                    <div class="terminal">2 1</div>
+                </div>
+            </div>
+            <h3>Naming rules</h3>
+            <ul>
+                <li>Letters, numbers and underscores only — must NOT start with a number</li>
+                <li>Case-sensitive: <code class="inline">age</code> and <code class="inline">Age</code> are different</li>
+                <li>Convention: <code class="inline">snake_case</code> for variables, <code class="inline">UPPER_CASE</code> for constants</li>
+                <li>Keywords are reserved: <code class="inline">if</code>, <code class="inline">for</code>, <code class="inline">class</code>… can't be names</li>
+            </ul>
+            <div class="warn"><strong>Chained assignment:</strong> <code class="inline">x = y = 0</code> sets both to 0.
+            But <code class="inline">a = b = []</code> makes <em>both names point to the same list</em> — a classic bug!</div>
+        </section>
+
+        <!-- ================= 05 DATA TYPES ================= -->
+        <section class="card" id="types">
+            <h2><span class="num">05</span>Data Types — What Everything Is</h2>
+            <p>Every value in Python has a <strong>type</strong>. Ask with <code class="inline">type()</code> — the answer
+            decides what you can do with the value:</p>
+            <table>
+                <tr><th>Type</th><th>Example</th><th>What it is</th></tr>
+                <tr><td><code class="inline">int</code></td><td><code class="inline">42</code></td><td>Whole numbers (unlimited size!)</td></tr>
+                <tr><td><code class="inline">float</code></td><td><code class="inline">3.14</code></td><td>Decimal numbers</td></tr>
+                <tr><td><code class="inline">str</code></td><td><code class="inline">"hi"</code></td><td>Text — immutable sequence of characters</td></tr>
+                <tr><td><code class="inline">bool</code></td><td><code class="inline">True</code></td><td><code class="inline">True</code> or <code class="inline">False</code> (capital T/F!)</td></tr>
+                <tr><td><code class="inline">list</code></td><td><code class="inline">[1, 2]</code></td><td>Ordered, changeable collection</td></tr>
+                <tr><td><code class="inline">tuple</code></td><td><code class="inline">(1, 2)</code></td><td>Ordered, unchangeable collection</td></tr>
+                <tr><td><code class="inline">dict</code></td><td><code class="inline">{"k": 1}</code></td><td>Key → value pairs</td></tr>
+                <tr><td><code class="inline">set</code></td><td><code class="inline">{1, 2}</code></td><td>Unique values, no order</td></tr>
+                <tr><td><code class="inline">NoneType</code></td><td><code class="inline">None</code></td><td>"Nothing" — Python's null</td></tr>
+            </table>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>print(type(42))
+print(type("42"))
+print(type(3.14))
+print(type(True))</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">OUTPUT</span></div>
+                    <div class="terminal">&lt;class 'int'&gt;
+&lt;class 'str'&gt;
+&lt;class 'float'&gt;
+&lt;class 'bool'&gt;</div>
+                </div>
+            </div>
+            <div class="warn"><strong>Watch out:</strong> <code class="inline">"5" + 3</code> crashes with
+            <code class="inline">TypeError</code>. Convert first: <code class="inline">int("5") + 3</code>.</div>
+        </section>
+
+        <!-- ================= 06 STRINGS ================= -->
+        <section class="card" id="strings">
+            <h2><span class="num">06</span>Strings — Text Is Powerful</h2>
+            <p>Strings are <strong>sequences of characters</strong> — that means you can slice them, loop them, and
+            check membership. Single, double, or triple quotes all work:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>s = "Python"
+print(s[0])      # P  (index 0!)
+print(s[-1])     # n  (negative = from end)
+print(s[0:3])   # Pyt (slice)
+print(s[::2])    # Pto (step 2)
+print(s.upper(), s.replace("Py", "Mon"))</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">OUTPUT</span></div>
+                    <div class="terminal">P
+n
+Pyt
+Pto
+PYTHON Mont hon</div>
+                </div>
+            </div>
+            <h3>Handy string methods</h3>
+            <table>
+                <tr><th>Method</th><th>Result for <code class="inline">s = "  Hello World "</code></th></tr>
+                <tr><td><code class="inline">s.strip()</code></td><td><code class="inline">"Hello World"</code> — removes edges</td></tr>
+                <tr><td><code class="inline">s.lower()</code></td><td><code class="inline">"hello world"</code></td></tr>
+                <tr><td><code class="inline">s.split()</code></td><td><code class="inline">['Hello', 'World']</code> — list of words</td></tr>
+                <tr><td><code class="inline">s.startswith("He")</code></td><td><code class="inline">True</code></td></tr>
+                <tr><td><code class="inline">"-".join(["a","b"])</code></td><td><code class="inline">"a-b"</code> — glue a list into a string</td></tr>
+            </table>
+            <div class="tip"><strong>Strings are immutable:</strong> <code class="inline">s[0] = "X"</code> fails.
+            Every method returns a <em>new</em> string — the original never changes.</div>
+        </section>
+
+        <!-- ================= 07 NUMBERS & OPERATORS ================= -->
+        <section class="card" id="numbers">
+            <h2><span class="num">07</span>Numbers &amp; Operators</h2>
+            <p>Python's arithmetic is friendly — but it has three division operators, each doing something different.
+            Learn them once and you'll never be confused again:</p>
+            <table>
+                <tr><th>Operator</th><th>Meaning</th><th><code class="inline">10 / 3</code></th></tr>
+                <tr><td><code class="inline">/</code></td><td>True division (always float)</td><td><code class="inline">3.333...</code></td></tr>
+                <tr><td><code class="inline">//</code></td><td>Floor division (rounds down)</td><td><code class="inline">3</code></td></tr>
+                <tr><td><code class="inline">%</code></td><td>Modulo (remainder)</td><td><code class="inline">1</code></td></tr>
+                <tr><td><code class="inline">**</code></td><td>Power</td><td><code class="inline">1000</code> (10³)</td></tr>
+            </table>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code># Is 7 even? What time is it after 90 min?
+print(7 % 2)          # 1 → odd!
+print(10 // 3)        # 3
+print(2 ** 10)       # 1024
+print((8 + 30) // 60, (8 + 30) % 60)  # 0h 38min</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">OUTPUT</span></div>
+                    <div class="terminal">1
+3
+1024
+0 38</div>
+                </div>
+            </div>
+            <div class="demo" style="margin-top:14px">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">Try any expression</span></div>
+                    <div class="terminal">&gt;&gt;&gt; (2 + 3) * 4</div>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">LIVE — Python-style calculator</span></div>
+                    <div class="preview">
+                        <input id="calcInput" value="(2 + 3) * 4 // 2" style="width:100%">
+                        <button onclick="runCalc()" style="margin-top:8px">Evaluate ⚡</button>
+                        <div class="out" id="calcOut"></div>
+                        <p style="font-size:12px;color:#57606a;margin-top:6px">Supports + - * / // % ** , parentheses, ints &amp; floats — try <code>7 // 2</code> or <code>2 ** 8</code></p>
+                    </div>
+                </div>
+            </div>
+            <script>
+                (function () {
+                    window.runCalc = function () {
+                        var src = document.getElementById('calcInput').value;
+                        var out = document.getElementById('calcOut');
+                        if (!/^[0-9+\-*/%().\s]*$/.test(src)) { out.textContent = 'SyntaxError: invalid input'; return; }
+                        try {
+                            // Translate Python-flavoured syntax to JS:  // -> Math.floor(a/b)
+                            var js = src.replace(/(\d+)\s*\/\/\s*(\d+)/g, function (m, a, b) {
+                                return 'Math.floor(' + a + '/' + b + ')';
+                            });
+                            out.textContent = src + '  =  ' + eval(js);
+                        } catch (e) { out.textContent = 'Error: ' + e.message; }
+                    };
+                })();
+            </script>
+            <div class="warn"><strong>Modulo is magic:</strong> <code class="inline">x % 2</code> → 0 means even,
+            1 means odd. <code class="inline">n % 60</code> converts minutes to the minutes-of-an-hour. Games use it everywhere.</div>
+        </section>
+
+        <!-- ================= 08 BOOLEANS & CONVERSION ================= -->
+        <section class="card" id="bool">
+            <h2><span class="num">08</span>Booleans, Comparisons &amp; Conversion</h2>
+            <p><code class="inline">bool</code> values are <code class="inline">True</code> / <code class="inline">False</code>.
+            Comparisons produce them; <code class="inline">and</code>, <code class="inline">or</code>, <code class="inline">not</code> combine them.
+            And remember — every value has a <strong>truthiness</strong>:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>print(5 &gt; 3, 5 == "5", 5 != 4)  # True False True
+print(True and False, True or False, not True)
+
+# truthiness — what counts as False?
+# 0, "", [], {}, None, False
+print(bool(0), bool(""), bool([]), bool("hi"))  # False False False True
+
+# conversion
+print(int("42") + 8, float(3), str(99) + "!")</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">OUTPUT</span></div>
+                    <div class="terminal">True False True
+False True False
+False False False True
+50 3.0 99!</div>
+                </div>
+            </div>
+            <h3>Chained comparisons (Python special!)</h3>
+            <pre><code>age = 20
+print(10 &lt; age &lt; 30)   # True — reads like math!</code></pre>
+            <div class="tip"><strong>is vs ==:</strong> <code class="inline">==</code> compares <em>values</em>; <code class="inline">is</code>
+            compares <em>identity</em> (same object). Use <code class="inline">x is None</code>, but <code class="inline">a == b</code> for everything else.</div>
+        </section>
+
+        <!-- ================= 09 CONDITIONS ================= -->
+        <section class="card" id="conditions">
+            <h2><span class="num">09</span>Conditions — if / elif / else</h2>
+            <p>Decisions. Python's version is the most readable of any language — note the <strong>colon</strong>
+            and the <strong>indent</strong>, not braces. <code class="inline">elif</code> = "else if":</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>age = int(input("How old? "))
+
+if age &lt; 13:
+    print("Child 🧒")
+elif age &lt; 20:
+    print("Teenager 🧑")
+elif age &lt; 65:
+    print("Adult 👨‍💼")
+else:
+    print("Senior 👴")</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">LIVE — slide the age</span></div>
+                    <div class="preview">
+                        <p><strong>Age:</strong> <input id="ageRange" type="range" min="1" max="90" value="15" style="width:140px"> <span id="ageShow" style="font-weight:700">15</span></p>
+                        <div class="out" id="ageOut" style="font-size:18px"></div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                (function () {
+                    function updateAge() {
+                        var a = parseInt(document.getElementById('ageRange').value, 10);
+                        document.getElementById('ageShow').textContent = a;
+                        var msg;
+                        if (a < 13) msg = 'Child 🧒';
+                        else if (a < 20) msg = 'Teenager 🧑';
+                        else if (a < 65) msg = 'Adult 👨‍💼';
+                        else msg = 'Senior 👴';
+                        document.getElementById('ageOut').textContent = msg;
+                    }
+                    document.getElementById('ageRange').addEventListener('input', updateAge);
+                    updateAge();
+                })();
+            </script>
+            <h3>The one-liner version</h3>
+            <pre><code>status = "adult" if age &gt;= 18 else "minor"</code></pre>
+            <div class="tip"><strong>Pattern:</strong> check the <em>most specific</em> condition first, then the
+            most general last — the <code class="inline">else</code> catches everything left over.</div>
+        </section>
+
+        <!-- ================= 10 FOR LOOPS ================= -->
+        <section class="card" id="for">
+            <h2><span class="num">10</span>For Loops — Repeat Over Everything</h2>
+            <p>Python's <code class="inline">for</code> is a <strong>for-each</strong>: it walks through any sequence —
+            a range, a string, a list, even dictionary keys:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>for i in range(3):
+    print(f"Step {i}")
+
+# range(start, stop, step)
+for n in range(2, 11, 2):
+    print(n, end=" ")   # 2 4 6 8 10
+
+for ch in "PY":
+    print("letter:", ch)</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">OUTPUT</span></div>
+                    <div class="terminal">Step 0
+Step 1
+Step 2
+2 4 6 8 10
+letter: P
+letter: Y</div>
+                </div>
+            </div>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">Sum 1..100 the Python way</span></div>
+                    <pre><code>total = 0
+for i in range(1, 101):
+    total += i
+print(total)  # 5050</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">LIVE — watch it run</span></div>
+                    <div class="preview">
+                        <button onclick="runSum()">▶ Animate the loop</button>
+                        <div class="out" id="sumOut" style="font-family:'Cascadia Code',monospace"></div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                (function () {
+                    window.runSum = function () {
+                        var out = document.getElementById('sumOut');
+                        out.textContent = '';
+                        var total = 0, i = 1;
+                        var timer = setInterval(function () {
+                            total += i;
+                            if (i % 25 === 0 || i === 100) out.textContent += 'after ' + i + ': total = ' + total + '\n';
+                            i++;
+                            if (i > 100) { clearInterval(timer); out.textContent += '✅ Final: 5050'; }
+                        }, 30);
+                    };
+                })();
+            </script>
+            <div class="tip"><strong>Remember:</strong> <code class="inline">range(3)</code> gives <code class="inline">0, 1, 2</code> —
+            it stops BEFORE the end. That's the Python way: <code class="inline">range(n)</code> = n items.</div>
+        </section>
+
+        <!-- ================= 11 WHILE LOOPS ================= -->
+        <section class="card" id="while">
+            <h2><span class="num">11</span>While Loops — Repeat Until…</h2>
+            <p><code class="inline">while</code> repeats as long as a condition is true. Perfect when you don't know
+            how many times you'll loop — like waiting for the user to type the right answer:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code># countdown
+n = 5
+while n &gt; 0:
+    print(n)
+    n -= 1
+print("Liftoff! 🚀")
+
+# keep asking until valid
+while True:
+    ans = input("Type 'yes': ")
+    if ans == "yes":
+        break          # leave the loop
+    print("Try again!")</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">OUTPUT</span></div>
+                    <div class="terminal">5 4 3 2 1
+Liftoff! 🚀
+&gt;&gt;&gt; Type 'yes': no
+Try again!
+&gt;&gt;&gt; Type 'yes': yes</div>
+                </div>
+            </div>
+            <h3>Loop control keywords</h3>
+            <table>
+                <tr><th>Keyword</th><th>Effect</th></tr>
+                <tr><td><code class="inline">break</code></td><td>Exit the loop immediately</td></tr>
+                <tr><td><code class="inline">continue</code></td><td>Skip to the next round</td></tr>
+                <tr><td><code class="inline">pass</code></td><td>Do nothing (placeholder — loops need a body!)</td></tr>
+                <tr><td><code class="inline">else</code></td><td>Runs after the loop ONLY if no <code class="inline">break</code> happened</td></tr>
+            </table>
+            <div class="warn"><strong>Infinite loop!</strong> If the condition never becomes false, the loop never stops
+            (and your program freezes). Make sure something inside the loop changes the condition.</div>
+        </section>
+
+        <!-- ================= 12 LISTS ================= -->
+        <section class="card" id="lists">
+            <h2><span class="num">12</span>Lists — The Workhorse</h2>
+            <p>Lists are <strong>ordered, changeable</strong> collections. Add, remove, sort, slice — here are the
+            moves you'll use every day:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>nums = [3, 1, 2]
+nums.append(4)        # [3, 1, 2, 4]
+nums.pop()             # remove last → 4
+nums.insert(0, 9)     # [9, 3, 1, 2]
+nums.sort()            # [1, 2, 3, 9]
+print(3 in nums, len(nums))  # True 4
+print(nums[1:3])     # [2, 3] slice</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">LIVE — press the buttons</span></div>
+                    <div class="preview">
+                        <p><strong>nums</strong> = <span id="listShow" class="out" style="display:inline-block;min-width:120px">[1, 2, 3]</span></p>
+                        <button onclick="listAppend()">append(4)</button>
+                        <button onclick="listPop()" class="secondary">pop()</button>
+                        <button onclick="listSort()" class="green">sort()</button>
+                        <p style="margin-top:8px">len = <span id="listLen" style="font-weight:700">3</span> · 4 in nums → <span id="listIn" style="font-weight:700">False</span></p>
+                    </div>
+                </div>
+            </div>
+            <script>
+                (function () {
+                    var nums = [1, 2, 3];
+                    function render() {
+                        document.getElementById('listShow').textContent = JSON.stringify(nums);
+                        document.getElementById('listLen').textContent = nums.length;
+                        document.getElementById('listIn').textContent = nums.indexOf(4) !== -1;
+                    }
+                    window.listAppend = function () { nums.push(4); render(); };
+                    window.listPop = function () { if (nums.length) nums.pop(); render(); };
+                    window.listSort = function () { nums.sort(function (a, b) { return a - b; }); render(); };
+                })();
+            </script>
+            <h3>Loop over a list</h3>
+            <pre><code>for i, fruit in enumerate(["apple", "banana"]):
+    print(i, fruit)   # 0 apple / 1 banana</code></pre>
+            <div class="warn"><strong>Aliasing trap:</strong> <code class="inline">b = a</code> does NOT copy a list — both names
+            point to the same list. Copy with <code class="inline">b = a[:]</code> or <code class="inline">b = a.copy()</code>.</div>
+        </section>
+
+        <!-- ================= 13 TUPLES & SETS ================= -->
+        <section class="card" id="tuples">
+            <h2><span class="num">13</span>Tuples &amp; Sets — The Cousins</h2>
+            <p><strong>Tuples</strong> are immutable lists (can't change once created) — use them for data that belongs
+            together, like coordinates. <strong>Sets</strong> hold <em>unique</em> values with lightning-fast lookup:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>point = (10, 20)       # tuple — unpack it!
+x, y = point
+print(x, y)            # 10 20
+
+unique = {1, 2, 2, 3, 3, 3}  # set
+print(unique)         # {1, 2, 3} — duplicates gone!
+
+# set math
+a = {1, 2, 3}; b = {3, 4, 5}
+print(a &amp; b, a | b, a - b)  # {3} {1,2,3,4,5} {1,2}</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">OUTPUT</span></div>
+                    <div class="terminal">10 20
+{1, 2, 3}
+{3} {1, 2, 3, 4, 5} {1, 2}</div>
+                </div>
+            </div>
+            <table>
+                <tr><th></th><th>list</th><th>tuple</th><th>set</th></tr>
+                <tr><td>Ordered</td><td>✅</td><td>✅</td><td>❌</td></tr>
+                <tr><td>Changeable</td><td>✅</td><td>❌</td><td>✅ (but no duplicates)</td></tr>
+                <tr><td>Syntax</td><td><code class="inline">[ ]</code></td><td><code class="inline">( )</code></td><td><code class="inline">{ }</code></td></tr>
+                <tr><td>Use for</td><td>everything</td><td>fixed records</td><td>uniqueness / membership</td></tr>
+            </table>
+            <div class="tip"><strong>Pro move:</strong> deduplicate a list in one line:
+            <code class="inline">list(set([1,1,2,2,3]))</code> → <code class="inline">[1,2,3]</code>.</div>
+        </section>
+
+        <!-- ================= 14 DICTIONARIES ================= -->
+        <section class="card" id="dicts">
+            <h2><span class="num">14</span>Dictionaries — Key → Value</h2>
+            <p>A dict maps <strong>keys to values</strong> — like a real dictionary or a phone book. Lookup by key is
+            instant, and you can nest dicts to model real-world data:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>student = {
+    "name": "Lina",
+    "grade": 12,
+    "subjects": ["math", "cs"],
+}
+
+print(student["name"])        # Lina
+student["grade"] = 13      # update
+student.get("age", 0)   # 0 — safe read
+
+for k, v in student.items():
+    print(k, "=", v)</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">OUTPUT</span></div>
+                    <div class="terminal">Lina
+name = Lina
+grade = 13
+subjects = ['math', 'cs']</div>
+                </div>
+            </div>
+            <h3>Methods you'll use constantly</h3>
+            <table>
+                <tr><th>Method</th><th>Does</th></tr>
+                <tr><td><code class="inline">d.keys()</code> / <code class="inline">d.values()</code></td><td>All keys / all values</td></tr>
+                <tr><td><code class="inline">d.items()</code></td><td>Pairs for looping</td></tr>
+                <tr><td><code class="inline">d.get(k, default)</code></td><td>Read without crashing if missing</td></tr>
+                <tr><td><code class="inline">d.pop(k)</code></td><td>Remove and return a key</td></tr>
+                <tr><td><code class="inline">"k" in d</code></td><td>Membership check</td></tr>
+            </table>
+            <div class="warn"><strong>KeyError:</strong> <code class="inline">student["age"]</code> crashes if missing.
+            Use <code class="inline">.get()</code> when you're not sure the key exists.</div>
+        </section>
+
+        <!-- ================= 15 FUNCTIONS ================= -->
+        <section class="card" id="functions">
+            <h2><span class="num">15</span>Functions — Reusable Blocks</h2>
+            <p><code class="inline">def</code> defines a function. It takes <strong>parameters</strong>, does work, and can
+            <code class="inline">return</code> a result. A function with no <code class="inline">return</code> gives <code class="inline">None</code>:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>def greet(name):
+    """Return a friendly greeting."""
+    return f"Hey {name}!"
+
+def is_even(n):
+    return n % 2 == 0
+
+print(greet("Sam"))
+print(is_even(10), is_even(7))</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">OUTPUT</span></div>
+                    <div class="terminal">Hey Sam!
+True False</div>
+                </div>
+            </div>
+            <h3>Rules of thumb</h3>
+            <ul>
+                <li>Name functions with <code class="inline">snake_case</code> verbs: <code class="inline">calculate_total()</code></li>
+                <li>A function should do <strong>one job</strong> — if it does two, split it</li>
+                <li>Docstrings (<code class="inline">"""..."""</code>) explain what it does — future-you will thank you</li>
+                <li>Call before define? No — Python reads top-to-bottom, so define first, call after</li>
+            </ul>
+            <div class="tip"><strong>Early return:</strong> you can exit a function at any point with
+            <code class="inline">return</code>. Guard clauses (<code class="inline">if not valid: return</code>) keep code flat and readable.</div>
+        </section>
+
+        <!-- ================= 16 ARGUMENTS ================= -->
+        <section class="card" id="args">
+            <h2><span class="num">16</span>Arguments — Defaults, *args, **kwargs</h2>
+            <p>Python functions are flexible about how they're called. Defaults, keyword arguments, and the two
+            star-prefixed collect-alls cover every calling style:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>def order(item, qty=1, urgent=False):
+    return f"{qty}x {item}" + (" ⚡" if urgent else "")
+
+print(order("pizza"))            # 1x pizza
+print(order("sushi", 3))        # 3x sushi
+print(order("cola", urgent=True))  # keyword!
+
+def total(*nums):        # any number of args → tuple
+    return sum(nums)
+print(total(1, 2, 3))     # 6
+
+def profile(**info):      # keyword args → dict
+    return info
+print(profile(name="Ada", lang="Python"))</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">OUTPUT</span></div>
+                    <div class="terminal">1x pizza
+3x sushi
+1x cola ⚡
+6
+{'name': 'Ada', 'lang': 'Python'}</div>
+                </div>
+            </div>
+            <h3>The * trick both ways</h3>
+            <pre><code>nums = [1, 2, 3]
+print(total(*nums))    # unpack a list into arguments → 6
+d = {"item": "tea", "urgent": True}
+print(order(**d))    # unpack a dict into keyword args → 1x tea ⚡</code></pre>
+            <div class="warn"><strong>Order matters:</strong> defaults can't come before required params:
+            <code class="inline">def f(a, b=2)</code> ✅ but <code class="inline">def f(a=1, b)</code> ❌ SyntaxError.</div>
+        </section>
+
+        <!-- ================= 17 LAMBDA & FUNCTIONAL TOOLS ================= -->
+        <section class="card" id="lambda">
+            <h2><span class="num">17</span>Lambda, map &amp; filter — Functions as Data</h2>
+            <p>A <strong>lambda</strong> is a tiny anonymous function. It shines when passed to tools like
+            <code class="inline">map()</code> (transform every item), <code class="inline">filter()</code> (keep some items),
+            and <code class="inline">sorted()</code> (custom ordering):</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>nums = [1, 2, 3, 4, 5]
+
+squares = list(map(lambda x: x * x, nums))
+print(squares)        # [1, 4, 9, 16, 25]
+
+evens = list(filter(lambda x: x % 2 == 0, nums))
+print(evens)          # [2, 4]
+
+words = ["kiwi", "apple", "pear"]
+print(sorted(words, key=lambda w: len(w)))  # shortest first</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">OUTPUT</span></div>
+                    <div class="terminal">[1, 4, 9, 16, 25]
+[2, 4]
+['pear', 'kiwi', 'apple']</div>
+                </div>
+            </div>
+            <h3>When to use what</h3>
+            <table>
+                <tr><th>Tool</th><th>Result</th><th>Rule of thumb</th></tr>
+                <tr><td><code class="inline">map(f, items)</code></td><td>same count, transformed</td><td>"change every item"</td></tr>
+                <tr><td><code class="inline">filter(f, items)</code></td><td>fewer or equal, original items</td><td>"keep the ones where f is True"</td></tr>
+                <tr><td><code class="inline">sorted(items, key=f)</code></td><td>reordered</td><td>"sort by this rule"</td></tr>
+                <tr><td><code class="inline">reduce(f, items)</code></td><td>one value</td><td>"fold down to a total"</td></tr>
+            </table>
+            <div class="tip"><strong>Pythonic note:</strong> for one-step transforms, list comprehensions (section 27)
+            are usually more readable. Lambdas win when you need a <em>function object</em> to pass around.</div>
+        </section>
+
+        <!-- ================= 18 SCOPE ================= -->
+        <section class="card" id="scope">
+            <h2><span class="num">18</span>Scope — Where Names Live</h2>
+            <p>A variable's <strong>scope</strong> decides who can see it. Python follows LEGB — Local, Enclosing,
+            Global, Built-in. The two rules that trip everyone up: <code class="inline">global</code> and <code class="inline">nonlocal</code>:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>count = 0          # global
+
+def bump():
+    global count   # declare: I want the global one!
+    count += 1
+
+def read():
+    return count   # reading globals is always fine
+
+bump(); bump()
+print(read())     # 2</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">OUTPUT</span></div>
+                    <div class="terminal">2</div>
+                </div>
+            </div>
+            <div class="warn"><strong>The classic bug:</strong> inside a function, <code class="inline">count += 1</code>
+            WITHOUT <code class="inline">global count</code> creates a brand-new <em>local</em> variable called <code class="inline">count</code>
+            — and crashes with <code class="inline">UnboundLocalError</code>. If you assign to a name, Python assumes it's local.</div>
+            <h3>nonlocal — for nested functions</h3>
+            <pre><code>def outer():
+    total = 0
+    def inner():
+        nonlocal total  # modify the enclosing scope's total
+        total += 1
+    inner(); inner()
+    return total
+print(outer())   # 2</code></pre>
+            <div class="tip"><strong>Best practice:</strong> avoid <code class="inline">global</code> — return values instead.
+            Globals make programs impossible to reason about as they grow.</div>
+        </section>
+
+        <!-- ================= 19 F-STRINGS ================= -->
+        <section class="card" id="fstrings">
+            <h2><span class="num">19</span>f-strings — Modern String Building</h2>
+            <p>Put an <code class="inline">f</code> before the quote, drop <code class="inline">{expressions}</code> inside,
+            and Python fills them in — including method calls and formatting specifiers:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>name, age = "Lina", 17
+pi = 3.14159265
+
+print(f"{name} is {age}.")
+print(f"Next year: {age + 1}.")
+print(f"Pi ≈ {pi:.2f}")       # 2 decimals
+print(f"{name.upper()}!")
+print(f"{1234567:,}")       # thousands separators</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">LIVE — the same program</span></div>
+                    <div class="preview">
+                        <p><strong>name</strong> <input id="fName" value="Lina" style="width:90px">
+                           <strong>age</strong> <input id="fAge" type="number" value="17" style="width:60px"></p>
+                        <div class="out" id="fOut"></div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                (function () {
+                    function render() {
+                        var n = document.getElementById('fName').value.trim() || 'someone';
+                        var a = parseInt(document.getElementById('fAge').value, 10) || 0;
+                        var pi = 3.14159265;
+                        document.getElementById('fOut').textContent =
+                            n + ' is ' + a + '.\n' +
+                            'Next year: ' + (a + 1) + '.\n' +
+                            'Pi \u2248 ' + pi.toFixed(2) + '\n' +
+                            n.toUpperCase() + '!\n' +
+                            '1234567'.replace(/\B(?=(\d{3})+(?!\d))/g, ',') + ' (formatted with :,)';  
+                    }
+                    document.getElementById('fName').addEventListener('input', render);
+                    document.getElementById('fAge').addEventListener('input', render);
+                    render();
+                })();
+            </script>
+            <div class="tip"><strong>Format specifiers:</strong> <code class="inline">.2f</code> = 2 decimals,
+            <code class="inline">:&gt;5</code> = pad left to 5, <code class="inline">:^10</code> = center in 10,
+            <code class="inline">%</code> = percentage. Curly braces are the only way to put <code class="inline">{}</code> in an f-string: <code class="inline">{{}}</code>.</div>
+        </section>
+
+        <!-- ================= 20 ERRORS & EXCEPTIONS ================= -->
+        <section class="card" id="errors">
+            <h2><span class="num">20</span>Errors &amp; Exceptions — Don't Panic</h2>
+            <p>Errors are normal! Python <em>raises</em> exceptions, and you <em>catch</em> them with
+            <code class="inline">try / except</code> so your program keeps running:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>try:
+    num = int(input("Give a number: "))
+    print(10 / num)
+except ValueError:
+    print("That wasn't a number!")
+except ZeroDivisionError:
+    print("Can't divide by zero!")
+else:
+    print("No error — nice!")
+finally:
+    print("This always runs.")</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">LIVE — trigger the errors</span></div>
+                    <div class="preview">
+                        <p>Type something and run:</p>
+                        <input id="errInput" value="abc" style="width:120px">
+                        <button onclick="runErr()">▶ Run try/except</button>
+                        <div class="out" id="errOut"></div>
+                        <p style="font-size:12px;color:#57606a;margin-top:6px">Try <code>5</code>, <code>0</code>, or <code>abc</code></p>
+                    </div>
+                </div>
+            </div>
+            <script>
+                (function () {
+                    window.runErr = function () {
+                        var v = document.getElementById('errInput').value.trim();
+                        var out = document.getElementById('errOut');
+                        var lines = [];
+                        if (v === '' || isNaN(Number(v))) {
+                            lines.push("ValueError: That wasn't a number!");
+                        } else {
+                            var num = Number(v);
+                            if (num === 0) lines.push("ZeroDivisionError: Can't divide by zero!");
+                            else lines.push('10 / ' + num + ' = ' + (10 / num) + '   (else: no error — nice!)');
+                        }
+                        lines.push('finally: This always runs.');
+                        out.textContent = lines.join('\n');
+                    };
+                })();
+            </script>
+            <table>
+                <tr><th>Common exceptions</th><th>When</th></tr>
+                <tr><td><code class="inline">ValueError</code></td><td>Right type, wrong value (e.g. <code class="inline">int("abc")</code>)</td></tr>
+                <tr><td><code class="inline">TypeError</code></td><td>Wrong type (<code class="inline">"5" + 3</code>)</td></tr>
+                <tr><td><code class="inline">KeyError</code></td><td>Missing dict key</td></tr>
+                <tr><td><code class="inline">IndexError</code></td><td>List index out of range</td></tr>
+                <tr><td><code class="inline">FileNotFoundError</code></td><td>File doesn't exist</td></tr>
+            </table>
+            <div class="warn"><strong>Don't swallow errors:</strong> a bare <code class="inline">except:</code> hides bugs.
+            Always catch the specific exception type you expect.</div>
+        </section>
+
+        <!-- ================= 21 FILES ================= -->
+        <section class="card" id="files">
+            <h2><span class="num">21</span>Working with Files</h2>
+            <p>The <code class="inline">with</code> statement opens a file and <strong>always closes it</strong>, even on
+            errors. Three modes: <code class="inline">r</code> read, <code class="inline">w</code> write (overwrites!),
+            <code class="inline">a</code> append:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code># write
+with open("notes.txt", "w") as f:
+    f.write("Hello from Python!\n")
+    f.write("Line two\n")
+
+# read it all back
+with open("notes.txt") as f:
+    content = f.read()
+print(content)
+
+# loop line by line (memory-friendly)
+with open("notes.txt") as f:
+    for line in f:
+        print("→", line.strip())</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">OUTPUT</span></div>
+                    <div class="terminal">Hello from Python!
+Line two
+&gt;&gt;&gt; → Hello from Python!
+&gt;&gt;&gt; → Line two</div>
+                </div>
+            </div>
+            <table>
+                <tr><th>Mode</th><th>Meaning</th></tr>
+                <tr><td><code class="inline">"r"</code></td><td>Read (default). Error if the file is missing</td></tr>
+                <tr><td><code class="inline">"w"</code></td><td>Write — creates or <strong>empties</strong> the file</td></tr>
+                <tr><td><code class="inline">"a"</code></td><td>Append — adds to the end</td></tr>
+                <tr><td><code class="inline">"x"</code></td><td>Create — errors if it already exists</td></tr>
+            </table>
+            <div class="warn"><strong>Paths:</strong> use <code class="inline">pathlib</code> for serious work:
+            <code class="inline">from pathlib import Path; Path("data") / "notes.txt"</code> — works on Windows &amp; Mac alike.</div>
+        </section>
+
+        <!-- ================= 22 MODULES & PIP ================= -->
+        <section class="card" id="modules">
+            <h2><span class="num">22</span>Modules &amp; pip — Standing on Giants</h2>
+            <p>A <strong>module</strong> is a Python file you can import. The standard library has hundreds for free;
+            <code class="inline">pip</code> installs 500,000+ more from the community:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code># three import styles
+import math                # then: math.sqrt(16)
+from random import choice   # then: choice(items)
+import datetime as dt    # alias
+
+print(math.sqrt(16))
+print(choice(["heads", "tails"]))
+print(dt.date.today())</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">LIVE — roll it!</span></div>
+                    <div class="preview">
+                        <button onclick="rollDice()">🎲 Roll dice (random.choice)</button>
+                        <div class="out" id="diceOut"></div>
+                        <p style="font-size:12px;color:#57606a;margin-top:6px">from random import choice → choice([1,2,3,4,5,6])</p>
+                    </div>
+                </div>
+            </div>
+            <script>
+                (function () {
+                    window.rollDice = function () {
+                        document.getElementById('diceOut').textContent =
+                            'choice([1,2,3,4,5,6]) → ' + (1 + Math.floor(Math.random() * 6));
+                    };
+                })();
+            </script>
+            <h3>pip — the package manager</h3>
+            <pre><code>$ pip install requests        # install a library
+$ pip install --upgrade pip
+$ pip list                    # what's installed</code></pre>
+            <div class="tip"><strong>Popular libraries:</strong> <code class="inline">requests</code> (HTTP),
+            <code class="inline">pandas</code> (data), <code class="inline">flask</code> (web apps),
+            <code class="inline">beautifulsoup4</code> (web scraping), <code class="inline">pygame</code> (games).
+            Never use <code class="inline">pip install</code> as root/global for projects — see section 32.</div>
+        </section>
+
+        <!-- ================= 23 CLASSES & OOP ================= -->
+        <section class="card" id="classes">
+            <h2><span class="num">23</span>Classes — Blueprints for Objects</h2>
+            <p>A <strong>class</strong> bundles data (attributes) and behavior (methods) into a reusable blueprint.
+            <code class="inline">__init__</code> runs when you create an instance, and <code class="inline">self</code> is
+            the instance itself:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>class Dog:
+    def __init__(self, name):
+        self.name = name
+        self.energy = 100
+
+    def bark(self):
+        return f"{self.name} says WOOF!"
+
+    def play(self):
+        self.energy -= 10
+        return f"{self.name} plays (energy {self.energy})"
+
+rex = Dog("Rex")
+print(rex.bark())
+print(rex.play())
+print(rex.play())</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">LIVE — meet Rex</span></div>
+                    <div class="preview">
+                        <button onclick="rexBark()">🔊 bark()</button>
+                        <button onclick="rexPlay()" class="green">🎾 play()</button>
+                        <div class="out" id="rexOut"></div>
+                        <p style="font-size:12px;color:#57606a;margin-top:6px">energy: <span id="rexEnergy">100</span>/100</p>
+                    </div>
+                </div>
+            </div>
+            <script>
+                (function () {
+                    var energy = 100;
+                    window.rexBark = function () {
+                        var out = document.getElementById('rexOut');
+                        out.textContent = 'Rex says WOOF!';
+                    };
+                    window.rexPlay = function () {
+                        if (energy <= 0) { document.getElementById('rexOut').textContent = 'Rex is too tired! 😴'; return; }
+                        energy -= 10;
+                        document.getElementById('rexEnergy').textContent = energy;
+                        document.getElementById('rexOut').textContent = 'Rex plays (energy ' + energy + ')';
+                    };
+                })();
+            </script>
+            <h3>Class vs instance</h3>
+            <ul>
+                <li><code class="inline">self.attr</code> — belongs to each instance (Rex has his own energy)</li>
+                <li>Attributes without <code class="inline">self.</code> inside the class body are <em>class-level</em>, shared by all</li>
+                <li>Name convention: classes are <code class="inline">CamelCase</code> — <code class="inline">Dog</code>, not <code class="inline">dog</code></li>
+            </ul>
+            <div class="tip"><strong>OOP mindset:</strong> a class is a <em>noun</em> with <em>verbs</em> as methods.
+            If you find yourself passing the same data to functions over and over, it's probably a class.</div>
+        </section>
+
+        <!-- ================= 24 INHERITANCE ================= -->
+        <section class="card" id="inheritance">
+            <h2><span class="num">24</span>Inheritance — Reuse &amp; Extend</h2>
+            <p>A child class <strong>inherits</strong> everything from its parent, then adds or <em>overrides</em>.
+            <code class="inline">super()</code> calls the parent's version:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>class Animal:
+    def __init__(self, name):
+        self.name = name
+    def sound(self):
+        return "..."
+
+class Cat(Animal):        # Cat IS an Animal
+    def sound(self):       # override
+        return "Meow!"
+
+class Robot(Animal):
+    def __init__(self, name, battery):
+        super().__init__(name)   # parent's setup
+        self.battery = battery
+    def sound(self):
+        return f"Beep (battery {self.battery})"
+
+for a in [Cat("Milo"), Robot("R2", 80)]:
+    print(a.name, "→", a.sound())</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">OUTPUT</span></div>
+                    <div class="terminal">Milo → Meow!
+R2 → Beep (battery 80)</div>
+                </div>
+            </div>
+            <h3>Polymorphism in one sentence</h3>
+            <p>The loop above calls <code class="inline">sound()</code> on each object — and each does its own thing.
+            That's polymorphism: <em>same call, different behavior</em>, decided at runtime.</p>
+            <div class="warn"><strong>isinstance:</strong> <code class="inline">isinstance(robo, Animal)</code> → <code class="inline">True</code>,
+            because a Robot IS an Animal. Check this before forcing a duck-typed object through code that needs a specific interface.</div>
+        </section>
+
+        <!-- ================= 25 MAGIC METHODS & DATACLASSES ================= -->
+        <section class="card" id="magic">
+            <h2><span class="num">25</span>Magic Methods &amp; Dataclasses</h2>
+            <p><strong>Dunder methods</strong> (double-underscore) give your objects superpowers — so
+            <code class="inline">len(my_obj)</code>, <code class="inline">str(my_obj)</code> and <code class="inline">my_obj == other</code>
+            just work. And <code class="inline">@dataclass</code> writes the boring boilerplate for you:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>class Deck:
+    def __init__(self):
+        self.cards = ["A", "K", "Q"]
+    def __len__(self):
+        return len(self.cards)   # len(deck) works!
+    def __str__(self):
+        return " → ".join(self.cards)  # print(deck) works!
+
+d = Deck()
+print(len(d))
+print(d)</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">OUTPUT</span></div>
+                    <div class="terminal">3
+A → K → Q</div>
+                </div>
+            </div>
+            <h3>@dataclass — zero boilerplate</h3>
+            <pre><code>from dataclasses import dataclass
+
+@dataclass
+class Point:
+    x: int
+    y: int
+
+p = Point(1, 2)
+print(p)              # Point(x=1, y=2) — __repr__ free!
+print(p == Point(1, 2))  # True — __eq__ free!</code></pre>
+            <div class="tip"><strong>Common dunders:</strong> <code class="inline">__init__</code> construct,
+            <code class="inline">__str__</code> display, <code class="inline">__len__</code> size,
+            <code class="inline">__eq__</code> equality, <code class="inline">__repr__</code> debugging,
+            <code class="inline">__getitem__</code> indexing (<code class="inline">obj[0]</code>),
+            <code class="inline">__call__</code> makes objects callable.</div>
+        </section>
+
+        <!-- ================= 26 GENERATORS ================= -->
+        <section class="card" id="generators">
+            <h2><span class="num">26</span>Generators — Lazy &amp; Infinite</h2>
+            <p>A function with <code class="inline">yield</code> becomes a <strong>generator</strong>: it produces values one
+            at a time, pausing between each. Memory stays tiny even for huge sequences — it never builds the whole list:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>def countdown(n):
+    while n &gt; 0:
+        yield n          # pause here, hand out n
+        n -= 1
+
+for x in countdown(3):
+    print(x)          # 3, then 2, then 1
+
+# infinite sequence, zero memory
+def odds():
+    n = 1
+    while True:
+        yield n
+        n += 2
+
+print(next(odds()))  # 1</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">OUTPUT</span></div>
+                    <div class="terminal">3
+2
+1
+1</div>
+                </div>
+            </div>
+            <h3>yield vs return</h3>
+            <table>
+                <tr><th></th><th><code class="inline">return</code></th><th><code class="inline">yield</code></th></tr>
+                <tr><td>Runs</td><td>once, all at once</td><td>lazily, one value at a time</td></tr>
+                <tr><td>Memory</td><td>whole result in RAM</td><td>one value at a time</td></tr>
+                <tr><td>Can resume</td><td>no</td><td>yes — remembers position!</td></tr>
+            </table>
+            <div class="tip"><strong>Use case:</strong> reading a 10 GB file line by line, streams, pipelines.
+            If you <code class="inline">list()</code> a generator, you defeat the point — consume it in a loop instead.</div>
+        </section>
+
+        <!-- ================= 27 COMPREHENSIONS ================= -->
+        <section class="card" id="comprehensions">
+            <h2><span class="num">27</span>Comprehensions — Build Collections in One Line</h2>
+            <p>A comprehension is a loop compressed into an expression. It's the most <em>Pythonic</em> feature there is —
+            read it like English: <strong>"build a list where x is in nums if x is even"</strong>:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>nums = [1, 2, 3, 4]
+
+squares = [x * x for x in nums]
+print(squares)      # [1, 4, 9, 16]
+
+evens = [x for x in nums if x % 2 == 0]
+print(evens)        # [2, 4]
+
+pairs = {x: x * 2 for x in nums}   # dict!
+print(pairs)       # {1: 2, 2: 4, 3: 6, 4: 8}
+
+words = ["hi", "a", "hello"]
+long = [w.upper() for w in words if len(w) &gt; 1]
+print(long)        # ['HI', 'HELLO']</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">OUTPUT</span></div>
+                    <div class="terminal">[1, 4, 9, 16]
+[2, 4]
+{1: 2, 2: 4, 3: 6, 4: 8}
+['HI', 'HELLO']</div>
+                </div>
+            </div>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">The verbose version (same thing)</span></div>
+                    <pre><code>squares = []
+for x in nums:
+    squares.append(x * x)</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">OUTPUT</span></div>
+                    <div class="terminal">[1, 4, 9, 16]  — same result, 3 lines vs 1</div>
+                </div>
+            </div>
+            <h3>Nested comprehension (flatten a matrix)</h3>
+            <pre><code>matrix = [[1, 2], [3, 4]]
+flat = [n for row in matrix for n in row]
+print(flat)   # [1, 2, 3, 4]</code></pre>
+            <div class="warn"><strong>Don't overdo it:</strong> if a comprehension needs an <code class="inline">if</code>
+            AND a nested loop AND a function call, write a normal loop — readability wins over cleverness.</div>
+        </section>
+
+        <!-- ================= 28 TYPE HINTS ================= -->
+        <section class="card" id="typing">
+            <h2><span class="num">28</span>Type Hints — Document &amp; Protect</h2>
+            <p>Hints don't change how Python runs — but your editor, autocomplete, and tools like
+            <code class="inline">mypy</code> use them to catch bugs before you run the code:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>def discount(price: float, percent: int = 10) -&gt; float:
+    return price * (1 - percent / 100)
+
+def get_names(users: list[dict]) -&gt; list[str]:
+    return [u["name"] for u in users]
+
+name: str = "Lina"       # variable hint
+score: int | None = None  # union — score can be None</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">OUTPUT</span></div>
+                    <div class="terminal">$ mypy app.py
+Success: no issues found in 1 source file
+$ # hover 'discount' in VS Code → shows the full signature</div>
+                </div>
+            </div>
+            <table>
+                <tr><th>Hint</th><th>Means</th></tr>
+                <tr><td><code class="inline">list[int]</code></td><td>list of ints</td></tr>
+                <tr><td><code class="inline">dict[str, int]</code></td><td>dict with str keys, int values</td></tr>
+                <tr><td><code class="inline">tuple[int, str]</code></td><td>fixed 2-tuple</td></tr>
+                <tr><td><code class="inline">int | None</code></td><td>int or None</td></tr>
+                <tr><td><code class="inline">Any</code></td><td>anything (try to avoid)</td></tr>
+            </table>
+            <div class="tip"><strong>Rule of thumb:</strong> hint your function parameters and return values —
+            the three most valuable characters you can type. Modern projects (FastAPI, Django) treat hints as standard.</div>
+        </section>
+
+        <!-- ================= 29 STANDARD LIBRARY ================= -->
+        <section class="card" id="stdlib">
+            <h2><span class="num">29</span>The Standard Library — Batteries Included</h2>
+            <p>Python ships with a huge toolbox. You'll never write a sorting algorithm yourself — it's all here,
+            battle-tested:</p>
+            <table>
+                <tr><th>Module</th><th>You use it for</th></tr>
+                <tr><td><code class="inline">math</code></td><td><code class="inline">sqrt</code>, <code class="inline">ceil</code>, <code class="inline">pi</code>, <code class="inline">factorial</code></td></tr>
+                <tr><td><code class="inline">random</code></td><td><code class="inline">randint</code>, <code class="inline">choice</code>, <code class="inline">shuffle</code>, <code class="inline">seed</code></td></tr>
+                <tr><td><code class="inline">datetime</code></td><td>dates, times, <code class="inline">timedelta</code> math</td></tr>
+                <tr><td><code class="inline">json</code></td><td>save/load data as JSON (section 30)</td></tr>
+                <tr><td><code class="inline">os</code></td><td>files &amp; folders: <code class="inline">listdir</code>, <code class="inline">rename</code>, paths</td></tr>
+                <tr><td><code class="inline">collections</code></td><td><code class="inline">Counter</code>, <code class="inline">defaultdict</code>, <code class="inline">deque</code></td></tr>
+                <tr><td><code class="inline">itertools</code></td><td>infinite loops, combinations, chaining</td></tr>
+                <tr><td><code class="inline">re</code></td><td>regular expressions (section 31)</td></tr>
+            </table>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>import random
+import math
+from collections import Counter
+
+print(random.randint(1, 6))        # dice roll
+print(math.factorial(5))          # 120
+letters = Counter("banana")
+print(letters)   # Counter({'a': 3, 'n': 2, 'b': 1})</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">OUTPUT</span></div>
+                    <div class="terminal">4   # random each run
+120
+Counter({'a': 3, 'n': 2, 'b': 1})</div>
+                </div>
+            </div>
+            <div class="tip"><strong>Before you pip-install anything,</strong> check the standard library first —
+            the answer is often already built in.</div>
+        </section>
+
+        <!-- ================= 30 JSON ================= -->
+        <section class="card" id="json">
+            <h2><span class="num">30</span>JSON — The Language of the Web</h2>
+            <p>JSON is how programs exchange data — an API response, a config file, a save game.
+            Python dicts and JSON look almost identical, which makes the conversion trivial:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>import json
+
+player = {"name": "Aria", "level": 7, "items": ["sword"]}
+
+# dict → JSON string (save it, send it)
+text = json.dumps(player)
+print(text)
+
+# JSON string → dict (load it, use it)
+back = json.loads(text)
+print(back["name"], back["level"])</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">LIVE — convert it</span></div>
+                    <div class="preview">
+                        <button onclick="toJson()">dict → json.dumps</button>
+                        <button onclick="fromJson()" class="secondary">str → json.loads</button>
+                        <div class="out" id="jsonOut"></div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                (function () {
+                    window.toJson = function () {
+                        var player = { name: 'Aria', level: 7, items: ['sword'] };
+                        document.getElementById('jsonOut').textContent = JSON.stringify(player);
+                    };
+                    window.fromJson = function () {
+                        var back = JSON.parse('{"name": "Aria", "level": 7}');
+                        document.getElementById('jsonOut').textContent = 'name=' + back.name + '  level=' + back.level;
+                    };
+                })();
+            </script>
+            <h3>Save to a file</h3>
+            <pre><code>with open("save.json", "w") as f:
+    json.dump(player, f, indent=2)</code></pre>
+            <div class="warn"><strong>Gotchas:</strong> JSON needs double quotes, not single; tuples become lists;
+            <code class="inline">True</code> becomes <code class="inline">true</code> (lowercase).
+            <code class="inline">json.loads</code> throws <code class="inline">JSONDecodeError</code> on bad input — wrap it in try/except.</div>
+        </section>
+
+        <!-- ================= 31 REGEX ================= -->
+        <section class="card" id="regex">
+            <h2><span class="num">31</span>Regular Expressions — Pattern Matching</h2>
+            <p>A regex describes a <strong>pattern</strong> — an email shape, a phone format, a set of dates.
+            Start small: <code class="inline">\d</code> digits, <code class="inline">+</code> one-or-more,
+            <code class="inline">[...]</code> a character set:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>import re
+
+# extract every number from text
+text = "Order 42 arrived in 3 days"
+print(re.findall(r"\d+", text))   # ['42', '3']
+
+# validate an email roughly
+email = "lina@mail.com"
+print(re.match(r".+@.+\..+", email) is not None)  # True
+
+# replace parts
+print(re.sub(r"\d+", "#", text))    # Order # arrived in # days</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">LIVE — test a pattern</span></div>
+                    <div class="preview">
+                        <p>Extract digits from your text:</p>
+                        <input id="rxInput" value="Call 555-1234 or 555-9876 today" style="width:100%">
+                        <button onclick="runRx()" style="margin-top:8px">re.findall(r"\d+")</button>
+                        <div class="out" id="rxOut"></div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                (function () {
+                    window.runRx = function () {
+                        var t = document.getElementById('rxInput').value;
+                        var m = t.match(/\d+/g) || [];
+                        document.getElementById('rxOut').textContent = "['" + m.join("', '") + "']";
+                    };
+                })();
+            </script>
+            <h3>The building blocks</h3>
+            <table>
+                <tr><th>Symbol</th><th>Meaning</th></tr>
+                <tr><td><code class="inline">\d</code> <code class="inline">\w</code> <code class="inline">\s</code></td><td>digit / word char / whitespace</td></tr>
+                <tr><td><code class="inline">+</code> <code class="inline">*</code> <code class="inline">?</code></td><td>1+ / 0+ / 0-or-1 of the previous</td></tr>
+                <tr><td><code class="inline">[a-z]</code></td><td>any lowercase letter</td></tr>
+                <tr><td><code class="inline">^</code> <code class="inline">$</code></td><td>start / end of the string</td></tr>
+                <tr><td><code class="inline">|</code></td><td>OR (<code class="inline">cat|dog</code>)</td></tr>
+            </table>
+            <div class="tip"><strong>Use raw strings</strong> (<code class="inline">r"..."</code>) for patterns so
+            backslashes aren't eaten by Python itself.</div>
+        </section>
+
+        <!-- ================= 32 VENV & PIP ================= -->
+        <section class="card" id="venv">
+            <h2><span class="num">32</span>Virtual Environments — Every Project Gets Its Own World</h2>
+            <p>A <strong>venv</strong> isolates each project's packages, so project A's <code class="inline">flask 2</code>
+            never fights project B's <code class="inline">flask 3</code>. The golden workflow:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">TERMINAL — the golden workflow</span></div>
+                    <div class="terminal">$ mkdir myproject &amp;&amp; cd myproject
+$ python -m venv .venv         # create the bubble
+$ .venv\Scripts\activate      # Windows  (Mac: source .venv/bin/activate)
+$ pip install flask            # installs INSIDE the bubble
+$ pip freeze &gt; requirements.txt  # snapshot what you used
+$ (myproject) $ ...            # (name) = active!</div>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">The pay-off</span></div>
+                    <div class="terminal"># new machine / teammate clones your repo
+$ git clone repo &amp;&amp; cd repo
+$ python -m venv .venv
+$ pip install -r requirements.txt  # done — exact versions</div>
+                </div>
+            </div>
+            <h3>requirements.txt</h3>
+            <pre><code>flask==3.0.3          # pinned exact version
+requests&gt;=2.31       # at least this</code></pre>
+            <div class="warn"><strong>Never commit .venv!</strong> Add it to <code class="inline">.gitignore</code> — it's
+            machine-specific and can be rebuilt anytime. Also never install packages with a bare global <code class="inline">pip install</code>.</div>
+        </section>
+
+        <!-- ================= 33 DECORATORS ================= -->
+        <section class="card" id="decorators">
+            <h2><span class="num">33</span>Decorators — Wrap a Function</h2>
+            <p>A <strong>decorator</strong> takes a function, adds behavior around it, and hands back an upgraded
+            version. You've already used them — <code class="inline">@dataclass</code> is one! Here's a timer you
+            could actually use:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>import time
+
+def timed(func):
+    def wrapper(*args, **kwargs):
+        start = time.time()
+        result = func(*args, **kwargs)
+        print(f"{func.__name__} took {time.time() - start:.4f}s")
+        return result
+    return wrapper
+
+@timed                       # the magic sugar
+def slow_thing():
+    total = sum(range(10_000_000))
+    return total
+
+print(slow_thing())</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">OUTPUT</span></div>
+                    <div class="terminal">slow_thing took 0.4123s
+49999995000000</div>
+                </div>
+            </div>
+            <h3>Reading a decorator</h3>
+            <p><code class="inline">@timed</code> is exactly equivalent to
+            <code class="inline">slow_thing = timed(slow_thing)</code>. The decorator runs at <strong>definition time</strong>
+            and wraps every future call.</p>
+            <div class="tip"><strong>Real-world decorators:</strong> Flask routes (<code class="inline">@app.route("/")</code>),
+            Django permissions, <code class="inline">@property</code>, <code class="inline">@staticmethod</code>,
+            <code class="inline">@lru_cache</code> for memoization. Once you see the pattern, they're everywhere.</div>
+        </section>
+
+        <!-- ================= 34 RECURSION & ALGORITHMS ================= -->
+        <section class="card" id="recursion">
+            <h2><span class="num">34</span>Recursion — Functions That Call Themselves</h2>
+            <p>A recursive function solves a problem by calling itself on a <em>smaller</em> version of the same
+            problem, until it hits a <strong>base case</strong>. The classic: Fibonacci:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>def fib(n):
+    if n &lt; 2:          # base case — stop here
+        return n
+    return fib(n - 1) + fib(n - 2)
+
+for i in range(8):
+    print(fib(i), end=" ")
+# 0 1 1 2 3 5 8 13</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">LIVE — fib(n) step by step</span></div>
+                    <div class="preview">
+                        <p>n = <input id="fibN" type="range" min="1" max="30" value="10" style="width:130px"> <span id="fibShow" style="font-weight:700">10</span></p>
+                        <button onclick="runFib()">▶ Run fib(n)</button>
+                        <div class="out" id="fibOut" style="font-family:'Cascadia Code',monospace"></div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                (function () {
+                    var fibN = document.getElementById('fibN');
+                    fibN.addEventListener('input', function () { document.getElementById('fibShow').textContent = fibN.value; });
+                    window.runFib = function () {
+                        var n = parseInt(fibN.value, 10);
+                        var seq = [];
+                        var calls = 0;
+                        function fib(k) {
+                            calls++;
+                            if (k < 2) return k;
+                            return fib(k - 1) + fib(k - 2);
+                        }
+                        for (var i = 0; i <= n; i++) seq.push(fib(i));
+                        document.getElementById('fibOut').textContent =
+                            'fib(' + n + ') = ' + seq[n] + '\nsequence: ' + seq.join(' ') + '\nfunction calls: ' + calls;
+                    };
+                })();
+            </script>
+            <h3>Iterative version (fast, no recursion depth issue)</h3>
+            <pre><code>def fib_iter(n):
+    a, b = 0, 1
+    for _ in range(n):
+        a, b = b, a + b
+    return a</code></pre>
+            <div class="warn"><strong>Every recursion needs a base case</strong> or it runs forever and dies with
+            <code class="inline">RecursionError</code>. Also, naive <code class="inline">fib(40)</code> is slow — that's why
+            <code class="inline">@lru_cache</code> (memoization) exists.</div>
+        </section>
+
+        <!-- ================= 35 MINI PROJECT ================= -->
+        <section class="card" id="project">
+            <h2><span class="num">35</span>Mini Project — Number Guessing Game</h2>
+            <p>Everything so far — input, loops, conditions, random, functions — in one real program.
+            Type it, run it, then beat the computer below (same rules!):</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE — guess.py</span></div>
+                    <pre><code>import random
+
+def play():
+    secret = random.randint(1, 100)
+    attempts = 0
+    print("I'm thinking of 1–100…")
+
+    while True:
+        guess = int(input("Guess: "))
+        attempts += 1
+        if guess &lt; secret:
+            print("Too low 📉")
+        elif guess &gt; secret:
+            print("Too high 📈")
+        else:
+            print(f"Got it in {attempts} tries! 🎉")
+            break
+
+play()</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">LIVE — beat the computer</span></div>
+                    <div class="preview game-demo">
+                        <p><strong>Guess 1–100:</strong> <input id="guessInput" type="number" min="1" max="100" style="width:90px">
+                        <button onclick="guess()">Guess</button> <button onclick="resetGame()" class="secondary">New game</button></p>
+                        <div class="out" id="guessOut" style="font-size:15px"></div>
+                        <p class="guess-history" id="guessHist"></p>
+                    </div>
+                </div>
+            </div>
+            <script>
+                (function () {
+                    var secret = Math.floor(Math.random() * 100) + 1;
+                    var attempts = 0;
+                    var history = [];
+                    function render() {
+                        document.getElementById('guessHist').innerHTML = history.map(function (h) {
+                            return '<span>' + h.g + (h.t ? ' ✓' : ' ✗') + '</span>';
+                        }).join('');
+                    }
+                    window.guess = function () {
+                        var el = document.getElementById('guessInput');
+                        var g = parseInt(el.value, 10);
+                        var out = document.getElementById('guessOut');
+                        if (isNaN(g)) { out.textContent = "int(input()) raised ValueError — type a number!"; return; }
+                        attempts++;
+                        var msg;
+                        if (g < secret) msg = 'Too low 📉';
+                        else if (g > secret) msg = 'Too high 📈';
+                        else { msg = 'Got it in ' + attempts + ' tries! 🎉'; history.push({ g: g, t: true }); render(); out.textContent = msg; el.disabled = true; return; }
+                        history.push({ g: g, t: false });
+                        render();
+                        out.textContent = msg + '  (attempt ' + attempts + ')';
+                        el.value = '';
+                    };
+                    window.resetGame = function () {
+                        secret = Math.floor(Math.random() * 100) + 1;
+                        attempts = 0;
+                        history = [];
+                        var el = document.getElementById('guessInput');
+                        el.disabled = false;
+                        el.value = '';
+                        document.getElementById('guessOut').textContent = 'New secret chosen — good luck!';
+                        render();
+                    };
+                    document.getElementById('guessInput').addEventListener('keydown', function (e) {
+                        if (e.key === 'Enter') guess();
+                    });
+                })();
+            </script>
+            <div class="tip"><strong>Now upgrade it:</strong> add a max-attempts limit, track best scores across games,
+            or use <code class="inline">bisect</code> to show the computer playing against you. Every concept you need is in sections 09–16.</div>
+        </section>
+
+        <!-- ================= 36 QUIZ ================= -->
+        <section class="card" id="quiz">
+            <h2><span class="num">36</span>Quiz — Test Yourself 🧠</h2>
+            <p>12 questions covering everything above. Answer, then press <strong>Check</strong>.</p>
+
+            <div class="quiz-q" data-answer="2">
+                <p>1. What does <code class="inline">print(2 ** 3)</code> output?</p>
+                <label><input type="radio" name="q1" value="0"> 6</label>
+                <label><input type="radio" name="q1" value="1"> 9</label>
+                <label><input type="radio" name="q1" value="2"> 8</label>
+                <label><input type="radio" name="q1" value="3"> 23</label>
+            </div>
+
+            <div class="quiz-q" data-answer="1">
+                <p>2. Which keyword defines a function?</p>
+                <label><input type="radio" name="q2" value="0"> function</label>
+                <label><input type="radio" name="q2" value="1"> def</label>
+                <label><input type="radio" name="q2" value="2"> fn</label>
+                <label><input type="radio" name="q2" value="3"> define</label>
+            </div>
+
+            <div class="quiz-q" data-answer="0">
+                <p>3. What does <code class="inline">len("hello")</code> return?</p>
+                <label><input type="radio" name="q3" value="0"> 5</label>
+                <label><input type="radio" name="q3" value="1"> 6</label>
+                <label><input type="radio" name="q3" value="2"> 4</label>
+                <label><input type="radio" name="q3" value="3"> "hello"</label>
+            </div>
+
+            <div class="quiz-q" data-answer="2">
+                <p>4. What type is <code class="inline">x = [1, 2, 3]</code>?</p>
+                <label><input type="radio" name="q4" value="0"> tuple</label>
+                <label><input type="radio" name="q4" value="1"> set</label>
+                <label><input type="radio" name="q4" value="2"> list</label>
+                <label><input type="radio" name="q4" value="3"> dict</label>
+            </div>
+
+            <div class="quiz-q" data-answer="1">
+                <p>5. What does <code class="inline">print(7 // 2)</code> output?</p>
+                <label><input type="radio" name="q5" value="0"> 3.5</label>
+                <label><input type="radio" name="q5" value="1"> 3</label>
+                <label><input type="radio" name="q5" value="2"> 4</label>
+                <label><input type="radio" name="q5" value="3"> 2</label>
+            </div>
+
+            <div class="quiz-q" data-answer="0">
+                <p>6. Which is an immutable ordered collection?</p>
+                <label><input type="radio" name="q6" value="0"> tuple</label>
+                <label><input type="radio" name="q6" value="1"> list</label>
+                <label><input type="radio" name="q6" value="2"> dict</label>
+                <label><input type="radio" name="q6" value="3"> set</label>
+            </div>
+
+            <div class="quiz-q" data-answer="3">
+                <p>7. How do you write a single-line comment?</p>
+                <label><input type="radio" name="q7" value="0"> // comment</label>
+                <label><input type="radio" name="q7" value="1"> -- comment</label>
+                <label><input type="radio" name="q7" value="2"> &lt;!-- comment --&gt;</label>
+                <label><input type="radio" name="q7" value="3"> # comment</label>
+            </div>
+
+            <div class="quiz-q" data-answer="2">
+                <p>8. What does <code class="inline">"a" in "banana"</code> evaluate to?</p>
+                <label><input type="radio" name="q8" value="0"> 1</label>
+                <label><input type="radio" name="q8" value="1"> "a"</label>
+                <label><input type="radio" name="q8" value="2"> True</label>
+                <label><input type="radio" name="q8" value="3"> None</label>
+            </div>
+
+            <div class="quiz-q" data-answer="1">
+                <p>9. Which repeats a block while a condition stays true?</p>
+                <label><input type="radio" name="q9" value="0"> for</label>
+                <label><input type="radio" name="q9" value="1"> while</label>
+                <label><input type="radio" name="q9" value="2"> repeat</label>
+                <label><input type="radio" name="q9" value="3"> loop</label>
+            </div>
+
+            <div class="quiz-q" data-answer="2">
+                <p>10. What does <code class="inline">range(3)</code> produce?</p>
+                <label><input type="radio" name="q10" value="0"> [3]</label>
+                <label><input type="radio" name="q10" value="1"> 1, 2, 3</label>
+                <label><input type="radio" name="q10" value="2"> 0, 1, 2</label>
+                <label><input type="radio" name="q10" value="3"> 0, 1, 2, 3</label>
+            </div>
+
+            <div class="quiz-q" data-answer="3">
+                <p>11. Which keyword catches errors?</p>
+                <label><input type="radio" name="q11" value="0"> catch</label>
+                <label><input type="radio" name="q11" value="1"> rescue</label>
+                <label><input type="radio" name="q11" value="2"> try</label>
+                <label><input type="radio" name="q11" value="3"> except</label>
+            </div>
+
+            <div class="quiz-q" data-answer="1">
+                <p>12. What does <code class="inline">type(3.14)</code> return?</p>
+                <label><input type="radio" name="q12" value="0"> int</label>
+                <label><input type="radio" name="q12" value="1"> float</label>
+                <label><input type="radio" name="q12" value="2"> double</label>
+                <label><input type="radio" name="q12" value="3"> decimal</label>
+            </div>
+
+            <div style="margin-top:6px;">
+                <button class="quiz-btn" onclick="checkQuiz()">Check my answers ✅</button>
+                <span id="quizScore"></span>
+            </div>
+        </section>
+
+    </main>
+
+    <footer>
+        <p>Made with ♥ for learning · Part 4 of your notes: <a href="HTML-Complete-Notes.html">HTML</a> · <a href="CSS-Notes.html">CSS</a> · <a href="JavaScript-Notes.html">JS</a> · Python</p>
+        <p>Full documentation: <a href="https://docs.python.org/3/" target="_blank">Python Docs</a> · <a href="https://docs.python.org/3/tutorial/" target="_blank">Official Tutorial</a></p>
+    </footer>
+
+    <button class="theme-btn" id="themeBtn" type="button">☀️ Light mode</button>
+    <button class="plain-btn" id="plainBtn" type="button" aria-pressed="false">📄 Plain code</button>
+
+    <script>
+        // --- Theme toggle ---
+        document.getElementById('themeBtn').addEventListener('click', function () {
+            document.body.classList.toggle('light');
+            this.textContent = document.body.classList.contains('light') ? '🌙 Dark mode' : '☀️ Light mode';
+        });
+        // --- Plain code mode (view-source friendly): strip colors, keep code plain ---
+        var plainBtn = document.getElementById('plainBtn');
+        function applyPlain(on) {
+            document.body.classList.toggle('plain-mode', on);
+            plainBtn.textContent = on ? '🎨 Colored code' : '📄 Plain code';
+            plainBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+            try { localStorage.setItem('notesPlain', on ? '1' : '0'); } catch (e) {}
+        }
+        plainBtn.addEventListener('click', function () {
+            applyPlain(!document.body.classList.contains('plain-mode'));
+        });
+        try { if (localStorage.getItem('notesPlain') === '1') applyPlain(true); } catch (e) {}
+
+
+        // --- Copy buttons: inject one into every code panel ---
+        document.querySelectorAll('.panel').forEach(function (panel) {
+            var pre = panel.querySelector('pre');
+            var bar = panel.querySelector('.panel-bar');
+            if (!pre || !bar) return;
+            var btn = document.createElement('button');
+            btn.className = 'copy-btn';
+            btn.textContent = 'Copy';
+            btn.addEventListener('click', function () {
+                var code = pre.querySelector('code');
+                navigator.clipboard.writeText(code.textContent).then(function () {
+                    btn.textContent = 'Copied!';
+                    setTimeout(function () { btn.textContent = 'Copy'; }, 1500);
+                });
+            });
+            bar.appendChild(btn);
+        });
+
+        // --- Search: filter sections ---
+        var searchBox = document.getElementById('search');
+        searchBox.addEventListener('input', function () {
+            var q = searchBox.value.toLowerCase().trim();
+            document.querySelectorAll('.card').forEach(function (card) {
+                var show = !q || card.textContent.toLowerCase().indexOf(q) !== -1;
+                card.style.display = show ? '' : 'none';
+            });
+        });
+
+        // --- Quiz ---
+        function checkQuiz() {
+            var score = 0, total = 0;
+            document.querySelectorAll('.quiz-q').forEach(function (q) {
+                q.classList.remove('correct', 'wrong');
+                var chosen = q.querySelector('input:checked');
+                if (!chosen) return;
+                total++;
+                var right = chosen.value === q.getAttribute('data-answer');
+                q.classList.add(right ? 'correct' : 'wrong');
+                if (right) score++;
+            });
+            var box = document.getElementById('quizScore');
+            if (total === 12) {
+                box.textContent = 'Your score: ' + score + '/12 ' + (score >= 10 ? '🏆 Amazing!' : score >= 7 ? '👍 Good job!' : '💪 Keep practicing!');
+            } else {
+                box.textContent = 'Answered ' + total + '/12 — ' + score + ' correct so far. Answer all 12!';
+            }
+        }
+
+        // --- Python syntax highlighting ---
+        var PY_RE = /(#[^\n]*|"""[\s\S]*?"""|'''[\s\S]*?'''|f?"(?:\\.|[^"\\\n])*"|f?'(?:\\.|[^'\\\n])*'|\b(?:def|class|return|if|elif|else|for|while|in|not|and|or|import|from|as|try|except|finally|with|lambda|True|False|None|pass|break|continue|global|nonlocal|yield|is|del|raise|assert|async|await)\b|\b(?:print|input|len|range|int|float|str|bool|list|dict|set|tuple|type|abs|round|min|max|sum|sorted|enumerate|zip|open|super|self)\b|\b\d+(?:\.\d+)?\b)/g;
+
+        function colorPy(match) {
+            if (match.charAt(0) === '#') return '<span class="c">' + match + '</span>';
+            if (match.charAt(0) === '"' || match.charAt(0) === "'") return '<span class="st">' + match + '</span>';
+            if (/^\d/.test(match)) return '<span class="n">' + match + '</span>';
+            if (/^(?:print|input|len|range|int|float|str|bool|list|dict|set|tuple|type|abs|round|min|max|sum|sorted|enumerate|zip|open|super|self)$/.test(match)) return '<span class="s">' + match + '</span>';
+            return '<span class="k">' + match + '</span>';
+        }
+
+        document.querySelectorAll('pre code').forEach(function (code) {
+            var html = code.innerHTML;
+            if (code.className.indexOf('lang-text') !== -1) {
+                code.innerHTML = html;
+            } else {
+                code.innerHTML = html.replace(PY_RE, colorPy);
+            }
+        });
+    </script>
+
+</body>
+</html>

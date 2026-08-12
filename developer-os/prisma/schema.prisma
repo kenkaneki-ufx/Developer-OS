@@ -40,6 +40,8 @@ model User {
   githubData       GitHubData?
   dailyAnalytics   DailyAnalytics[]
   aiConversations  AIConversation[]
+  courseVotes      CourseVote[]
+  courseProgress   CourseProgress[]
 }
 
 model Account {
@@ -730,6 +732,39 @@ model AIMessage {
   conversation AIConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
   @@index([conversationId])
+}
+
+// ===========================================
+// LEARNING HUB — COURSE VOTING & PROGRESS
+// ===========================================
+
+model CourseVote {
+  id        String   @id @default(cuid())
+  userId    String
+  courseId  String // id from src/lib/learning/courses.ts (coming-soon course)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, courseId])
+  @@index([courseId])
+}
+
+model CourseProgress {
+  id          String   @id @default(cuid())
+  userId      String
+  courseId    String // id from src/lib/learning/courses.ts (available course)
+  status      String   @default("in_progress") // in_progress, completed
+  completedAt DateTime?
+  lastReadAt  DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, courseId])
+  @@index([userId])
 }
 
 // ===========================================

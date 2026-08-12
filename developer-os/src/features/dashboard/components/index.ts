@@ -7,3 +7,4 @@ export { DSAWidget } from "./dsa-widget";
 export { MLWidget } from "./ml-widget";
 export { MotivationWidget } from "./motivation-widget";
 export { QuickNotesWidget } from "./notes-widget";
+export { LearningProgressWidget } from "./learning-progress-widget";

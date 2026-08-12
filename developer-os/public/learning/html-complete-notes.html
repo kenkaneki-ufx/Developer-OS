@@ -1,0 +1,3322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML Notes — Every Tag, Every Topic</title>
+    <style>
+        /* ============ Base ============ */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #0d1117;
+            --card: #161b22;
+            --card-2: #1c2128;
+            --border: #30363d;
+            --text: #e6edf3;
+            --muted: #9aa5b1;
+            --accent: #58a6ff;
+            --purple: #a371f7;
+            --cyan: #39c5cf;
+            --green: #7ee787;
+            --yellow: #d29922;
+            --red: #f85149;
+            --code-bg: #0d1117;
+            --preview-bg: #ffffff;
+            --preview-text: #1f2328;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        /* ============ Hero ============ */
+        .hero {
+            padding: 56px 20px 40px;
+            text-align: center;
+            background:
+                radial-gradient(600px 200px at 20% 0%, rgba(163, 113, 247, 0.15), transparent),
+                radial-gradient(600px 200px at 80% 0%, rgba(57, 197, 207, 0.15), transparent);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .hero h1 {
+            font-size: clamp(28px, 5vw, 46px);
+            background: linear-gradient(90deg, var(--purple), var(--accent), var(--cyan));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: -0.5px;
+        }
+
+        .hero p {
+            color: var(--muted);
+            max-width: 680px;
+            margin: 12px auto 0;
+            font-size: 17px;
+        }
+
+        .hero .badge {
+            display: inline-block;
+            margin-top: 16px;
+            padding: 6px 14px;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            font-size: 13px;
+            color: var(--accent);
+            background: rgba(88, 166, 255, 0.08);
+        }
+
+        /* ============ Sticky TOC ============ */
+        nav.toc {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: rgba(13, 17, 23, 0.92);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid var(--border);
+            padding: 10px 16px;
+            overflow-x: auto;
+            white-space: nowrap;
+            display: flex;
+            gap: 8px;
+            scrollbar-width: thin;
+        }
+
+        nav.toc a {
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 13px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        nav.toc a:hover {
+            color: var(--text);
+            border-color: var(--accent);
+            background: rgba(88, 166, 255, 0.1);
+        }
+
+        /* ============ Layout ============ */
+        main {
+            max-width: 1080px;
+            margin: 0 auto;
+            padding: 28px 20px 60px;
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 28px;
+            scroll-margin-top: 70px;
+        }
+
+        .card h2 {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 22px;
+            margin-bottom: 10px;
+        }
+
+        .card h2 .num {
+            flex-shrink: 0;
+            width: 34px;
+            height: 34px;
+            display: grid;
+            place-items: center;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--bg);
+            background: linear-gradient(135deg, var(--purple), var(--cyan));
+            border-radius: 9px;
+        }
+
+        .card > p {
+            color: var(--muted);
+            margin-bottom: 16px;
+        }
+
+        .card h3 {
+            font-size: 16px;
+            color: var(--accent);
+            margin: 18px 0 8px;
+        }
+
+        .card ul, .card ol { padding-left: 22px; margin-bottom: 14px; }
+        .card li { margin-bottom: 4px; }
+
+        .card table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12px 0;
+            font-size: 14px;
+        }
+
+        .card th, .card td {
+            border: 1px solid var(--border);
+            padding: 8px 12px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        .card th {
+            background: var(--card-2);
+            color: var(--accent);
+        }
+
+        code.inline {
+            background: var(--card-2);
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            padding: 1px 7px;
+            font-family: 'Cascadia Code', 'Consolas', 'Courier New', monospace;
+            font-size: 0.88em;
+            color: var(--cyan);
+        }
+
+        /* ============ Demo: code + preview ============ */
+        .demo {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        @media (max-width: 800px) {
+            .demo { grid-template-columns: 1fr; }
+        }
+
+        .panel {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+            min-width: 0;
+        }
+
+        .panel-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 7px 12px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            border-bottom: 1px solid var(--border);
+            background: var(--card-2);
+        }
+
+        .panel-bar .tag-code { color: var(--green); }
+        .panel-bar .tag-result { color: var(--purple); }
+
+        .copy-btn {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            color: var(--muted);
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 3px 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .copy-btn:hover {
+            color: var(--text);
+            border-color: var(--accent);
+            background: rgba(88, 166, 255, 0.12);
+        }
+
+        pre {
+            background: var(--code-bg);
+            padding: 16px;
+            overflow-x: auto;
+            font-size: 13.5px;
+            line-height: 1.55;
+        }
+
+        pre code {
+            font-family: 'Cascadia Code', 'Consolas', 'Courier New', monospace;
+            color: var(--text);
+            white-space: pre;
+        }
+
+        pre code .t { color: var(--purple); font-weight: 600; }
+        pre code .c { color: var(--green); font-style: italic; }
+
+        .preview {
+            background: var(--preview-bg);
+            color: var(--preview-text);
+            padding: 16px;
+            min-height: 60px;
+            font-size: 14px;
+        }
+
+        .preview h1, .preview h2, .preview h3, .preview h4 { color: var(--preview-text); margin: 0 0 6px; }
+        .preview p { margin: 0 0 8px; }
+        .preview table { width: auto; }
+        .preview th, .preview td { border: 1px solid #d0d7de; padding: 6px 12px; }
+        .preview th { background: #f6f8fa; }
+        .preview table caption { font-weight: 700; padding: 6px; color: #57606a; }
+        .preview a { color: #0969da; }
+        .preview img { max-width: 100%; height: auto; }
+        .preview blockquote {
+            border-left: 4px solid #d0d7de;
+            margin: 0 0 10px;
+            padding: 4px 14px;
+            color: #57606a;
+        }
+        .preview pre {
+            background: #f6f8fa;
+            border: 1px solid #d0d7de;
+            border-radius: 6px;
+            padding: 10px;
+            font-size: 12.5px;
+            margin: 0 0 10px;
+        }
+        .preview code {
+            font-family: 'Cascadia Code', 'Consolas', monospace;
+            background: #f6f8fa;
+            border-radius: 4px;
+            padding: 0 4px;
+            font-size: 0.9em;
+        }
+        .preview kbd {
+            background: #f6f8fa;
+            border: 1px solid #d0d7de;
+            border-bottom-width: 2px;
+            border-radius: 4px;
+            padding: 1px 7px;
+            font-family: 'Cascadia Code', 'Consolas', monospace;
+            font-size: 0.85em;
+        }
+        .preview details {
+            border: 1px solid #d0d7de;
+            border-radius: 8px;
+            padding: 8px 12px;
+            margin-bottom: 8px;
+            background: #f6f8fa;
+        }
+        .preview summary { cursor: pointer; font-weight: 700; }
+        .preview progress, .preview meter { width: 100%; margin: 4px 0 8px; }
+        .preview abbr { text-decoration: underline dotted; cursor: help; }
+        .preview .svg-box { border: 1px solid #d0d7de; border-radius: 8px; padding: 10px; display: inline-block; background: #f6f8fa; }
+
+        /* Flow diagram (section 02) */
+        .web-flow {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+            font-size: 13px;
+        }
+        .web-flow .step {
+            background: #ddf4ff;
+            border: 1px solid #0969da;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-weight: 600;
+        }
+        .web-flow .arrow { color: #57606a; font-size: 18px; }
+
+        /* Mini demo page for semantic section */
+        .mini-page {
+            border: 2px dashed #d0d7de;
+            border-radius: 8px;
+            overflow: hidden;
+            font-size: 13px;
+        }
+        .mini-page .mp-header { background: #ddf4ff; padding: 10px; font-weight: 700; }
+        .mini-page .mp-nav { background: #fff1e5; padding: 6px 10px; }
+        .mini-page .mp-main { display: flex; gap: 10px; padding: 10px; }
+        .mini-page .mp-section { background: #dafbe1; flex: 1; padding: 10px; border-radius: 6px; }
+        .mini-page .mp-aside { background: #ffebe9; width: 110px; padding: 10px; border-radius: 6px; }
+        .mini-page .mp-footer { background: #d8dee4; padding: 8px 10px; font-size: 12px; }
+
+        /* Boxes for div/span demo */
+        .box { padding: 10px 14px; border-radius: 6px; margin-bottom: 8px; }
+        .box-red { background: #ffebe9; border: 1px solid #f85149; }
+        .box-blue { background: #ddf4ff; border: 1px solid #0969da; }
+        .box-green { background: #dafbe1; border: 1px solid #1a7f37; }
+        .box-yellow { background: #fff8c5; border: 1px solid #d4a72c; }
+        .box-purple { background: #fbefff; border: 1px solid #a371f7; }
+        .span-red { background: #ffebe9; color: #cf222e; padding: 0 4px; border-radius: 4px; }
+        .span-blue { background: #ddf4ff; color: #0550ae; padding: 0 4px; border-radius: 4px; }
+        .span-green { background: #dafbe1; color: #116329; padding: 0 4px; border-radius: 4px; }
+
+        /* Tip callout */
+        .tip {
+            border-left: 4px solid var(--green);
+            background: rgba(126, 231, 135, 0.08);
+            padding: 12px 16px;
+            border-radius: 0 8px 8px 0;
+            margin: 16px 0;
+            font-size: 14px;
+        }
+
+        .tip strong { color: var(--green); }
+
+        .warn {
+            border-left: 4px solid var(--yellow);
+            background: rgba(210, 153, 34, 0.08);
+            padding: 12px 16px;
+            border-radius: 0 8px 8px 0;
+            margin: 16px 0;
+            font-size: 14px;
+        }
+
+        .warn strong { color: var(--yellow); }
+
+        /* ============ Footer ============ */
+        footer {
+            text-align: center;
+            color: var(--muted);
+            padding: 30px 20px 50px;
+            border-top: 1px solid var(--border);
+            font-size: 14px;
+        }
+
+        footer a { color: var(--accent); text-decoration: none; }
+        footer a:hover { text-decoration: underline; }
+
+        /* ============ Light theme toggle ============ */
+        body.light {
+            --bg: #ffffff;
+            --card: #f6f8fa;
+            --card-2: #eaeef2;
+            --border: #d0d7de;
+            --text: #1f2328;
+            --muted: #57606a;
+            --code-bg: #f6f8fa;
+        }
+        body.light nav.toc { background: rgba(255,255,255,0.92); }
+        body.light pre { color: #1f2328; }
+        body.light .panel-bar { background: #eaeef2; }
+
+        /* ============ Search ============ */
+        .search-wrap { max-width: 1080px; margin: 0 auto; padding: 18px 20px 0; }
+        #search {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--card);
+            color: var(--text);
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        #search:focus { border-color: var(--accent); }
+        #search::placeholder { color: var(--muted); }
+
+        /* ============ Theme button ============ */
+        /* ============ Plain code mode (view-source friendly) ============ */
+        .plain-btn {
+            position: fixed;
+            right: 18px;
+            bottom: 70px;
+            z-index: 60;
+            border: 1px solid var(--border);
+            background: var(--card);
+            color: var(--text);
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(0,0,0,.25);
+            transition: border-color .2s, transform .15s;
+        }
+        .plain-btn:hover { border-color: var(--accent); transform: translateY(-2px); }
+        .plain-btn[aria-pressed="true"] { border-color: var(--accent); }
+        /* Neutralize every token color so code reads as plain source text */
+        body.plain-mode pre code,
+        body.plain-mode pre code span,
+        body.plain-mode .terminal span {
+            color: var(--text) !important;
+            background: none !important;
+            font-weight: normal !important;
+            font-style: normal !important;
+            text-decoration: none !important;
+            text-shadow: none !important;
+        }
+        .theme-btn {
+            position: fixed;
+            right: 18px;
+            bottom: 18px;
+            z-index: 60;
+            border: 1px solid var(--border);
+            background: var(--card);
+            color: var(--text);
+            padding: 10px 16px;
+            border-radius: 999px;
+            font-size: 14px;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.35);
+            transition: all 0.2s;
+        }
+        .theme-btn:hover { border-color: var(--accent); }
+
+        /* ============ Quiz ============ */
+        .quiz-q {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 14px;
+            background: var(--card-2);
+        }
+        .quiz-q p { font-weight: 700; margin-bottom: 8px; }
+        .quiz-q label {
+            display: block;
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.15s;
+            font-weight: 400;
+        }
+        .quiz-q label:hover { background: rgba(88,166,255,0.12); }
+        .quiz-q.correct { border-color: var(--green); }
+        .quiz-q.wrong { border-color: var(--red); }
+        .quiz-btn {
+            background: linear-gradient(135deg, var(--purple), var(--cyan));
+            color: var(--bg);
+            font-weight: 700;
+            border: 0;
+            padding: 12px 28px;
+            border-radius: 10px;
+            font-size: 15px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .quiz-btn:hover { opacity: 0.88; }
+        #quizScore {
+            display: inline-block;
+            margin-left: 14px;
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        /* ============ marquee fun ============ */
+        .preview marquee { color: #cf222e; font-weight: 700; }
+
+        /* ============ mini project page demo ============ */
+        .profile-demo {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #f6f8fa;
+            border: 2px dashed #d0d7de;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .profile-demo .pd-header { background: #0969da; color: #fff; padding: 14px; display: flex; align-items: center; gap: 12px; }
+        .profile-demo .pd-nav { background: #eaeef2; padding: 6px 14px; font-size: 13px; }
+        .profile-demo .pd-nav a { margin-right: 14px; color: #0969da; text-decoration: none; font-weight: 600; }
+        .profile-demo .pd-body { padding: 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 13px; }
+        .profile-demo .pd-foot { background: #d8dee4; padding: 8px 14px; font-size: 12px; color: #57606a; }
+    </style>
+</head>
+<body>
+
+    <header class="hero">
+        <h1>📚 HTML Notes — Every Tag, Every Topic</h1>
+        <p>The complete beginner-friendly HTML5 reference. Every topic has the
+           <strong style="color:var(--green)">code</strong> on the left and the
+           <strong style="color:var(--purple)">live result</strong> on the right.
+           One file. No internet needed. No frameworks.</p>
+        <span class="badge">HTML5 · 41 sections · Every tag covered · Search 🔍 · Quiz 🧠 · Dark/Light 🌙</span>
+    </header>
+
+    <nav class="toc">
+        <a href="#what">01 Basics</a>
+        <a href="#web">02 How web works</a>
+        <a href="#structure">03 Structure</a>
+        <a href="#head">04 Head &amp; meta</a>
+        <a href="#headings">05 Headings &amp; text</a>
+        <a href="#breaks">06 Breaks &amp; pre</a>
+        <a href="#format">07 Emphasis &amp; edits</a>
+        <a href="#quotes">08 Quotes</a>
+        <a href="#tech">09 Code tags</a>
+        <a href="#comments">10 Comments</a>
+        <a href="#entities">11 Entities</a>
+        <a href="#divspan">12 div &amp; span</a>
+        <a href="#semantic">13 Semantic</a>
+        <a href="#lists">14 Lists</a>
+        <a href="#tables">15 Tables</a>
+        <a href="#links">16 Links</a>
+        <a href="#images">17 Images</a>
+        <a href="#media">18 Media</a>
+        <a href="#iframe">19 iframe</a>
+        <a href="#form">20 form tag</a>
+        <a href="#input">21 Input types</a>
+        <a href="#select">22 Select &amp; textarea</a>
+        <a href="#fieldset">23 fieldset &amp; co</a>
+        <a href="#attrs">24 Input attrs</a>
+        <a href="#global">25 Global attrs</a>
+        <a href="#interactive">26 Interactive</a>
+        <a href="#scripts">27 SVG &amp; data-*</a>
+        <a href="#a11y">28 Accessibility</a>
+        <a href="#cheat">29 Cheat sheet</a>
+        <a href="#tips">30 Best practices</a>
+        <a href="#paths">31 Paths</a>
+        <a href="#elements">32 More tags</a>
+        <a href="#obsolete">33 Obsolete</a>
+        <a href="#categories">34 Categories</a>
+        <a href="#global2">35 All attrs</a>
+        <a href="#seo">36 SEO</a>
+        <a href="#performance">37 Performance</a>
+        <a href="#devtools">38 DevTools</a>
+        <a href="#history">39 History</a>
+        <a href="#project">40 Mini project</a>
+        <a href="#quiz">41 Quiz</a>
+    </nav>
+
+    <div class="search-wrap">
+        <input id="search" type="search" placeholder="🔍 Search the notes… (e.g. 'form', 'image', 'table', 'link')">
+    </div>
+
+    <main>
+
+        <!-- ================= 01 WHAT IS HTML ================= -->
+        <section class="card" id="what">
+            <h2><span class="num">01</span>What is HTML?</h2>
+            <p><strong>HTML</strong> (HyperText Markup Language) is the skeleton of every website. It uses
+            <strong>tags</strong> wrapped in angle brackets to tell the browser: "this is a heading", "this is a link",
+            "this is an image".</p>
+            <p>Every tag usually comes in a pair — an <strong>opening</strong> tag and a <strong>closing</strong> tag
+            (closing tags have a <code class="inline">/</code>). Some tags are <em>void</em> (self-closing) — they have no closing tag.</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>&lt;p&gt;This is a paragraph&lt;/p&gt;
+&lt;h1&gt;This is a heading&lt;/h1&gt;
+
+&lt;!-- void tags need no closing tag: --&gt;
+&lt;img src="photo.jpg" alt="A photo"&gt;
+&lt;br&gt;  &lt;input&gt;  &lt;hr&gt;  &lt;meta&gt;</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <p>This is a paragraph</p>
+                        <h3>This is a heading</h3>
+                        <p><em>Void tags</em> (img, br, hr, meta, input…) never have a closing tag.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="tip"><strong>Remember:</strong> opening tag <code class="inline">&lt;p&gt;</code> + content +
+            closing tag <code class="inline">&lt;/p&gt;</code>. HTML is <strong>forgiving</strong> — it won't crash, but mistakes
+            render weirdly. Fix them early!</div>
+        </section>
+
+        <!-- ================= 02 HOW THE WEB WORKS ================= -->
+        <section class="card" id="web">
+            <h2><span class="num">02</span>How the Web Works</h2>
+            <p>When you open a website, four things happen in under a second:</p>
+            <ol>
+                <li>You type a URL like <code class="inline">https://example.com</code> in the browser.</li>
+                <li>The browser asks a <strong>server</strong> (a computer that stores the site) for the HTML file.</li>
+                <li>The server sends back the file.</li>
+                <li>The browser reads the HTML and <strong>renders</strong> it into the page you see.</li>
+            </ol>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>https://example.com/products?id=42#reviews
+  |_____________|  |____|  |__|  |____|
+       domain        path  query  fragment
+  (which site)  (which page) (data)(scroll to)</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <div class="web-flow">
+                            <span class="step">🌐 You</span>
+                            <span class="arrow">→</span>
+                            <span class="step">🧭 Browser</span>
+                            <span class="arrow">→</span>
+                            <span class="step">📡 Internet</span>
+                            <span class="arrow">→</span>
+                            <span class="step">🖥️ Server</span>
+                        </div>
+                        <p style="margin-top:10px;">The browser is a <em>translator</em>: it reads
+                        HTML (structure) + CSS (style) + JavaScript (behavior) and draws the page.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="tip"><strong>Key idea:</strong> HTML = <strong>skeleton</strong> (content &amp; meaning).
+            CSS = <strong>clothes</strong> (looks). JavaScript = <strong>muscles</strong> (actions). This page is built
+            from exactly those three!</div>
+        </section>
+
+        <!-- ================= 03 STRUCTURE ================= -->
+        <section class="card" id="structure">
+            <h2><span class="num">03</span>Page Structure (the skeleton)</h2>
+            <p>Every HTML page follows this same skeleton. Copy this to start any project:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>&lt;!DOCTYPE html&gt;          &lt;!-- HTML5 declaration --&gt;
+&lt;html lang="en"&gt;        &lt;!-- root element, lang = language --&gt;
+&lt;head&gt;                   &lt;!-- hidden settings --&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;title&gt;My First Page&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;                   &lt;!-- visible content --&gt;
+    &lt;p&gt;Hello, World!&lt;/p&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <p style="font-weight:700;">What the &lt;body&gt; renders:</p>
+                        <p>Hello, World!</p>
+                        <p style="color:#57606a;font-size:12px;">Everything in &lt;head&gt; is invisible on the page.
+                        It's instructions for the browser and search engines.</p>
+                    </div>
+                </div>
+            </div>
+            <table>
+                <thead>
+                    <tr><th>Tag</th><th>Purpose</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><code class="inline">&lt;!DOCTYPE html&gt;</code></td><td>tells the browser "this is HTML5" (must be the very first line)</td></tr>
+                    <tr><td><code class="inline">&lt;html&gt;</code></td><td>the root element that wraps everything</td></tr>
+                    <tr><td><code class="inline">&lt;head&gt;</code></td><td>metadata — title, charset, styles, scripts</td></tr>
+                    <tr><td><code class="inline">&lt;body&gt;</code></td><td>everything the visitor sees</td></tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- ================= 04 HEAD & META ================= -->
+        <section class="card" id="head">
+            <h2><span class="num">04</span>The &lt;head&gt; Section &amp; Meta Tags</h2>
+            <p>The <code class="inline">&lt;head&gt;</code> holds invisible information. <code class="inline">&lt;meta&gt;</code> tags
+            describe your page to browsers and search engines.</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;              &lt;!-- emoji &amp; symbols --&gt;
+    &lt;meta name="viewport"
+          content="width=device-width,
+                   initial-scale=1.0"&gt;  &lt;!-- mobile friendly --&gt;
+    &lt;meta name="description"
+          content="Learn HTML free"&gt;    &lt;!-- shown on Google --&gt;
+    &lt;meta name="author" content="You"&gt;
+    &lt;title&gt;My Page&lt;/title&gt;             &lt;!-- browser tab --&gt;
+    &lt;link rel="icon" href="favicon.ico"&gt; &lt;!-- tab icon --&gt;
+    &lt;link rel="stylesheet" href="style.css"&gt;
+    &lt;style&gt; body { color: blue; } &lt;/style&gt;
+    &lt;script src="app.js"&gt;&lt;/script&gt;
+&lt;/head&gt;</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <p style="font-weight:700;">You can't see the head… but you can see its effects:</p>
+                        <p>🖥️ This tab's <strong>title</strong> is "HTML Notes — Every Tag, Every Topic"</p>
+                        <p>📱 The <strong>viewport</strong> meta makes this page fit phone screens</p>
+                        <p>🔍 The <strong>description</strong> meta is what Google shows under your link</p>
+                        <p>✳️ The <strong>favicon</strong> is the tiny icon next to the tab title</p>
+                    </div>
+                </div>
+            </div>
+            <h3>Most useful meta tags</h3>
+            <table>
+                <thead>
+                    <tr><th>Meta tag</th><th>What it does</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><code class="inline">charset="UTF-8"</code></td><td>supports every language &amp; emoji — always include</td></tr>
+                    <tr><td><code class="inline">name="viewport"</code></td><td>makes pages responsive on mobile — always include</td></tr>
+                    <tr><td><code class="inline">name="description"</code></td><td>the snippet Google shows in results</td></tr>
+                    <tr><td><code class="inline">name="keywords"</code></td><td>old SEO practice, Google ignores it now</td></tr>
+                    <tr><td><code class="inline">name="author"</code></td><td>who wrote the page</td></tr>
+                    <tr><td><code class="inline">http-equiv="refresh" content="5;url=https://x.com"</code></td><td>auto-redirect after 5 seconds</td></tr>
+                    <tr><td><code class="inline">property="og:title"</code></td><td>title shown when shared on WhatsApp/Facebook</td></tr>
+                    <tr><td><code class="inline">property="og:image"</code></td><td>thumbnail shown when shared</td></tr>
+                </tbody>
+            </table>
+            <div class="warn"><strong>Note:</strong> <code class="inline">&lt;style&gt;</code> and <code class="inline">&lt;script&gt;</code> are the
+            only head tags that <em>do</em> affect what you see — styles change looks, scripts add behavior.</div>
+        </section>
+
+        <!-- ================= 05 HEADINGS & TEXT ================= -->
+        <section class="card" id="headings">
+            <h2><span class="num">05</span>Headings &amp; Paragraphs</h2>
+            <p>Six heading levels — <code class="inline">&lt;h1&gt;</code> is the most important. Use exactly
+            <strong>one</strong> <code class="inline">&lt;h1&gt;</code> per page. Don't skip levels (h1 → h3 is wrong).</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>&lt;h1&gt;Heading 1 — biggest&lt;/h1&gt;
+&lt;h2&gt;Heading 2&lt;/h2&gt;
+&lt;h3&gt;Heading 3&lt;/h3&gt;
+&lt;h4&gt;Heading 4&lt;/h4&gt;
+&lt;h5&gt;Heading 5&lt;/h5&gt;
+&lt;h6&gt;Heading 6 — smallest&lt;/h6&gt;
+
+&lt;p&gt;A paragraph of normal text.&lt;/p&gt;</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <h1>Heading 1 — biggest</h1>
+                        
+                        <h3>Heading 3</h3>
+                        <h4>Heading 4</h4>
+                        <h5>Heading 5</h5>
+                        <h6>Heading 6 — smallest</h6>
+                        <p>A paragraph of normal text.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= 06 BREAKS & PRE ================= -->
+        <section class="card" id="breaks">
+            <h2><span class="num">06</span>Line Breaks, Rules &amp; &lt;pre&gt;</h2>
+            <p><code class="inline">&lt;br&gt;</code> = break to the next line inside text.
+            <code class="inline">&lt;hr&gt;</code> = horizontal rule (a divider line).
+            <code class="inline">&lt;pre&gt;</code> = <em>preformatted</em> text: keeps your spaces and line breaks exactly.</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>&lt;p&gt;Line 1&lt;br&gt;Line 2&lt;/p&gt;
+
+&lt;hr&gt;
+
+&lt;p&gt;Normal text ignores
+  my    spaces.&lt;/p&gt;
+
+&lt;pre&gt;Pre text keeps
+  my    spaces
+  and line breaks!&lt;/pre&gt;</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <p>Line 1<br>Line 2</p>
+                        <hr>
+                        <p>Normal text ignores
+                        my    spaces.</p>
+                        <pre>Pre text keeps
+  my    spaces
+  and line breaks!</pre>
+                    </div>
+                </div>
+            </div>
+            <div class="tip"><strong>When to use:</strong> <code class="inline">&lt;pre&gt;</code> is perfect for showing
+            code or ASCII art. This whole page uses <code class="inline">&lt;pre&gt;</code> to display its code examples!</div>
+        </section>
+
+        <!-- ================= 07 EMPHASIS & EDITS ================= -->
+        <section class="card" id="format">
+            <h2><span class="num">07</span>Text Formatting — Emphasis &amp; Edits</h2>
+            <p>Tags that give meaning to words. Prefer the <em>semantic</em> ones
+            (<code class="inline">&lt;strong&gt;</code>, <code class="inline">&lt;em&gt;</code>) — they tell screen readers and search engines
+            "this matters".</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>&lt;strong&gt;Bold = important&lt;/strong&gt;
+&lt;em&gt;Italic = emphasized&lt;/em&gt;
+&lt;b&gt;Bold (no meaning)&lt;/b&gt;
+&lt;i&gt;Italic (no meaning)&lt;/i&gt;
+&lt;u&gt;Underlined&lt;/u&gt;
+&lt;s&gt;Strikethrough (no longer relevant)&lt;/s&gt;
+&lt;mark&gt;Highlighted text&lt;/mark&gt;
+&lt;small&gt;Small print / fine print&lt;/small&gt;
+&lt;del&gt;Deleted (old) text&lt;/del&gt;
+&lt;ins&gt;Inserted (new) text&lt;/ins&gt;
+H&lt;sub&gt;2&lt;/sub&gt;O — water
+x&lt;sup&gt;2&lt;/sup&gt; — x squared</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <p><strong>Bold = important</strong><br>
+                        <em>Italic = emphasized</em><br>
+                        <b>Bold (no meaning)</b><br>
+                        <i>Italic (no meaning)</i><br>
+                        <u>Underlined</u><br>
+                        <s>Strikethrough</s><br>
+                        <mark>Highlighted text</mark><br>
+                        <small>Small print / fine print</small><br>
+                        <del>Deleted (old) text</del><br>
+                        <ins>Inserted (new) text</ins><br>
+                        H<sub>2</sub>O — water<br>
+                        x<sup>2</sup> — x squared</p>
+                    </div>
+                </div>
+            </div>
+            <table>
+                <thead>
+                    <tr><th>Tag</th><th>Meaning</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><code class="inline">&lt;strong&gt;</code></td><td>important — renders bold</td></tr>
+                    <tr><td><code class="inline">&lt;em&gt;</code></td><td>emphasis — renders italic</td></tr>
+                    <tr><td><code class="inline">&lt;b&gt;</code> / <code class="inline">&lt;i&gt;</code></td><td>just bold / italic, no meaning</td></tr>
+                    <tr><td><code class="inline">&lt;u&gt;</code></td><td>underlined (usually links)</td></tr>
+                    <tr><td><code class="inline">&lt;s&gt;</code></td><td>strikethrough — no longer valid</td></tr>
+                    <tr><td><code class="inline">&lt;mark&gt;</code></td><td>highlighted, like a marker pen</td></tr>
+                    <tr><td><code class="inline">&lt;small&gt;</code></td><td>fine print, disclaimers</td></tr>
+                    <tr><td><code class="inline">&lt;del&gt;</code> / <code class="inline">&lt;ins&gt;</code></td><td>shows deleted / inserted text (like a changelog)</td></tr>
+                    <tr><td><code class="inline">&lt;sub&gt;</code> / <code class="inline">&lt;sup&gt;</code></td><td>subscript (H₂O) / superscript (x²)</td></tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- ================= 08 QUOTES ================= -->
+        <section class="card" id="quotes">
+            <h2><span class="num">08</span>Quotes &amp; Citations</h2>
+            <p>Tags for quoting people and citing sources.</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>&lt;blockquote&gt;   &lt;!-- big quote block --&gt;
+    "The best way to learn is to build."
+    &lt;cite&gt;— A wise developer&lt;/cite&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;He said &lt;q&gt;I love HTML&lt;/q&gt;.&lt;/p&gt;
+&lt;!-- q adds automatic quotes --&gt;
+
+&lt;p&gt;I love the &lt;abbr title="HyperText Markup Language"&gt;HTML&lt;/abbr&gt;.&lt;/p&gt;
+&lt;!-- abbr = abbreviation, hover it! --&gt;
+
+&lt;address&gt;   &lt;!-- contact info, italic --&gt;
+    123 Street, Mumbai
+&lt;/address&gt;</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <blockquote>
+                            "The best way to learn is to build."
+                            <cite>— A wise developer</cite>
+                        </blockquote>
+                        <p>He said <q>I love HTML</q>.</p>
+                        <p>I love the <abbr title="HyperText Markup Language">HTML</abbr>. (hover the dotted text!)</p>
+                        <address>123 Street, Mumbai</address>
+                    </div>
+                </div>
+            </div>
+            <table>
+                <thead>
+                    <tr><th>Tag</th><th>Purpose</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><code class="inline">&lt;blockquote&gt;</code></td><td>a long quote, indented block</td></tr>
+                    <tr><td><code class="inline">&lt;q&gt;</code></td><td>short inline quote — browser adds quotes</td></tr>
+                    <tr><td><code class="inline">&lt;cite&gt;</code></td><td>source of the quote (book, person, work)</td></tr>
+                    <tr><td><code class="inline">&lt;abbr&gt;</code></td><td>abbreviation; show the full form with <code class="inline">title</code></td></tr>
+                    <tr><td><code class="inline">&lt;address&gt;</code></td><td>contact details (also usable as a physical address)</td></tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- ================= 09 CODE & TECHNICAL ================= -->
+        <section class="card" id="tech">
+            <h2><span class="num">09</span>Computer &amp; Technical Text Tags</h2>
+            <p>Tags for showing code, keyboard keys, program output, and variables.</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>&lt;code&gt;let x = 5;&lt;/code&gt;  &lt;!-- code font --&gt;
+
+&lt;p&gt;Press &lt;kbd&gt;Ctrl&lt;/kbd&gt; + &lt;kbd&gt;S&lt;/kbd&gt; to save.&lt;/p&gt;
+
+&lt;samp&gt;Error 404: page not found&lt;/samp&gt;
+&lt;!-- program output --&gt;
+
+&lt;p&gt;A &lt;var&gt;variable&lt;/var&gt; holds a value.&lt;/p&gt;
+
+&lt;p&gt;The &lt;dfn&gt;HTML&lt;/dfn&gt; is a markup language.&lt;/p&gt;
+&lt;!-- dfn = definition --&gt;
+
+&lt;time datetime="2026-08-13"&gt;Aug 13, 2026&lt;/time&gt;
+&lt;!-- machine-readable time --&gt;
+
+&lt;p&gt;I read &lt;data value="5"&gt;five&lt;/data&gt; books.&lt;/p&gt;</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <p><code>let x = 5;</code> — code font</p>
+                        <p>Press <kbd>Ctrl</kbd> + <kbd>S</kbd> to save.</p>
+                        <p><samp>Error 404: page not found</samp></p>
+                        <p>A <var>variable</var> holds a value.</p>
+                        <p>The <dfn>HTML</dfn> is a markup language.</p>
+                        <p><time datetime="2026-08-13">Aug 13, 2026</time></p>
+                        <p>I read <data value="5">five</data> books.</p>
+                    </div>
+                </div>
+            </div>
+            <h3>Text direction &amp; ruby</h3>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>&lt;bdi&gt;username_123&lt;/bdi&gt;  &lt;!-- isolated direction --&gt;
+
+&lt;p dir="rtl"&gt;مرحبا بالعالم&lt;/p&gt;
+&lt;!-- dir = text direction: rtl right-to-left --&gt;
+
+&lt;bdo dir="rtl"&gt;Backwards text&lt;/bdo&gt;
+&lt;!-- forces reversed direction --&gt;
+
+&lt;ruby&gt;漢 &lt;rt&gt;kan&lt;/rt&gt;字 &lt;rt&gt;ji&lt;/rt&gt;&lt;/ruby&gt;
+&lt;!-- ruby = pronunciation guide --&gt;</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <p>Welcome back, <bdi>username_123</bdi>!</p>
+                        <p dir="rtl" style="direction:rtl;">مرحبا بالعالم</p>
+                        <p><bdo dir="rtl">Backwards text</bdo></p>
+                        <p style="font-size:20px;"><ruby>漢 <rt>kan</rt>字 <rt>ji</rt></ruby></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= 10 COMMENTS ================= -->
+        <section class="card" id="comments">
+            <h2><span class="num">10</span>Comments</h2>
+            <p>Notes only developers can read — never rendered on the page. Comment your code; future-you will thank you.</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>&lt;!-- single-line comment --&gt;
+
+&lt;p&gt;Visible text&lt;/p&gt;
+
+&lt;!--
+    Multi-line comments are great
+    for explaining a whole section
+    or temporarily hiding code.
+--&gt;</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <p>Visible text</p>
+                        <p style="color:#57606a;font-size:12px;">…and nothing else! Comments never render.
+                        (Press Ctrl+U to see them in the source.)</p>
+                    </div>
+                </div>
+            </div>
+            <div class="tip"><strong>Also useful:</strong> wrapping code in a comment = <em>disabling</em> it without deleting.
+            Great for testing what a piece of code does.</div>
+        </section>
+
+        <!-- ================= 11 ENTITIES ================= -->
+        <section class="card" id="entities">
+            <h2><span class="num">11</span>Special Characters (Entities)</h2>
+            <p>Some characters are <em>reserved</em> by HTML. To type them in your content, use an <strong>entity</strong>:
+            <code class="inline">&amp;</code> + name + <code class="inline">;</code>. This is why every code sample on this page
+            writes <code class="inline">&amp;lt;</code> instead of <code class="inline">&lt;</code>.</p>
+            <table>
+                <thead>
+                    <tr><th>You type</th><th>You get</th><th>Name</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><code class="inline">&amp;lt;</code></td><td>&lt;</td><td>less-than</td></tr>
+                    <tr><td><code class="inline">&amp;gt;</code></td><td>&gt;</td><td>greater-than</td></tr>
+                    <tr><td><code class="inline">&amp;amp;</code></td><td>&amp;</td><td>ampersand</td></tr>
+                    <tr><td><code class="inline">&amp;quot;</code></td><td>"</td><td>double quote</td></tr>
+                    <tr><td><code class="inline">&amp;apos;</code></td><td>'</td><td>apostrophe</td></tr>
+                    <tr><td><code class="inline">&amp;nbsp;</code></td><td>a&nbsp;b</td><td>non-breaking space</td></tr>
+                    <tr><td><code class="inline">&amp;copy;</code></td><td>&copy;</td><td>copyright</td></tr>
+                    <tr><td><code class="inline">&amp;reg;</code></td><td>&reg;</td><td>registered</td></tr>
+                    <tr><td><code class="inline">&amp;trade;</code></td><td>&trade;</td><td>trademark</td></tr>
+                    <tr><td><code class="inline">&amp;euro;</code></td><td>&euro;</td><td>euro</td></tr>
+                    <tr><td><code class="inline">&amp;pound;</code></td><td>&pound;</td><td>pound</td></tr>
+                    <tr><td><code class="inline">&amp;hearts;</code></td><td>&hearts;</td><td>heart</td></tr>
+                    <tr><td><code class="inline">&amp;rarr;</code></td><td>&rarr;</td><td>right arrow</td></tr>
+                    <tr><td><code class="inline">&amp;larr;</code></td><td>&larr;</td><td>left arrow</td></tr>
+                    <tr><td><code class="inline">&amp;hellip;</code></td><td>&hellip;</td><td>ellipsis</td></tr>
+                    <tr><td><code class="inline">&amp;deg;</code></td><td>&deg;</td><td>degree</td></tr>
+                    <tr><td><code class="inline">&amp;plusmn;</code></td><td>&plusmn;</td><td>plus-minus</td></tr>
+                    <tr><td><code class="inline">&amp;times;</code></td><td>&times;</td><td>multiplication</td></tr>
+                    <tr><td><code class="inline">&amp;divide;</code></td><td>&divide;</td><td>division</td></tr>
+                    <tr><td><code class="inline">&amp;#128512;</code></td><td>&#128512;</td><td>emoji (decimal code)</td></tr>
+                    <tr><td><code class="inline">&amp;#x1F600;</code></td><td>&#x1F600;</td><td>emoji (hex code)</td></tr>
+                </tbody>
+            </table>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>&lt;p&gt;5 &amp;lt; 10 is true&lt;/p&gt;
+&lt;p&gt;HTML &amp;amp; CSS = web&lt;/p&gt;
+&lt;p&gt;Copyright &amp;copy; 2026&lt;/p&gt;
+&lt;p&gt;30&amp;deg;C outside 🥵&lt;/p&gt;
+&lt;p&gt;I &amp;hearts; learning HTML&lt;/p&gt;</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <p>5 &lt; 10 is true</p>
+                        <p>HTML &amp; CSS = web</p>
+                        <p>Copyright &copy; 2026</p>
+                        <p>30&deg;C outside 🥵</p>
+                        <p>I &hearts; learning HTML</p>
+                    </div>
+                </div>
+            </div>
+            <div class="warn"><strong>Golden rule:</strong> any time you want to <em>show</em> a &lt; or &gt; or &amp; on the
+            page, escape it. Any time you want a <em>tag</em>, type it raw. Mixing them up is the #1 beginner bug.</div>
+        </section>
+
+        <!-- ================= 12 DIV & SPAN ================= -->
+        <section class="card" id="divspan">
+            <h2><span class="num">12</span>&lt;div&gt; &amp; &lt;span&gt; — Generic Boxes</h2>
+            <p><code class="inline">&lt;div&gt;</code> is a <strong>block</strong> container: full width, stacks vertically.
+            <code class="inline">&lt;span&gt;</code> is an <strong>inline</strong> wrapper: sits inside text, only as wide as its content.</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>&lt;div class="box-red"&gt;
+    &lt;p&gt;I am inside a div&lt;/p&gt;
+    &lt;p&gt;Divs stack full-width&lt;/p&gt;
+&lt;/div&gt;
+
+&lt;div class="box-blue"&gt;
+    Second div, new line
+&lt;/div&gt;
+
+&lt;p&gt;Text with a
+    &lt;span class="span-red"&gt;red span&lt;/span&gt;
+    and a &lt;span class="span-blue"&gt;blue span&lt;/span&gt;
+    inline in the same line.
+&lt;/p&gt;</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <div class="box-red">
+                            <p style="margin:0;">I am inside a div</p>
+                            <p style="margin:0;">Divs stack full-width</p>
+                        </div>
+                        <div class="box-blue">Second div, new line</div>
+                        <p>Text with a <span class="span-red">red span</span>
+                        and a <span class="span-blue">blue span</span> inline in the same line.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="tip"><strong>Rule of thumb:</strong> div = big blocks of the page. span = small inline bits of text.
+            And when a tag with meaning exists (header, p, li…), use <em>that</em> instead of div!</div>
+        </section>
+
+        <!-- ================= 13 SEMANTIC ================= -->
+        <section class="card" id="semantic">
+            <h2><span class="num">13</span>Semantic Layout Tags</h2>
+            <p>HTML5 gives us <strong>meaningful</strong> containers instead of &lt;div&gt; everywhere. Search engines and
+            screen readers understand these instantly.</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>&lt;header&gt;   &lt;!-- top: logo, title --&gt;&lt;/header&gt;
+&lt;nav&gt;      &lt;!-- menu / links --&gt;&lt;/nav&gt;
+
+&lt;main&gt;     &lt;!-- main content (1 per page) --&gt;
+    &lt;section&gt; &lt;!-- a themed block --&gt;&lt;/section&gt;
+    &lt;article&gt; &lt;!-- self-contained post --&gt;&lt;/article&gt;
+    &lt;aside&gt;   &lt;!-- side info / ads --&gt;&lt;/aside&gt;
+&lt;/main&gt;
+
+&lt;footer&gt;   &lt;!-- bottom: copyright --&gt;&lt;/footer&gt;</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <div class="mini-page">
+                            <div class="mp-header">header — logo &amp; title</div>
+                            <div class="mp-nav">nav — Home · About · Contact</div>
+                            <div class="mp-main">
+                                <div class="mp-section">section — main content</div>
+                                <div class="mp-aside">aside — sidebar</div>
+                            </div>
+                            <div class="mp-footer">footer — © 2026</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <table>
+                <thead>
+                    <tr><th>Tag</th><th>Meaning</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><code class="inline">&lt;header&gt;</code></td><td>top area: logo, page title, intro</td></tr>
+                    <tr><td><code class="inline">&lt;nav&gt;</code></td><td>navigation links / menu</td></tr>
+                    <tr><td><code class="inline">&lt;main&gt;</code></td><td>the main content — only one per page</td></tr>
+                    <tr><td><code class="inline">&lt;section&gt;</code></td><td>a themed group of content (usually has a heading)</td></tr>
+                    <tr><td><code class="inline">&lt;article&gt;</code></td><td>self-contained content: blog post, news, comment</td></tr>
+                    <tr><td><code class="inline">&lt;aside&gt;</code></td><td>side content: sidebar, related links, ads</td></tr>
+                    <tr><td><code class="inline">&lt;footer&gt;</code></td><td>bottom: copyright, contact, links</td></tr>
+                    <tr><td><code class="inline">&lt;figure&gt;</code> + <code class="inline">&lt;figcaption&gt;</code></td><td>an image/diagram with a caption (see section 17)</td></tr>
+                    <tr><td><code class="inline">&lt;details&gt;</code> + <code class="inline">&lt;summary&gt;</code></td><td>click-to-expand box (see section 26)</td></tr>
+                    <tr><td><code class="inline">&lt;dialog&gt;</code></td><td>a popup window (see section 26)</td></tr>
+                </tbody>
+            </table>
+            <div class="tip"><strong>Why it matters:</strong> Google reads &lt;nav&gt; to find your menu, &lt;article&gt; to index
+            your posts. Screen readers jump straight to &lt;main&gt;. Semantic HTML = better SEO + better accessibility — for free.</div>
+        </section>
+
+        <!-- ================= 14 LISTS ================= -->
+        <section class="card" id="lists">
+            <h2><span class="num">14</span>Lists: &lt;ul&gt;, &lt;ol&gt;, &lt;dl&gt;</h2>
+            <p><code class="inline">&lt;ul&gt;</code> = unordered (bullets). <code class="inline">&lt;ol&gt;</code> = ordered (numbers).
+            <code class="inline">&lt;dl&gt;</code> = description list (term + definition). List items use <code class="inline">&lt;li&gt;</code>.</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>&lt;!-- unordered: bullets --&gt;
+&lt;ul&gt;
+    &lt;li&gt;Milk&lt;/li&gt;
+    &lt;li&gt;Bread&lt;/li&gt;
+    &lt;li&gt;Eggs&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;!-- ordered: numbers --&gt;
+&lt;ol type="A"&gt;  &lt;!-- A,B,C... try: 1, i, I, a --&gt;
+    &lt;li&gt;First step&lt;/li&gt;
+    &lt;li&gt;Second step&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;ol start="5"&gt;
+    &lt;li&gt;starts at 5&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;!-- nested lists --&gt;
+&lt;ul&gt;
+    &lt;li&gt;Fruits
+        &lt;ul&gt;
+            &lt;li&gt;Apple&lt;/li&gt;
+            &lt;li&gt;Mango&lt;/li&gt;
+        &lt;/ul&gt;
+    &lt;/li&gt;
+&lt;/ul&gt;</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <ul><li>Milk</li><li>Bread</li><li>Eggs</li></ul>
+                        <ol type="A"><li>First step</li><li>Second step</li></ol>
+                        <ol start="5"><li>starts at 5</li></ol>
+                        <ul><li>Fruits<ul><li>Apple</li><li>Mango</li></ul></li></ul>
+                    </div>
+                </div>
+            </div>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>&lt;!-- description list: term + definition --&gt;
+&lt;dl&gt;
+    &lt;dt&gt;HTML&lt;/dt&gt;
+    &lt;dd&gt;Structure of a page&lt;/dd&gt;
+
+    &lt;dt&gt;CSS&lt;/dt&gt;
+    &lt;dd&gt;Style &amp; looks of a page&lt;/dd&gt;
+&lt;/dl&gt;
+
+&lt;!-- menu = like ul (toolbars, commands) --&gt;
+&lt;menu&gt;
+    &lt;li&gt;Copy&lt;/li&gt;
+    &lt;li&gt;Paste&lt;/li&gt;
+&lt;/menu&gt;</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <dl>
+                            <dt style="font-weight:700;">HTML</dt>
+                            <dd style="margin-left:16px;">Structure of a page</dd>
+                            <dt style="font-weight:700;">CSS</dt>
+                            <dd style="margin-left:16px;">Style &amp; looks of a page</dd>
+                        </dl>
+                        <menu style="margin:0;padding-left:24px;">
+                            <li>Copy</li>
+                            <li>Paste</li>
+                        </menu>
+                    </div>
+                </div>
+            </div>
+            <div class="tip"><strong>Always nest correctly:</strong> &lt;li&gt; can only live inside &lt;ul&gt;, &lt;ol&gt; or &lt;menu&gt;.
+            Never put text directly inside a list without an &lt;li&gt;.</div>
+        </section>
+
+        <!-- ================= 15 TABLES ================= -->
+        <section class="card" id="tables">
+            <h2><span class="num">15</span>Tables — everything</h2>
+            <p>Tables = rows (<code class="inline">&lt;tr&gt;</code>) of cells
+            (<code class="inline">&lt;td&gt;</code> data, <code class="inline">&lt;th&gt;</code> header). Organize with
+            <code class="inline">&lt;thead&gt;</code> / <code class="inline">&lt;tbody&gt;</code> / <code class="inline">&lt;tfoot&gt;</code>.</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>&lt;table&gt;
+    &lt;caption&gt;My Friends&lt;/caption&gt;  &lt;!-- title --&gt;
+    &lt;thead&gt;
+        &lt;tr&gt;
+            &lt;th&gt;Name&lt;/th&gt;
+            &lt;th&gt;Age&lt;/th&gt;
+        &lt;/tr&gt;
+    &lt;/thead&gt;
+    &lt;tbody&gt;
+        &lt;tr&gt;
+            &lt;td&gt;Alice&lt;/td&gt;
+            &lt;td&gt;21&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+            &lt;td&gt;Bob&lt;/td&gt;
+            &lt;td&gt;24&lt;/td&gt;
+        &lt;/tr&gt;
+    &lt;/tbody&gt;
+    &lt;tfoot&gt;
+        &lt;tr&gt;&lt;td&gt;2 people&lt;/td&gt;&lt;/tr&gt;
+    &lt;/tfoot&gt;
+&lt;/table&gt;</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <table>
+                            <caption>My Friends</caption>
+                            <thead><tr><th>Name</th><th>Age</th></tr></thead>
+                            <tbody>
+                                <tr><td>Alice</td><td>21</td></tr>
+                                <tr><td>Bob</td><td>24</td></tr>
+                            </tbody>
+                            <tfoot><tr><td colspan="2">2 people</td></tr></tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <h3>Merging cells: colspan &amp; rowspan</h3>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>&lt;table&gt;
+    &lt;tr&gt;
+        &lt;th colspan="2"&gt;Merged 2 columns&lt;/th&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+        &lt;td rowspan="2"&gt;Merged 2 rows&lt;/td&gt;
+        &lt;td&gt;Cell A&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+        &lt;td&gt;Cell B&lt;/td&gt;
+    &lt;/tr&gt;
+&lt;/table&gt;</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <table>
+                            <tr><th colspan="2">Merged 2 columns</th></tr>
+                            <tr><td rowspan="2">Merged 2 rows</td><td>Cell A</td></tr>
+                            <tr><td>Cell B</td></tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <h3>Column styling with &lt;colgroup&gt;</h3>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>&lt;table&gt;
+    &lt;colgroup&gt;
+        &lt;col style="background:#ddf4ff"&gt;
+        &lt;col span="2" style="background:#fff8c5"&gt;
+    &lt;/colgroup&gt;
+    &lt;tr&gt;
+        &lt;th&gt;Name&lt;/th&gt;
+        &lt;th&gt;Score&lt;/th&gt;
+        &lt;th&gt;Grade&lt;/th&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+        &lt;td&gt;Alice&lt;/td&gt;
+        &lt;td&gt;92&lt;/td&gt;
+        &lt;td&gt;A&lt;/td&gt;
+    &lt;/tr&gt;
+&lt;/table&gt;</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <table>
+                            <colgroup>
+                                <col style="background:#ddf4ff">
+                                <col span="2" style="background:#fff8c5">
+                            </colgroup>
+                            <tr><th>Name</th><th>Score</th><th>Grade</th></tr>
+                            <tr><td>Alice</td><td>92</td><td>A</td></tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="tip"><strong>Note:</strong> &lt;table&gt; is for <em>tabular data</em> (scores, schedules, prices).
+            For page layout, use CSS — not tables. That was the 1990s way!</div>
+        </section>
+
+        <!-- ================= 16 LINKS ================= -->
+        <section class="card" id="links">
+            <h2><span class="num">16</span>Links &lt;a&gt; — everything</h2>
+            <p>Links are the "hyper" in HTML. The <code class="inline">href</code> attribute holds the destination.
+            Everything below is clickable — try it!</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>&lt;!-- external link, new tab --&gt;
+&lt;a href="https://developer.mozilla.org"
+   target="_blank"&gt;MDN Web Docs&lt;/a&gt;
+
+&lt;!-- link to a section on this page --&gt;
+&lt;a href="#top"&gt;Back to top&lt;/a&gt;
+
+&lt;!-- email &amp; phone --&gt;
+&lt;a href="mailto:me@example.com"&gt;Email me&lt;/a&gt;
+&lt;a href="tel:+919876543210"&gt;Call me&lt;/a&gt;
+
+&lt;!-- download a file --&gt;
+&lt;a href="photo.jpg" download&gt;
+    Download photo
+&lt;/a&gt;
+
+&lt;!-- link rel for search engines --&gt;
+&lt;a href="/next-page" rel="next"&gt;Next&lt;/a&gt;
+
+&lt;!-- styled as a button --&gt;
+&lt;a href="https://example.com"
+   style="background:#0969da;color:#fff;
+          padding:8px 16px;border-radius:6px;
+          text-decoration:none;"&gt;
+    Visit Example
+&lt;/a&gt;</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <p><a href="https://developer.mozilla.org" target="_blank">MDN Web Docs</a> (new tab)</p>
+                        <p><a href="#top">Back to top</a> (jumps on this page)</p>
+                        <p><a href="mailto:me@example.com">Email me</a> · <a href="tel:+919876543210">Call me</a></p>
+                        <p><a href="#" download>Download photo</a> (needs a real file)</p>
+                        <p><a href="#" rel="next">Next</a></p>
+                        <p><a href="https://example.com" style="background:#0969da;color:#fff;padding:8px 16px;border-radius:6px;text-decoration:none;display:inline-block;">Visit Example</a></p>
+                    </div>
+                </div>
+            </div>
+            <h3>&lt;a&gt; attributes</h3>
+            <table>
+                <thead>
+                    <tr><th>Attribute</th><th>What it does</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><code class="inline">href</code></td><td>destination: URL, #section, mailto:, tel:</td></tr>
+                    <tr><td><code class="inline">target="_blank"</code></td><td>open in a new tab</td></tr>
+                    <tr><td><code class="inline">target="_self"</code></td><td>same tab (default)</td></tr>
+                    <tr><td><code class="inline">download</code></td><td>download instead of opening</td></tr>
+                    <tr><td><code class="inline">rel="noopener"</code></td><td>safety with target=_blank</td></tr>
+                    <tr><td><code class="inline">title</code></td><td>tooltip on hover</td></tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- ================= 17 IMAGES ================= -->
+        <section class="card" id="images">
+            <h2><span class="num">17</span>Images — everything</h2>
+            <p><code class="inline">&lt;img&gt;</code> = image. <code class="inline">src</code> = file, <code class="inline">alt</code> =
+            description (always write it!).</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>&lt;!-- local file --&gt;
+&lt;img src="photo.jpg" alt="A photo I took"&gt;
+
+&lt;!-- internet image, sized --&gt;
+&lt;img src="https://picsum.photos/
+     seed/html/240/140"
+     alt="Random photo"
+     width="240" height="140"
+     loading="lazy"&gt;
+&lt;!-- lazy = load when scrolled into view --&gt;</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <p><img src="https://picsum.photos/seed/htmlnotes/240/140" alt="Random placeholder photo" width="240" height="140"></p>
+                        <p style="color:#57606a;font-size:12px;">(needs internet; local files work offline)</p>
+                    </div>
+                </div>
+            </div>
+            <h3>&lt;figure&gt; + &lt;figcaption&gt; — image with caption</h3>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>&lt;figure&gt;
+    &lt;img src="https://picsum.photos/
+         seed/fig/240/140"
+         alt="Sunset photo"&gt;
+    &lt;figcaption&gt;
+        Fig. 1 — Sunset at the beach
+    &lt;/figcaption&gt;
+&lt;/figure&gt;</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <figure style="margin:0;">
+                            <img src="https://picsum.photos/seed/fig2/240/140" alt="Sunset photo">
+                            <figcaption style="font-size:12px;color:#57606a;">Fig. 1 — Sunset at the beach</figcaption>
+                        </figure>
+                    </div>
+                </div>
+            </div>
+            <h3>&lt;picture&gt; — different images for different screens</h3>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>&lt;picture&gt;
+    &lt;source media="(min-width: 800px)"
+            srcset="big.jpg"&gt;
+    &lt;source media="(min-width: 400px)"
+            srcset="medium.jpg"&gt;
+    &lt;img src="small.jpg"
+         alt="Responsive image"&gt;
+    &lt;!-- img is always required as fallback --&gt;
+&lt;/picture&gt;</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <picture>
+                            <source media="(min-width: 800px)" srcset="https://picsum.photos/seed/picbig/320/140">
+                            <source media="(min-width: 400px)" srcset="https://picsum.photos/seed/picmed/260/140">
+                            <img src="https://picsum.photos/seed/picsmall/200/140" alt="Responsive image" style="max-width:100%;">
+                        </picture>
+                        <p style="font-size:12px;color:#57606a;">Resize the window — the browser picks big/medium/small!</p>
+                    </div>
+                </div>
+            </div>
+            <h3>Image map: &lt;map&gt; + &lt;area&gt; (clickable regions)</h3>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>&lt;img src="map.png" alt="A map"
+     usemap="#mymap"&gt;
+
+&lt;map name="mymap"&gt;
+    &lt;!-- clickable circle --&gt;
+    &lt;area shape="circle"
+          coords="60,60,40"
+          href="page-a.html"
+          alt="Zone A"&gt;
+    &lt;!-- clickable rectangle --&gt;
+    &lt;area shape="rect"
+          coords="120,20,200,100"
+          href="page-b.html"
+          alt="Zone B"&gt;
+&lt;/map&gt;</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <svg width="240" height="130" viewBox="0 0 240 130">
+                            <rect x="0" y="0" width="240" height="130" fill="#f6f8fa" stroke="#d0d7de"/>
+                            <circle cx="60" cy="65" r="40" fill="#ddf4ff" stroke="#0969da"/>
+                            <rect x="120" y="20" width="100" height="90" fill="#ffebe9" stroke="#cf222e"/>
+                        </svg>
+                        <p style="font-size:12px;color:#57606a;">Concept: areas map to links on an image.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= 18 MEDIA ================= -->
+        <section class="card" id="media">
+            <h2><span class="num">18</span>Audio &amp; Video</h2>
+            <p><code class="inline">controls</code> shows the play button. Use multiple
+            <code class="inline">&lt;source&gt;</code> tags to support different formats. The text between the tags shows
+            on very old browsers that can't play media.</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>&lt;audio controls&gt;
+    &lt;source src="song.mp3"
+            type="audio/mpeg"&gt;
+    Your browser can't play audio.
+&lt;/audio&gt;
+
+&lt;video controls width="320"&gt;
+    &lt;source src="movie.mp4"
+            type="video/mp4"&gt;
+    Your browser can't play video.
+&lt;/video&gt;</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <p style="font-weight:700;margin-bottom:6px;">Audio:</p>
+                        <audio controls style="width:100%;">
+                            <source src="https://interactive-examples.mdn.mozilla.net/media/cc0-audio/t-rex-roar.mp3" type="audio/mpeg">
+                            Your browser can't play audio.
+                        </audio>
+                        <p style="font-weight:700;margin:12px 0 6px;">Video:</p>
+                        <video controls width="280" style="max-width:100%;">
+                            <source src="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4" type="video/mp4">
+                            Your browser can't play video.
+                        </video>
+                    </div>
+                </div>
+            </div>
+            <h3>Useful media attributes</h3>
+            <table>
+                <thead>
+                    <tr><th>Attribute</th><th>What it does</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><code class="inline">controls</code></td><td>shows play/pause/volume buttons</td></tr>
+                    <tr><td><code class="inline">autoplay</code></td><td>starts playing automatically (browsers may block it)</td></tr>
+                    <tr><td><code class="inline">loop</code></td><td>plays again when it ends</td></tr>
+                    <tr><td><code class="inline">muted</code></td><td>starts muted (needed for autoplay to work)</td></tr>
+                    <tr><td><code class="inline">poster="x.jpg"</code></td><td>video: the preview image before playing</td></tr>
+                    <tr><td><code class="inline">preload="none"</code></td><td>don't download until play (saves data)</td></tr>
+                    <tr><td><code class="inline">&lt;track&gt;</code></td><td>subtitles for video: <code class="inline">&lt;track src="subs.vtt" kind="subtitles"&gt;</code></td></tr>
+                </tbody>
+            </table>
+            <div class="warn"><strong>Note:</strong> audio/video previews above need internet. For your own files, put
+            <code class="inline">song.mp3</code> next to your .html file and reference it like the code sample shows.</div>
+        </section>
+
+        <!-- ================= 19 IFRAME & EMBED ================= -->
+        <section class="card" id="iframe">
+            <h2><span class="num">19</span>&lt;iframe&gt;, &lt;embed&gt; &amp; &lt;object&gt;</h2>
+            <p>An iframe puts a whole other page inside yours (maps, videos, other sites).</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>&lt;iframe
+    src="https://www.openstreetmap.org/
+         export/embed.html?bbox=72.82,
+         19.07,72.87,19.12&amp;layer=mapnik"
+    width="100%" height="220"
+    title="Map of Mumbai"
+    style="border:0"&gt;
+&lt;/iframe&gt;</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview" style="padding:0;">
+                        <iframe
+                            src="https://www.openstreetmap.org/export/embed.html?bbox=72.82,19.07,72.87,19.12&amp;layer=mapnik"
+                            width="100%" height="220" title="Map of Mumbai" style="border:0;display:block;"></iframe>
+                    </div>
+                </div>
+            </div>
+            <table>
+                <thead>
+                    <tr><th>Tag</th><th>What it's for</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><code class="inline">&lt;iframe&gt;</code></td><td>embed another HTML page (maps, YouTube, widgets)</td></tr>
+                    <tr><td><code class="inline">&lt;embed&gt;</code></td><td>embed PDFs or plugins: <code class="inline">&lt;embed src="doc.pdf" type="application/pdf"&gt;</code></td></tr>
+                    <tr><td><code class="inline">&lt;object&gt;</code></td><td>older way to embed files (PDF, video, Flash)</td></tr>
+                    <tr><td><code class="inline">&lt;param&gt;</code></td><td>parameters for &lt;object&gt;</td></tr>
+                </tbody>
+            </table>
+            <div class="tip"><strong>Fun fact:</strong> every YouTube video is just an iframe.
+            On any video: <em>Share → Embed</em> → copy the code. Same for Google Maps: <em>Share → Embed a map</em>.</div>
+        </section>
+
+        <!-- ================= 20 FORM TAG ================= -->
+        <section class="card" id="form">
+            <h2><span class="num">20</span>The &lt;form&gt; Tag</h2>
+            <p>Every form needs <code class="inline">&lt;form&gt;</code>. Two crucial attributes:</p>
+            <ul>
+                <li><code class="inline">action</code> — where to send the data (a server URL)</li>
+                <li><code class="inline">method</code> — <strong>GET</strong> (data in the URL, for search) or <strong>POST</strong> (data in the request body, for passwords/orders)</li>
+            </ul>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>&lt;form action="/search"
+      method="get"&gt;
+    &lt;input type="search"
+           name="q"&gt;
+    &lt;button type="submit"&gt;
+        Search
+    &lt;/button&gt;
+&lt;/form&gt;
+
+&lt;!-- POST: sensitive data --&gt;
+&lt;form action="/signup"
+      method="post"
+      autocomplete="on"&gt;
+    &lt;!-- fields here --&gt;
+&lt;/form&gt;</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <p style="font-weight:700;">Type something and press Enter:</p>
+                        <form action="#" method="get" onsubmit="return false" style="display:flex;gap:8px;">
+                            <input type="search" name="q" placeholder="Search..." style="flex:1;padding:6px 8px;border:1px solid #d0d7de;border-radius:6px;">
+                            <button type="submit" style="background:#0969da;color:#fff;border:0;padding:6px 14px;border-radius:6px;cursor:pointer;">Search</button>
+                        </form>
+                        <p style="font-size:12px;color:#57606a;margin-top:8px;">GET would put ?q=yourtext in the URL.
+                        The demo stops itself so the page doesn't reload.</p>
+                    </div>
+                </div>
+            </div>
+            <h3>form attributes</h3>
+            <table>
+                <thead>
+                    <tr><th>Attribute</th><th>What it does</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><code class="inline">action</code></td><td>where the data goes</td></tr>
+                    <tr><td><code class="inline">method</code></td><td>get or post</td></tr>
+                    <tr><td><code class="inline">autocomplete</code></td><td>on/off browser autofill</td></tr>
+                    <tr><td><code class="inline">novalidate</code></td><td>turn off browser validation</td></tr>
+                    <tr><td><code class="inline">target</code></td><td>where to open the response</td></tr>
+                    <tr><td><code class="inline">enctype</code></td><td>for file uploads: <code class="inline">enctype="multipart/form-data"</code></td></tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- ================= 21 INPUT TYPES ================= -->
+        <section class="card" id="input">
+            <h2><span class="num">21</span>Input Types — all of them</h2>
+            <p>The <code class="inline">type</code> attribute decides the kind of field. Each type gets special
+            keyboard, validation, or picker UI from the browser. Try them all below!</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>&lt;input type="text"&gt;          &lt;!-- text --&gt;
+&lt;input type="password"&gt;      &lt;!-- hidden dots --&gt;
+&lt;input type="email"&gt;         &lt;!-- email check --&gt;
+&lt;input type="tel"&gt;           &lt;!-- phone --&gt;
+&lt;input type="url"&gt;           &lt;!-- link check --&gt;
+&lt;input type="number"&gt;        &lt;!-- spinner --&gt;
+&lt;input type="range"&gt;         &lt;!-- slider --&gt;
+&lt;input type="date"&gt;          &lt;!-- date picker --&gt;
+&lt;input type="datetime-local"&gt; &lt;!-- date+time --&gt;
+&lt;input type="month"&gt;         &lt;!-- month picker --&gt;
+&lt;input type="week"&gt;          &lt;!-- week picker --&gt;
+&lt;input type="time"&gt;          &lt;!-- time picker --&gt;
+&lt;input type="color"&gt;         &lt;!-- color picker --&gt;
+&lt;input type="search"&gt;        &lt;!-- search box --&gt;
+&lt;input type="checkbox"&gt;      &lt;!-- tick box --&gt;
+&lt;input type="radio"&gt;         &lt;!-- one of group --&gt;
+&lt;input type="file"&gt;          &lt;!-- upload --&gt;
+&lt;input type="hidden"&gt;        &lt;!-- invisible data --&gt;
+&lt;input type="submit"&gt;        &lt;!-- send button --&gt;
+&lt;input type="reset"&gt;         &lt;!-- clear button --&gt;
+&lt;input type="button"&gt;        &lt;!-- plain button --&gt;
+&lt;input type="image"&gt;         &lt;!-- picture button --&gt;</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <div style="display:grid;grid-template-columns:110px 1fr;gap:6px 10px;font-size:13px;">
+                            <span>text</span><input type="text" value="Plain text">
+                            <span>password</span><input type="password" value="secret">
+                            <span>email</span><input type="email" value="a@b.com">
+                            <span>tel</span><input type="tel" value="9876543210">
+                            <span>url</span><input type="url" value="https://x.com">
+                            <span>number</span><input type="number" value="42">
+                            <span>range</span><input type="range" value="50">
+                            <span>date</span><input type="date" value="2026-08-13">
+                            <span>datetime-local</span><input type="datetime-local" value="2026-08-13T10:30">
+                            <span>month</span><input type="month" value="2026-08">
+                            <span>week</span><input type="week" value="2026-W33">
+                            <span>time</span><input type="time" value="10:30">
+                            <span>color</span><input type="color" value="#a371f7">
+                            <span>search</span><input type="search" value="find me">
+                            <span>checkbox</span><span><input type="checkbox" checked> Yes</span>
+                            <span>radio</span><span><input type="radio" name="r"> A <input type="radio" name="r" checked> B</span>
+                            <span>file</span><input type="file">
+                            <span>hidden</span><span style="color:#57606a;">(invisible — carries data)</span>
+                        </div>
+                        <div style="margin-top:10px;display:flex;gap:8px;">
+                            <input type="submit" value="Submit">
+                            <input type="reset" value="Reset">
+                            <input type="button" value="Button">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <table>
+                <thead>
+                    <tr><th>Type</th><th>Use for</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><code class="inline">text</code></td><td>any short text (default)</td></tr>
+                    <tr><td><code class="inline">email</code> / <code class="inline">url</code> / <code class="inline">tel</code></td><td>browser validates the format</td></tr>
+                    <tr><td><code class="inline">password</code></td><td>hidden characters</td></tr>
+                    <tr><td><code class="inline">number</code> / <code class="inline">range</code></td><td>numbers: exact input / slider</td></tr>
+                    <tr><td><code class="inline">date</code> / <code class="inline">time</code> / <code class="inline">datetime-local</code> / <code class="inline">month</code> / <code class="inline">week</code></td><td>calendar &amp; clock pickers</td></tr>
+                    <tr><td><code class="inline">color</code></td><td>color picker</td></tr>
+                    <tr><td><code class="inline">search</code></td><td>search box with clear ✕</td></tr>
+                    <tr><td><code class="inline">checkbox</code></td><td>tick any number of options</td></tr>
+                    <tr><td><code class="inline">radio</code></td><td>pick exactly one (same name)</td></tr>
+                    <tr><td><code class="inline">file</code></td><td>file upload (with enctype on the form)</td></tr>
+                    <tr><td><code class="inline">hidden</code></td><td>sends data the user never sees</td></tr>
+                    <tr><td><code class="inline">submit</code> / <code class="inline">reset</code> / <code class="inline">button</code> / <code class="inline">image</code></td><td>the four button kinds</td></tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- ================= 22 SELECT & TEXTAREA ================= -->
+        <section class="card" id="select">
+            <h2><span class="num">22</span>&lt;select&gt;, &lt;textarea&gt; &amp; &lt;datalist&gt;</h2>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>&lt;!-- dropdown menu --&gt;
+&lt;label for="country"&gt;Country:&lt;/label&gt;
+&lt;select id="country" name="country"&gt;
+    &lt;option value="in"&gt;India&lt;/option&gt;
+    &lt;option value="us"&gt;USA&lt;/option&gt;
+    &lt;option value="uk" selected&gt;UK&lt;/option&gt;
+&lt;/select&gt;
+
+&lt;!-- grouped options --&gt;
+&lt;select&gt;
+    &lt;optgroup label="Fruits"&gt;
+        &lt;option&gt;Apple&lt;/option&gt;
+        &lt;option&gt;Mango&lt;/option&gt;
+    &lt;/optgroup&gt;
+    &lt;optgroup label="Veggies"&gt;
+        &lt;option&gt;Carrot&lt;/option&gt;
+    &lt;/optgroup&gt;
+&lt;/select&gt;
+
+&lt;!-- multi-select (hold Ctrl) --&gt;
+&lt;select multiple&gt;
+    &lt;option&gt;HTML&lt;/option&gt;
+    &lt;option&gt;CSS&lt;/option&gt;
+    &lt;option&gt;JS&lt;/option&gt;
+&lt;/select&gt;
+
+&lt;!-- big text area --&gt;
+&lt;textarea name="msg" rows="4"
+          cols="30"&gt;Default text&lt;/textarea&gt;</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <div style="margin-bottom:10px;">
+                            <label for="p-country" style="font-weight:600;display:block;">Country:</label>
+                            <select id="p-country" style="padding:6px 8px;border:1px solid #d0d7de;border-radius:6px;">
+                                <option value="in">India</option>
+                                <option value="us">USA</option>
+                                <option value="uk" selected>UK</option>
+                            </select>
+                        </div>
+                        <div style="margin-bottom:10px;">
+                            <span style="font-weight:600;display:block;">Grouped:</span>
+                            <select style="padding:6px 8px;border:1px solid #d0d7de;border-radius:6px;">
+                                <optgroup label="Fruits">
+                                    <option>Apple</option><option>Mango</option>
+                                </optgroup>
+                                <optgroup label="Veggies">
+                                    <option>Carrot</option>
+                                </optgroup>
+                            </select>
+                        </div>
+                        <div style="margin-bottom:10px;">
+                            <span style="font-weight:600;display:block;">Multi-select (Ctrl+click):</span>
+                            <select multiple size="3" style="padding:6px 8px;border:1px solid #d0d7de;border-radius:6px;">
+                                <option>HTML</option><option>CSS</option><option>JS</option>
+                            </select>
+                        </div>
+                        <div>
+                            <span style="font-weight:600;display:block;">Textarea:</span>
+                            <textarea rows="4" cols="30" style="padding:6px 8px;border:1px solid #d0d7de;border-radius:6px;">Default text</textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <h3>&lt;datalist&gt; — text input with suggestions</h3>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>&lt;input list="browsers"&gt;
+&lt;datalist id="browsers"&gt;
+    &lt;option value="Chrome"&gt;
+    &lt;option value="Firefox"&gt;
+    &lt;option value="Edge"&gt;
+    &lt;option value="Safari"&gt;
+&lt;/datalist&gt;</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <p style="font-weight:600;">Start typing "C":</p>
+                        <input list="p-browsers" style="width:100%;padding:6px 8px;border:1px solid #d0d7de;border-radius:6px;">
+                        <datalist id="p-browsers">
+                            <option value="Chrome">
+                            <option value="Firefox">
+                            <option value="Edge">
+                            <option value="Safari">
+                        </datalist>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= 23 FIELDSET & FRIENDS ================= -->
+        <section class="card" id="fieldset">
+            <h2><span class="num">23</span>&lt;fieldset&gt;, &lt;output&gt;, &lt;progress&gt; &amp; &lt;meter&gt;</h2>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>&lt;fieldset&gt;
+    &lt;legend&gt;Personal Info&lt;/legend&gt;
+    &lt;!-- groups fields in a box --&gt;
+    Name: &lt;input type="text"&gt;
+&lt;/fieldset&gt;
+
+&lt;fieldset disabled&gt;
+    &lt;legend&gt;Disabled group&lt;/legend&gt;
+    &lt;input type="text" value="can't type"/&gt;
+&lt;/fieldset&gt;
+
+&lt;!-- result of a calculation --&gt;
+&lt;form oninput="result.value =
+      parseInt(a.value)+parseInt(b.value)"&gt;
+    &lt;input type="range" id="a" value="40"&gt;
+    &lt;input type="range" id="b" value="30"&gt;
+    = &lt;output name="result"&gt;70&lt;/output&gt;
+&lt;/form&gt;
+
+&lt;!-- progress = task progress --&gt;
+&lt;progress value="70" max="100"&gt;&lt;/progress&gt;
+
+&lt;!-- meter = measurement --&gt;
+&lt;meter value="0.8"&gt;80%&lt;/meter&gt;</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <fieldset style="border:1px solid #d0d7de;border-radius:8px;padding:10px 14px;margin-bottom:10px;">
+                            <legend style="font-weight:700;">Personal Info</legend>
+                            Name: <input type="text" style="padding:4px 6px;border:1px solid #d0d7de;border-radius:6px;">
+                        </fieldset>
+                        <fieldset disabled style="border:1px solid #d0d7de;border-radius:8px;padding:10px 14px;margin-bottom:10px;">
+                            <legend style="font-weight:700;">Disabled group</legend>
+                            <input type="text" value="can't type" style="padding:4px 6px;border:1px solid #d0d7de;border-radius:6px;">
+                        </fieldset>
+                        <form oninput="res.value = parseInt(a2.value) + parseInt(b2.value)" style="margin-bottom:10px;">
+                            <input type="range" id="a2" value="40" style="width:40%;"> +
+                            <input type="range" id="b2" value="30" style="width:40%;"> =
+                            <output id="res" style="font-weight:700;">70</output>
+                        </form>
+                        <p style="margin-bottom:2px;">Progress:</p>
+                        <progress value="70" max="100"></progress>
+                        <p style="margin:10px 0 2px;">Meter:</p>
+                        <meter value="0.8">80%</meter>
+                    </div>
+                </div>
+            </div>
+            <div class="tip"><strong>Live demo:</strong> drag the two sliders in the result panel — the
+            <code class="inline">&lt;output&gt;</code> recalculates instantly using a tiny bit of inline JavaScript.</div>
+        </section>
+
+        <!-- ================= 24 INPUT ATTRIBUTES ================= -->
+        <section class="card" id="attrs">
+            <h2><span class="num">24</span>Input &amp; Form Attributes (validation)</h2>
+            <p>Attributes control size, limits, and validation. Browsers validate <em>automatically</em> —
+            try submitting the demo with an empty or wrong value!</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>&lt;input type="text" name="username"
+       placeholder="Your name"&gt;
+&lt;!-- placeholder = grey hint --&gt;
+
+&lt;input type="text" value="Default"&gt;
+&lt;!-- value = prefilled --&gt;
+
+&lt;input type="text" maxlength="10"&gt;
+&lt;!-- max 10 characters --&gt;
+
+&lt;input type="number" min="1" max="100"
+       step="5"&gt;
+&lt;!-- limits for numbers --&gt;
+
+&lt;input type="text" required&gt;
+&lt;!-- can't submit empty --&gt;
+
+&lt;input type="text" pattern="[A-Z]{3}"&gt;
+&lt;!-- must match pattern (3 caps) --&gt;
+
+&lt;input type="text" readonly&gt;
+&lt;!-- view only --&gt;
+
+&lt;input type="text" disabled&gt;
+&lt;!-- greyed out, not sent --&gt;
+
+&lt;input type="checkbox" checked&gt;
+&lt;!-- pre-checked --&gt;
+
+&lt;input autofocus&gt;
+&lt;!-- focused on page load --&gt;</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <form onsubmit="return false" style="display:grid;gap:8px;font-size:13px;">
+                            <div><input type="text" placeholder="Your name" style="width:100%;padding:6px 8px;border:1px solid #d0d7de;border-radius:6px;"></div>
+                            <div><input type="text" value="Default" style="width:100%;padding:6px 8px;border:1px solid #d0d7de;border-radius:6px;"></div>
+                            <div><input type="text" maxlength="10" placeholder="max 10 chars" style="width:100%;padding:6px 8px;border:1px solid #d0d7de;border-radius:6px;"></div>
+                            <div><input type="number" min="1" max="100" step="5" value="10" style="padding:6px 8px;border:1px solid #d0d7de;border-radius:6px;"></div>
+                            <div><input type="text" required placeholder="required *" style="width:100%;padding:6px 8px;border:1px solid #d0d7de;border-radius:6px;"></div>
+                            <div><input type="text" pattern="[A-Z]{3}" placeholder="3 CAPS (ABC)" style="width:100%;padding:6px 8px;border:1px solid #d0d7de;border-radius:6px;"></div>
+                            <div><input type="text" readonly value="readonly — can't edit" style="width:100%;padding:6px 8px;border:1px solid #d0d7de;border-radius:6px;background:#f6f8fa;"></div>
+                            <div><input type="text" disabled value="disabled — greyed" style="width:100%;padding:6px 8px;border:1px solid #d0d7de;border-radius:6px;"></div>
+                            <div><input type="checkbox" checked> <label>checked by default</label></div>
+                            <div><button type="submit" style="background:#0969da;color:#fff;border:0;padding:8px 16px;border-radius:6px;cursor:pointer;">Try to submit</button></div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <table>
+                <thead>
+                    <tr><th>Attribute</th><th>What it does</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><code class="inline">name</code></td><td>the data's key when submitted — <strong>always set it!</strong></td></tr>
+                    <tr><td><code class="inline">value</code></td><td>prefilled content</td></tr>
+                    <tr><td><code class="inline">placeholder</code></td><td>grey hint text</td></tr>
+                    <tr><td><code class="inline">required</code></td><td>must be filled to submit</td></tr>
+                    <tr><td><code class="inline">maxlength</code></td><td>max characters</td></tr>
+                    <tr><td><code class="inline">min / max / step</code></td><td>limits for number/date/range</td></tr>
+                    <tr><td><code class="inline">pattern</code></td><td>regex the value must match</td></tr>
+                    <tr><td><code class="inline">readonly</code></td><td>view only (still sent)</td></tr>
+                    <tr><td><code class="inline">disabled</code></td><td>not usable, not sent</td></tr>
+                    <tr><td><code class="inline">checked / selected</code></td><td>pre-select checkbox/option</td></tr>
+                    <tr><td><code class="inline">multiple</code></td><td>allow several files/options</td></tr>
+                    <tr><td><code class="inline">autofocus</code></td><td>focus on page load</td></tr>
+                    <tr><td><code class="inline">accept="image/*"</code></td><td>file: only images</td></tr>
+                </tbody>
+            </table>
+            <div class="warn"><strong>Important:</strong> browser validation is only <em>convenience</em>.
+            Real validation must happen on the server too — that's a back-end lesson for later.</div>
+        </section>
+
+        <!-- ================= 25 GLOBAL ATTRIBUTES ================= -->
+        <section class="card" id="global">
+            <h2><span class="num">25</span>Global Attributes — work on every tag</h2>
+            <p>These attributes work on <em>any</em> element. Try them in the demo:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>&lt;p id="unique"&gt;id = unique name&lt;/p&gt;
+&lt;p class="red"&gt;class = group name&lt;/p&gt;
+&lt;p style="color:tomato"&gt;
+    style = inline CSS&lt;/p&gt;
+&lt;p title="I'm a tooltip"&gt;
+    title = hover me&lt;/p&gt;
+&lt;p lang="hi"&gt;नमस्ते दुनिया&lt;/p&gt;
+&lt;p dir="rtl"&gt;مرحبا&lt;/p&gt;
+&lt;p hidden&gt;I am invisible&lt;/p&gt;
+&lt;p contenteditable="true"&gt;
+    click &amp; edit me!&lt;/p&gt;
+&lt;p data-id="7"
+   data-role="admin"&gt;
+    custom data-* attributes&lt;/p&gt;
+&lt;p tabindex="0"&gt;
+    focusable with Tab key&lt;/p&gt;</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <p><strong>id</strong> = unique name (used by links/CSS/JS)</p>
+                        <p><strong>class</strong> = group name (used by CSS)</p>
+                        <p style="color:tomato;"><strong>style</strong> = inline CSS (tomato color)</p>
+                        <p title="I'm a tooltip"><strong>title</strong> = hover me (hold still!)</p>
+                        <p lang="hi"><strong>lang</strong> = नमस्ते दुनिया</p>
+                        <p dir="rtl"><strong>dir</strong> = مرحبا (right-to-left)</p>
+                        <p><strong>hidden</strong> = (the hidden line is not displayed)</p>
+                        <p contenteditable="true" style="border:1px dashed #0969da;border-radius:6px;padding:4px 8px;">
+                            <strong>contenteditable</strong> = click &amp; edit me!</p>
+                        <p><strong>data-*</strong> = custom data (data-id="7") — read by JavaScript</p>
+                        <p tabindex="0"><strong>tabindex</strong> = reachable with the Tab key</p>
+                    </div>
+                </div>
+            </div>
+            <h3>Quick reference</h3>
+            <table>
+                <thead>
+                    <tr><th>Attribute</th><th>What it does</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><code class="inline">id</code></td><td>unique identifier — one per page</td></tr>
+                    <tr><td><code class="inline">class</code></td><td>group identifier — reusable</td></tr>
+                    <tr><td><code class="inline">style</code></td><td>inline CSS (avoid if possible)</td></tr>
+                    <tr><td><code class="inline">title</code></td><td>tooltip text on hover</td></tr>
+                    <tr><td><code class="inline">lang</code></td><td>language of the text (screen readers use it)</td></tr>
+                    <tr><td><code class="inline">dir</code></td><td>text direction: ltr / rtl</td></tr>
+                    <tr><td><code class="inline">hidden</code></td><td>hide the element entirely</td></tr>
+                    <tr><td><code class="inline">contenteditable</code></td><td>let users edit the text inline</td></tr>
+                    <tr><td><code class="inline">draggable</code></td><td>make it draggable with the mouse</td></tr>
+                    <tr><td><code class="inline">data-*</code></td><td>your own custom data for JavaScript</td></tr>
+                    <tr><td><code class="inline">tabindex</code></td><td>Tab-key order / focusability</td></tr>
+                    <tr><td><code class="inline">accesskey</code></td><td>keyboard shortcut (Alt+K)</td></tr>
+                    <tr><td><code class="inline">spellcheck</code></td><td>enable/disable spell check</td></tr>
+                </tbody>
+            </table>
+            <div class="tip"><strong>data-* tip:</strong> <code class="inline">data-price="500"</code> is a standard way to
+            store extra info in HTML for JavaScript to read later (e.g. a button remembering which product it belongs to).</div>
+        </section>
+
+        <!-- ================= 26 INTERACTIVE ================= -->
+        <section class="card" id="interactive">
+            <h2><span class="num">26</span>Interactive Elements — details, summary, dialog</h2>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>&lt;!-- click-to-expand box --&gt;
+&lt;details&gt;
+    &lt;summary&gt;What is HTML?&lt;/summary&gt;
+    &lt;p&gt;The skeleton of every website.&lt;/p&gt;
+&lt;/details&gt;
+
+&lt;details open&gt;
+    &lt;summary&gt;This one is open by default&lt;/summary&gt;
+    &lt;p&gt;Hello!&lt;/p&gt;
+&lt;/details&gt;
+
+&lt;!-- popup window --&gt;
+&lt;dialog open&gt;
+    &lt;p&gt;A popup box!&lt;/p&gt;
+    &lt;form method="dialog"&gt;
+        &lt;button&gt;Close&lt;/button&gt;
+    &lt;/form&gt;
+&lt;/dialog&gt;</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <details>
+                            <summary>What is HTML?</summary>
+                            <p style="margin-top:6px;">The skeleton of every website.</p>
+                        </details>
+                        <details open>
+                            <summary>This one is open by default</summary>
+                            <p style="margin-top:6px;">Hello!</p>
+                        </details>
+                        <div style="border:1px solid #d0d7de;border-radius:8px;padding:12px;margin-top:6px;background:#f6f8fa;">
+                            <p style="margin:0 0 8px;">dialog open — a popup box (shows with the <code class="inline">open</code> attribute)</p>
+                            <button style="background:#0969da;color:#fff;border:0;padding:6px 14px;border-radius:6px;cursor:pointer;">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="tip"><strong>Nice to know:</strong> &lt;details&gt; works with zero JavaScript —
+            the browser does all the expanding. JavaScript can open/close &lt;dialog&gt; with
+            <code class="inline">dialog.showModal()</code> / <code class="inline">dialog.close()</code> (that's a later lesson).</div>
+        </section>
+
+        <!-- ================= 27 SVG & SCRIPTS ================= -->
+        <section class="card" id="scripts">
+            <h2><span class="num">27</span>&lt;svg&gt;, &lt;canvas&gt;, &lt;template&gt; &amp; Events</h2>
+            <h3>SVG — vector graphics drawn with tags</h3>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>&lt;svg width="200" height="120"&gt;
+    &lt;!-- circle: cx,cy = center, r = radius --&gt;
+    &lt;circle cx="60" cy="60" r="45"
+            fill="#ddf4ff"
+            stroke="#0969da"
+            stroke-width="3"/&gt;
+    &lt;!-- rectangle --&gt;
+    &lt;rect x="130" y="20" width="60"
+          height="80" rx="8"
+          fill="#ffebe9"
+          stroke="#cf222e"/&gt;
+    &lt;!-- text --&gt;
+    &lt;text x="60" y="110"
+          text-anchor="middle"
+          font-size="12"&gt;SVG!&lt;/text&gt;
+&lt;/svg&gt;</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <svg width="200" height="120" style="max-width:100%;">
+                            <circle cx="60" cy="60" r="45" fill="#ddf4ff" stroke="#0969da" stroke-width="3"/>
+                            <rect x="130" y="20" width="60" height="80" rx="8" fill="#ffebe9" stroke="#cf222e"/>
+                            <text x="60" y="110" text-anchor="middle" font-size="12" fill="#1f2328">SVG!</text>
+                        </svg>
+                        <p style="font-size:12px;color:#57606a;">SVG never blurs — it scales to any size.
+                        Great for icons, charts and logos.</p>
+                    </div>
+                </div>
+            </div>
+            <h3>&lt;canvas&gt; — draw with JavaScript</h3>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>&lt;canvas id="myCanvas"
+        width="200" height="120"&gt;
+&lt;/canvas&gt;
+
+&lt;script&gt;
+    var c = document
+        .getElementById("myCanvas");
+    var ctx = c.getContext("2d");
+    ctx.fillStyle = "#a371f7";
+    ctx.fillRect(40, 30, 120, 60);
+&lt;/script&gt;</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <canvas id="miniCanvas" width="200" height="120" style="border:1px solid #d0d7de;border-radius:8px;max-width:100%;"></canvas>
+                        <script>
+                            (function () {
+                                var cv = document.getElementById("miniCanvas");
+                                if (cv && cv.getContext) {
+                                    var cx = cv.getContext("2d");
+                                    cx.fillStyle = "#a371f7";
+                                    cx.fillRect(40, 30, 120, 60);
+                                    cx.fillStyle = "#1f2328";
+                                    cx.font = "12px sans-serif";
+                                    cx.fillText("drawn by JS", 58, 70);
+                                }
+                            })();
+                        </script>
+                        <p style="font-size:12px;color:#57606a;">Canvas = a blank grid that JavaScript draws on.
+                        Used for games, charts and photo filters.</p>
+                    </div>
+                </div>
+            </div>
+            <h3>&lt;template&gt; &amp; &lt;slot&gt; — reusable chunks</h3>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>&lt;template id="cardTemplate"&gt;
+    &lt;div class="card"&gt;
+        &lt;p&gt;A reusable card&lt;/p&gt;
+    &lt;/div&gt;
+&lt;/template&gt;
+&lt;!-- hidden until JS clones it --&gt;</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <template id="cardTemplate">
+                            <div style="border:1px solid #d0d7de;border-radius:8px;padding:10px;"><p>A reusable card</p></div>
+                        </template>
+                        <p style="font-size:12px;color:#57606a;">The template is invisible here — JavaScript
+                        duplicates it as many times as needed (think: repeating list items).</p>
+                    </div>
+                </div>
+            </div>
+            <h3>Events — reacting to the user (short intro)</h3>
+            <p>HTML can attach behavior directly with <code class="inline">on...</code> attributes. Full power comes with
+            JavaScript, but see how simple it is:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>&lt;button onclick="alert('Hello!')"&gt;
+    Click me
+&lt;/button&gt;
+
+&lt;p onmouseover=
+    "this.style.color='tomato'"&gt;
+    Hover me
+&lt;/p&gt;</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <button onclick="alert('Hello! This is JavaScript inside HTML')" style="background:#0969da;color:#fff;border:0;padding:8px 16px;border-radius:6px;cursor:pointer;margin-bottom:10px;">Click me</button>
+                        <p onmouseover="this.style.color='tomato'" onmouseout="this.style.color=''">Hover me (goes tomato!)</p>
+                        <p style="font-size:12px;color:#57606a;">Common events: click, mouseover, keydown, submit, focus…</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= 28 ACCESSIBILITY ================= -->
+        <section class="card" id="a11y">
+            <h2><span class="num">28</span>Accessibility — HTML for everyone</h2>
+            <p>~15% of the world has a disability. Screen readers read your page aloud; keyboards navigate it.
+            Good HTML = accessible HTML. The basics:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>&lt;!-- alt: what a screen reader says --&gt;
+&lt;img src="dog.jpg"
+     alt="A golden retriever playing"&gt;
+
+&lt;!-- label: what the field is --&gt;
+&lt;label for="email"&gt;Email&lt;/label&gt;
+&lt;input type="email" id="email"&gt;
+
+&lt;!-- aria: extra info for readers --&gt;
+&lt;button aria-label="Close window"&gt;✕&lt;/button&gt;
+
+&lt;!-- role: what an element is --&gt;
+&lt;div role="alert"&gt;Error!&lt;/div&gt;
+
+&lt;!-- skip link for keyboard users --&gt;
+&lt;a class="skip-link" href="#content"&gt;
+    Skip to content
+&lt;/a&gt;</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <p style="font-weight:700;">Accessibility checklist:</p>
+                        <ul style="padding-left:20px;">
+                            <li>✅ <code class="inline">alt</code> on every image</li>
+                            <li>✅ <code class="inline">&lt;label&gt;</code> for every input</li>
+                            <li>✅ Real buttons for buttons (not divs)</li>
+                            <li>✅ One <code class="inline">&lt;h1&gt;</code>, logical heading order</li>
+                            <li>✅ Semantic tags (nav, main, footer)</li>
+                            <li>✅ Good color contrast (dark text on light)</li>
+                            <li>✅ <code class="inline">lang</code> attribute set</li>
+                            <li>✅ Text alternative for video (captions)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="tip"><strong>Mindset:</strong> build for everyone first, add fancy stuff second.
+            Accessible sites rank better on Google too — accessibility and SEO agree with each other!</div>
+        </section>
+
+        <!-- ================= 29 CHEAT SHEET ================= -->
+        <section class="card" id="cheat">
+            <h2><span class="num">29</span>The Complete Tag Cheat Sheet</h2>
+            <p>Every HTML5 tag, grouped by category. You've now seen every one of them in action above!
+            (Tags marked <em>void</em> have no closing tag.)</p>
+
+            <h3>📄 Document &amp; metadata</h3>
+            <table>
+                <thead><tr><th>Tag</th><th>Purpose</th></tr></thead>
+                <tbody>
+                    <tr><td><code class="inline">&lt;!DOCTYPE html&gt;</code></td><td>HTML5 declaration (void)</td></tr>
+                    <tr><td><code class="inline">&lt;html&gt;</code></td><td>root element</td></tr>
+                    <tr><td><code class="inline">&lt;head&gt;</code></td><td>metadata container</td></tr>
+                    <tr><td><code class="inline">&lt;title&gt;</code></td><td>page title / tab name</td></tr>
+                    <tr><td><code class="inline">&lt;meta&gt;</code></td><td>page info (charset, viewport…) (void)</td></tr>
+                    <tr><td><code class="inline">&lt;link&gt;</code></td><td>connect CSS/favicon (void)</td></tr>
+                    <tr><td><code class="inline">&lt;base&gt;</code></td><td>default URL for all links (void)</td></tr>
+                    <tr><td><code class="inline">&lt;style&gt;</code></td><td>embedded CSS</td></tr>
+                    <tr><td><code class="inline">&lt;script&gt;</code></td><td>embedded/external JavaScript</td></tr>
+                    <tr><td><code class="inline">&lt;noscript&gt;</code></td><td>shown only if JS is disabled</td></tr>
+                </tbody>
+            </table>
+
+            <h3>🧱 Page sections</h3>
+            <table>
+                <thead><tr><th>Tag</th><th>Purpose</th></tr></thead>
+                <tbody>
+                    <tr><td><code class="inline">&lt;body&gt;</code></td><td>visible content container</td></tr>
+                    <tr><td><code class="inline">&lt;header&gt;</code></td><td>top: logo, title, intro</td></tr>
+                    <tr><td><code class="inline">&lt;nav&gt;</code></td><td>navigation links</td></tr>
+                    <tr><td><code class="inline">&lt;main&gt;</code></td><td>main content (once per page)</td></tr>
+                    <tr><td><code class="inline">&lt;section&gt;</code></td><td>themed group of content</td></tr>
+                    <tr><td><code class="inline">&lt;article&gt;</code></td><td>self-contained content</td></tr>
+                    <tr><td><code class="inline">&lt;aside&gt;</code></td><td>side content</td></tr>
+                    <tr><td><code class="inline">&lt;footer&gt;</code></td><td>bottom: copyright, links</td></tr>
+                    <tr><td><code class="inline">&lt;h1&gt;–&lt;h6&gt;</code></td><td>headings, 1 biggest</td></tr>
+                    <tr><td><code class="inline">&lt;address&gt;</code></td><td>contact info</td></tr>
+                </tbody>
+            </table>
+
+            <h3>✍️ Content &amp; grouping</h3>
+            <table>
+                <thead><tr><th>Tag</th><th>Purpose</th></tr></thead>
+                <tbody>
+                    <tr><td><code class="inline">&lt;p&gt;</code></td><td>paragraph</td></tr>
+                    <tr><td><code class="inline">&lt;hr&gt;</code></td><td>horizontal divider (void)</td></tr>
+                    <tr><td><code class="inline">&lt;pre&gt;</code></td><td>keeps spaces &amp; line breaks</td></tr>
+                    <tr><td><code class="inline">&lt;blockquote&gt;</code></td><td>long quote</td></tr>
+                    <tr><td><code class="inline">&lt;ol&gt;</code> / <code class="inline">&lt;ul&gt;</code> / <code class="inline">&lt;menu&gt;</code></td><td>ordered / unordered / menu list</td></tr>
+                    <tr><td><code class="inline">&lt;li&gt;</code></td><td>list item</td></tr>
+                    <tr><td><code class="inline">&lt;dl&gt;</code> / <code class="inline">&lt;dt&gt;</code> / <code class="inline">&lt;dd&gt;</code></td><td>description list / term / definition</td></tr>
+                    <tr><td><code class="inline">&lt;figure&gt;</code> / <code class="inline">&lt;figcaption&gt;</code></td><td>illustration / its caption</td></tr>
+                    <tr><td><code class="inline">&lt;div&gt;</code></td><td>generic block container</td></tr>
+                </tbody>
+            </table>
+
+            <h3>🔤 Text level</h3>
+            <table>
+                <thead><tr><th>Tag</th><th>Purpose</th></tr></thead>
+                <tbody>
+                    <tr><td><code class="inline">&lt;a&gt;</code></td><td>hyperlink</td></tr>
+                    <tr><td><code class="inline">&lt;strong&gt;</code> / <code class="inline">&lt;em&gt;</code></td><td>important / emphasized</td></tr>
+                    <tr><td><code class="inline">&lt;b&gt;</code> / <code class="inline">&lt;i&gt;</code></td><td>bold / italic (no meaning)</td></tr>
+                    <tr><td><code class="inline">&lt;u&gt;</code> / <code class="inline">&lt;s&gt;</code></td><td>underline / strikethrough</td></tr>
+                    <tr><td><code class="inline">&lt;mark&gt;</code></td><td>highlighted text</td></tr>
+                    <tr><td><code class="inline">&lt;small&gt;</code></td><td>fine print</td></tr>
+                    <tr><td><code class="inline">&lt;del&gt;</code> / <code class="inline">&lt;ins&gt;</code></td><td>deleted / inserted text</td></tr>
+                    <tr><td><code class="inline">&lt;sub&gt;</code> / <code class="inline">&lt;sup&gt;</code></td><td>subscript / superscript</td></tr>
+                    <tr><td><code class="inline">&lt;q&gt;</code> / <code class="inline">&lt;cite&gt;</code></td><td>inline quote / source</td></tr>
+                    <tr><td><code class="inline">&lt;abbr&gt;</code> / <code class="inline">&lt;dfn&gt;</code></td><td>abbreviation / definition</td></tr>
+                    <tr><td><code class="inline">&lt;code&gt;</code> / <code class="inline">&lt;kbd&gt;</code> / <code class="inline">&lt;samp&gt;</code></td><td>code / keyboard key / output</td></tr>
+                    <tr><td><code class="inline">&lt;var&gt;</code></td><td>variable name</td></tr>
+                    <tr><td><code class="inline">&lt;time&gt;</code> / <code class="inline">&lt;data&gt;</code></td><td>machine-readable time / value</td></tr>
+                    <tr><td><code class="inline">&lt;ruby&gt;</code> / <code class="inline">&lt;rt&gt;</code> / <code class="inline">&lt;rp&gt;</code></td><td>pronunciation annotations</td></tr>
+                    <tr><td><code class="inline">&lt;bdi&gt;</code> / <code class="inline">&lt;bdo&gt;</code></td><td>text direction control</td></tr>
+                    <tr><td><code class="inline">&lt;span&gt;</code></td><td>generic inline wrapper</td></tr>
+                    <tr><td><code class="inline">&lt;br&gt;</code> / <code class="inline">&lt;wbr&gt;</code></td><td>line break / optional break (void)</td></tr>
+                </tbody>
+            </table>
+
+            <h3>🖼️ Embedded content</h3>
+            <table>
+                <thead><tr><th>Tag</th><th>Purpose</th></tr></thead>
+                <tbody>
+                    <tr><td><code class="inline">&lt;img&gt;</code></td><td>image (void)</td></tr>
+                    <tr><td><code class="inline">&lt;picture&gt;</code> / <code class="inline">&lt;source&gt;</code></td><td>responsive images (source is void)</td></tr>
+                    <tr><td><code class="inline">&lt;iframe&gt;</code></td><td>embed another page</td></tr>
+                    <tr><td><code class="inline">&lt;embed&gt;</code></td><td>embed PDF/plugins (void)</td></tr>
+                    <tr><td><code class="inline">&lt;object&gt;</code> / <code class="inline">&lt;param&gt;</code></td><td>old embed method (param void)</td></tr>
+                    <tr><td><code class="inline">&lt;video&gt;</code> / <code class="inline">&lt;audio&gt;</code></td><td>video / audio player</td></tr>
+                    <tr><td><code class="inline">&lt;track&gt;</code></td><td>subtitles for video (void)</td></tr>
+                    <tr><td><code class="inline">&lt;map&gt;</code> / <code class="inline">&lt;area&gt;</code></td><td>clickable image regions (area is void)</td></tr>
+                    <tr><td><code class="inline">&lt;svg&gt;</code></td><td>vector graphics</td></tr>
+                    <tr><td><code class="inline">&lt;canvas&gt;</code></td><td>draw with JavaScript</td></tr>
+                </tbody>
+            </table>
+
+            <h3>📊 Tables</h3>
+            <table>
+                <thead><tr><th>Tag</th><th>Purpose</th></tr></thead>
+                <tbody>
+                    <tr><td><code class="inline">&lt;table&gt;</code></td><td>table container</td></tr>
+                    <tr><td><code class="inline">&lt;caption&gt;</code></td><td>table title</td></tr>
+                    <tr><td><code class="inline">&lt;colgroup&gt;</code> / <code class="inline">&lt;col&gt;</code></td><td>style whole columns (col void)</td></tr>
+                    <tr><td><code class="inline">&lt;thead&gt;</code> / <code class="inline">&lt;tbody&gt;</code> / <code class="inline">&lt;tfoot&gt;</code></td><td>header / body / footer rows</td></tr>
+                    <tr><td><code class="inline">&lt;tr&gt;</code></td><td>row</td></tr>
+                    <tr><td><code class="inline">&lt;th&gt;</code> / <code class="inline">&lt;td&gt;</code></td><td>header cell / data cell</td></tr>
+                </tbody>
+            </table>
+
+            <h3>📝 Forms</h3>
+            <table>
+                <thead><tr><th>Tag</th><th>Purpose</th></tr></thead>
+                <tbody>
+                    <tr><td><code class="inline">&lt;form&gt;</code></td><td>form container</td></tr>
+                    <tr><td><code class="inline">&lt;label&gt;</code></td><td>caption for an input</td></tr>
+                    <tr><td><code class="inline">&lt;input&gt;</code></td><td>all input types (void)</td></tr>
+                    <tr><td><code class="inline">&lt;button&gt;</code></td><td>clickable button</td></tr>
+                    <tr><td><code class="inline">&lt;select&gt;</code> / <code class="inline">&lt;option&gt;</code> / <code class="inline">&lt;optgroup&gt;</code></td><td>dropdown / choice / group</td></tr>
+                    <tr><td><code class="inline">&lt;datalist&gt;</code></td><td>autocomplete suggestions</td></tr>
+                    <tr><td><code class="inline">&lt;textarea&gt;</code></td><td>multi-line text</td></tr>
+                    <tr><td><code class="inline">&lt;fieldset&gt;</code> / <code class="inline">&lt;legend&gt;</code></td><td>group fields / its title</td></tr>
+                    <tr><td><code class="inline">&lt;output&gt;</code></td><td>result of a calculation</td></tr>
+                    <tr><td><code class="inline">&lt;progress&gt;</code> / <code class="inline">&lt;meter&gt;</code></td><td>progress bar / measurement</td></tr>
+                </tbody>
+            </table>
+
+            <h3>✨ Interactive &amp; scripting</h3>
+            <table>
+                <thead><tr><th>Tag</th><th>Purpose</th></tr></thead>
+                <tbody>
+                    <tr><td><code class="inline">&lt;details&gt;</code> / <code class="inline">&lt;summary&gt;</code></td><td>click-to-expand / its heading</td></tr>
+                    <tr><td><code class="inline">&lt;dialog&gt;</code></td><td>popup window</td></tr>
+                    <tr><td><code class="inline">&lt;template&gt;</code> / <code class="inline">&lt;slot&gt;</code></td><td>reusable chunks / injection point</td></tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- ================= 30 BEST PRACTICES ================= -->
+        <section class="card" id="tips">
+            <h2><span class="num">30</span>Best Practices &amp; Next Steps</h2>
+            <h3>✅ Do</h3>
+            <ul>
+                <li>Always close your tags — a missing <code class="inline">&lt;/div&gt;</code> is the #1 beginner bug.</li>
+                <li>Always add <code class="inline">alt</code> to images and <code class="inline">label</code> to inputs.</li>
+                <li>Use semantic tags (&lt;header&gt;, &lt;main&gt;) instead of plain &lt;div&gt;.</li>
+                <li>One <code class="inline">&lt;h1&gt;</code> per page; keep heading order.</li>
+                <li>Indent nested tags — readable code = fewer bugs.</li>
+                <li>Style with CSS, never with &lt;br&gt; or &lt;b&gt;.</li>
+                <li>Validate your code at <a href="https://validator.w3.org" target="_blank" style="color:var(--accent);">validator.w3.org</a>.</li>
+            </ul>
+            <h3>❌ Avoid</h3>
+            <ul>
+                <li>Tables for layout (use CSS) and &lt;font&gt; tags (gone anyway).</li>
+                <li>Inline <code class="inline">style="..."</code> everywhere — use classes.</li>
+                <li>Skipping heading levels or using &lt;h1&gt; for size.</li>
+                <li>Forgetting <code class="inline">name</code> on inputs — then the data never sends!</li>
+                <li>Deep div-nesting soup: <code class="inline">&lt;div&gt;&lt;div&gt;&lt;div&gt;…</code></li>
+            </ul>
+            <h3>🚀 Next lessons in order</h3>
+            <ol>
+                <li><strong>CSS basics</strong> — colors, fonts, spacing (this page is styled with it!)</li>
+                <li><strong>CSS Flexbox &amp; Grid</strong> — arranging elements in rows/columns</li>
+                <li><strong>JavaScript</strong> — making pages interactive</li>
+                <li><strong>Forms in depth</strong> — sending data to a server (action + method)</li>
+                <li><strong>Git &amp; GitHub</strong> — saving versions and publishing free</li>
+            </ol>
+            <div class="tip"><strong>Final tip:</strong> don't memorize tags — <em>build</em>. Every tag you use once,
+            you'll remember forever. Open this file's source (Ctrl+U) and study how this very page was built —
+            it uses dozens of the tags you just learned!</div>
+        </section>
+
+        <!-- ================= 31 FILE PATHS ================= -->
+        <section class="card" id="paths">
+            <h2><span class="num">31</span>File Paths &amp; Folder Structure</h2>
+            <p>Knowing how to point to files is half of HTML. Imagine this folder:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>my-site/                 &lt;!-- project root --&gt;
+├── index.html           &lt;!-- the homepage --&gt;
+├── about.html
+├── style.css
+├── images/
+│   ├── logo.png
+│   └── gallery/
+│       └── photo.jpg
+└── pages/
+    └── blog.html</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <p style="font-weight:700;">Path rules:</p>
+                        <ul style="padding-left:20px;">
+                            <li><code class="inline">logo.png</code> — same folder as the page</li>
+                            <li><code class="inline">images/logo.png</code> — one folder down</li>
+                            <li><code class="inline">../logo.png</code> — one folder <em>up</em></li>
+                            <li><code class="inline">/logo.png</code> — from the website root</li>
+                            <li><code class="inline">https://…</code> — full URL (absolute)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>&lt;!-- from index.html --&gt;
+&lt;img src="images/logo.png" alt="Logo"&gt;
+
+&lt;!-- from pages/blog.html
+     (same folder level as images/) --&gt;
+&lt;img src="../images/logo.png"
+     alt="Logo"&gt;
+&lt;link rel="stylesheet"
+      href="../style.css"&gt;
+
+&lt;!-- back to homepage --&gt;
+&lt;a href="../index.html"&gt;Home&lt;/a&gt;
+
+&lt;!-- full URL (absolute) --&gt;
+&lt;img src="https://mysite.com/
+     images/logo.png"&gt;</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <p style="font-weight:700;">The golden rules:</p>
+                        <ul style="padding-left:20px;">
+                            <li><code class="inline">.</code> = current folder, <code class="inline">..</code> = parent folder</li>
+                            <li>Relative paths keep working when you upload the site</li>
+                            <li>Always use <code class="inline">/</code> (forward slash), never <code class="inline">\</code></li>
+                            <li>No spaces in file names — use <code class="inline">-</code> (my-photo.jpg)</li>
+                            <li>Case matters: <code class="inline">Logo.png</code> ≠ <code class="inline">logo.png</code> on servers</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="warn"><strong>Beginner trap:</strong> <code class="inline">&lt;img src="images/logo.png"&gt;</code> breaks if the image
+            is actually one folder up. When an image won't load, first check the path — it's the #1 cause!</div>
+        </section>
+
+        <!-- ================= 32 MORE ELEMENTS ================= -->
+        <section class="card" id="elements">
+            <h2><span class="num">32</span>More Elements You'll Meet</h2>
+            <h3>&lt;hgroup&gt; — heading + subtitle as one unit</h3>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>&lt;hgroup&gt;
+    &lt;h1&gt;My Blog&lt;/h1&gt;
+    &lt;p&gt;Stories about learning HTML&lt;/p&gt;
+&lt;/hgroup&gt;</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <hgroup>
+                            <h1>My Blog</h1>
+                            <p style="color:#57606a;margin-top:-4px;">Stories about learning HTML</p>
+                        </hgroup>
+                    </div>
+                </div>
+            </div>
+            <h3>&lt;base&gt; — default URL for the whole page</h3>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>&lt;head&gt;
+    &lt;base href="https://mysite.com/"&gt;
+    &lt;!-- every relative link below now
+         starts from this address --&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;!-- goes to https://mysite.com/about --&gt;
+    &lt;a href="about"&gt;About&lt;/a&gt;
+&lt;/body&gt;</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <p>Use it when all your pages share one URL base —
+                        it keeps links short. Rarely needed on simple sites.</p>
+                    </div>
+                </div>
+            </div>
+            <h3>&lt;noscript&gt; — content for users with JS disabled</h3>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>&lt;script src="app.js"&gt;&lt;/script&gt;
+&lt;noscript&gt;
+    &lt;p&gt;Please enable JavaScript
+       for the full experience.&lt;/p&gt;
+&lt;/noscript&gt;</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <p style="font-weight:700;">You have JavaScript ON, so you see:</p>
+                        <p>✅ the page works normally</p>
+                        <p style="color:#57606a;">If JS were off, the &lt;noscript&gt; message would appear instead.</p>
+                    </div>
+                </div>
+            </div>
+            <h3>&lt;template&gt; + &lt;slot&gt; — Web Components</h3>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>&lt;my-card&gt;
+    &lt;span slot="title"&gt;Hello!&lt;/span&gt;
+&lt;/my-card&gt;
+
+&lt;script&gt;
+class MyCard extends HTMLElement {
+  connectedCallback() {
+    this.innerHTML =
+      '&lt;h3&gt;&lt;slot name="title"&gt;&lt;/slot&gt;&lt;/h3&gt;';
+  }
+}
+customElements.define("my-card", MyCard);
+&lt;/script&gt;</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <p>Web Components = build your <strong>own tags</strong>.
+                        This is the advanced frontier of HTML —
+                        you'll learn it after JavaScript.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= 33 OBSOLETE ================= -->
+        <section class="card" id="obsolete">
+            <h2><span class="num">33</span>Obsolete Elements — Don't Use These</h2>
+            <p>These tags from the 90s/2000s still <em>render</em> (browsers are nostalgic), but they're dead:
+            no support guarantees, bad for SEO, and CSS does their job better.</p>
+            <table>
+                <thead>
+                    <tr><th>Dead tag</th><th>What it did</th><th>Use instead</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><code class="inline">&lt;font&gt;</code></td><td>text color/size</td><td>CSS <code class="inline">font-size</code>, <code class="inline">color</code></td></tr>
+                    <tr><td><code class="inline">&lt;center&gt;</code></td><td>centered content</td><td>CSS <code class="inline">text-align</code></td></tr>
+                    <tr><td><code class="inline">&lt;big&gt;</code> / <code class="inline">&lt;small&gt;</code></td><td>bigger/smaller text</td><td>CSS font-size</td></tr>
+                    <tr><td><code class="inline">&lt;strike&gt;</code></td><td>strikethrough</td><td><code class="inline">&lt;del&gt;</code> or <code class="inline">&lt;s&gt;</code></td></tr>
+                    <tr><td><code class="inline">&lt;tt&gt;</code></td><td>typewriter font</td><td><code class="inline">&lt;code&gt;</code> or CSS</td></tr>
+                    <tr><td><code class="inline">&lt;acronym&gt;</code></td><td>abbreviation</td><td><code class="inline">&lt;abbr&gt;</code></td></tr>
+                    <tr><td><code class="inline">&lt;frame&gt;</code> / <code class="inline">&lt;frameset&gt;</code></td><td>split-page frames</td><td>CSS layout / <code class="inline">&lt;iframe&gt;</code></td></tr>
+                    <tr><td><code class="inline">&lt;marquee&gt;</code></td><td>scrolling text</td><td>CSS animation</td></tr>
+                    <tr><td><code class="inline">&lt;blink&gt;</code></td><td>blinking text</td><td>nothing — blinking is banned by UX law 😄</td></tr>
+                    <tr><td><code class="inline">&lt;applet&gt;</code> / <code class="inline">&lt;basefont&gt;</code> / <code class="inline">&lt;dir&gt;</code> / <code class="inline">&lt;keygen&gt;</code></td><td>Java applets, fonts, old lists, security</td><td>modern equivalents (object, CSS, ul)</td></tr>
+                </tbody>
+            </table>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>&lt;!-- you may still see this in old code: --&gt;
+&lt;marquee&gt;I scroll forever!&lt;/marquee&gt;
+
+&lt;!-- modern replacement: --&gt;
+&lt;p&gt;A static paragraph. If you really
+   need motion, use CSS animations.&lt;/p&gt;</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <p style="font-weight:700;">Fun fact — this still scrolls:</p>
+                        <marquee scrollamount="5">I scroll forever! (and I'm deprecated 😅)</marquee>
+                        <p>But don't use me in real projects — CSS animations are cleaner and faster.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="tip"><strong>Rule:</strong> if a tag's job can be done by CSS, CSS wins. Today's rule:
+            HTML = meaning, CSS = looks.</div>
+        </section>
+
+        <!-- ================= 34 CONTENT CATEGORIES ================= -->
+        <section class="card" id="categories">
+            <h2><span class="num">34</span>Content Categories — how the browser classifies tags</h2>
+            <p>MDN organizes every element into <strong>content categories</strong>. They decide where a tag can live
+            and what it can contain. You don't need to memorize them — just understand the big three:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>&lt;!-- FLOW: most things you put in body --&gt;
+&lt;p&gt;Flow&lt;/p&gt;  &lt;div&gt;Flow&lt;/div&gt;
+&lt;ul&gt;&lt;li&gt;Flow&lt;/li&gt;&lt;/ul&gt;
+
+&lt;!-- PHRASING: inline bits inside text --&gt;
+&lt;p&gt;Inside a paragraph you can
+   put &lt;strong&gt;phrasing&lt;/strong&gt;
+   and &lt;a href="#"&gt;links&lt;/a&gt;.&lt;/p&gt;
+
+&lt;!-- EMBEDDED: media &amp; external content --&gt;
+&lt;img src="a.jpg" alt="a"&gt;
+&lt;iframe src="b.html"&gt;&lt;/iframe&gt;
+
+&lt;!-- INTERACTIVE: things users click/type --&gt;
+&lt;button&gt;Click&lt;/button&gt;
+&lt;a href="#"&gt;Link&lt;/a&gt;
+&lt;input type="text"&gt;</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <p style="font-weight:700;">The categories (simplified):</p>
+                        <ul style="padding-left:20px;">
+                            <li><strong>Metadata</strong> — head stuff (title, meta, link)</li>
+                            <li><strong>Flow</strong> — most body content</li>
+                            <li><strong>Sectioning</strong> — creates page structure (header, section)</li>
+                            <li><strong>Heading</strong> — h1–h6, hgroup</li>
+                            <li><strong>Phrasing</strong> — text-level tags (em, span, a)</li>
+                            <li><strong>Embedded</strong> — img, iframe, video, svg</li>
+                            <li><strong>Interactive</strong> — clickable/typeable (a, button, input)</li>
+                            <li><strong>Palpable</strong> — content a user can actually see/touch</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>&lt;!-- THE BIG RULE this explains: --&gt;
+&lt;p&gt;
+    &lt;div&gt;WRONG!&lt;/div&gt;
+    &lt;!-- a div (flow) can't sit inside
+         a p (phrasing only) --&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+    &lt;span&gt;RIGHT!&lt;/span&gt;
+    &lt;!-- span is phrasing, allowed --&gt;
+&lt;/p&gt;
+
+&lt;!-- ul can only contain li --&gt;
+&lt;ul&gt;
+    &lt;li&gt;item 1&lt;/li&gt;
+    &lt;li&gt;item 2&lt;/li&gt;
+&lt;/ul&gt;</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <p style="font-weight:700;">Why it matters:</p>
+                        <p>Browsers are forgiving — but putting a block inside a paragraph</p>
+                        <p>secretly <em>closes</em> the paragraph and restructures your page. That's why a stray
+                        <code class="inline">&lt;div&gt;</code> inside <code class="inline">&lt;p&gt;</code> causes weird gaps and jumps.</p>
+                        <p>Knowing the categories = understanding <strong>why</strong> pages break.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="tip"><strong>Beginner takeaway:</strong> phrasing content goes inside text.
+            Flow content goes inside body/containers. Interactive can't be nested inside other interactive (no
+            &lt;a&gt; inside &lt;button&gt;!).</div>
+        </section>
+
+        <!-- ================= 35 ALL GLOBAL ATTRIBUTES ================= -->
+        <section class="card" id="global2">
+            <h2><span class="num">35</span>Every Global Attribute (complete list)</h2>
+            <p>Section 25 showed the common ones. Here is the <strong>complete</strong> list — the same set MDN documents.
+            Mark ⭐ = you'll actually use it.</p>
+            <table>
+                <thead>
+                    <tr><th>Attribute</th><th>What it does</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>⭐ <code class="inline">class</code></td><td>group name for CSS/JS</td></tr>
+                    <tr><td>⭐ <code class="inline">id</code></td><td>unique name for links/CSS/JS</td></tr>
+                    <tr><td>⭐ <code class="inline">style</code></td><td>inline CSS</td></tr>
+                    <tr><td>⭐ <code class="inline">title</code></td><td>tooltip on hover</td></tr>
+                    <tr><td>⭐ <code class="inline">lang</code></td><td>language of the content</td></tr>
+                    <tr><td>⭐ <code class="inline">dir</code></td><td>text direction: ltr / rtl / auto</td></tr>
+                    <tr><td>⭐ <code class="inline">hidden</code></td><td>hide the element</td></tr>
+                    <tr><td>⭐ <code class="inline">data-*</code></td><td>your own custom data for JS</td></tr>
+                    <tr><td>⭐ <code class="inline">tabindex</code></td><td>Tab-key order / focusability</td></tr>
+                    <tr><td>⭐ <code class="inline">contenteditable</code></td><td>user can edit the text</td></tr>
+                    <tr><td><code class="inline">accesskey</code></td><td>keyboard shortcut (Alt+K)</td></tr>
+                    <tr><td><code class="inline">autocapitalize</code></td><td>auto-capitalize input text</td></tr>
+                    <tr><td><code class="inline">autofocus</code></td><td>focus this element on load</td></tr>
+                    <tr><td><code class="inline">draggable</code></td><td>true/false — can it be dragged?</td></tr>
+                    <tr><td><code class="inline">enterkeyhint</code></td><td>label for the Enter key on mobile keyboards</td></tr>
+                    <tr><td><code class="inline">exportparts</code></td><td>expose shadow-DOM parts</td></tr>
+                    <tr><td><code class="inline">inert</code></td><td>make element + children unclickable/unfocusable</td></tr>
+                    <tr><td><code class="inline">inputmode</code></td><td>which keyboard on mobile (numeric, email…)</td></tr>
+                    <tr><td><code class="inline">is</code></td><td>use a custom built-in element</td></tr>
+                    <tr><td><code class="inline">itemid</code> / <code class="inline">itemprop</code> / <code class="inline">itemref</code> / <code class="inline">itemscope</code> / <code class="inline">itemtype</code></td><td>microdata for search engines (rarely used)</td></tr>
+                    <tr><td><code class="inline">nonce</code></td><td>security token for scripts/styles</td></tr>
+                    <tr><td><code class="inline">part</code></td><td>name parts of shadow DOM</td></tr>
+                    <tr><td><code class="inline">popover</code></td><td>make element a popover (new!)</td></tr>
+                    <tr><td><code class="inline">role</code></td><td>what the element means to screen readers</td></tr>
+                    <tr><td><code class="inline">slot</code></td><td>which slot a custom element uses</td></tr>
+                    <tr><td><code class="inline">spellcheck</code></td><td>on/off spell checking</td></tr>
+                    <tr><td><code class="inline">translate</code></td><td>should translators translate it?</td></tr>
+                </tbody>
+            </table>
+            <div class="tip"><strong>Honest advice:</strong> you'll use ~10 of these regularly. The rest exist for
+            advanced cases (web components, microdata, security). Skim them once, learn them when needed.</div>
+        </section>
+
+        <!-- ================= 36 SEO & SHARING ================= -->
+        <section class="card" id="seo">
+            <h2><span class="num">36</span>SEO &amp; Social Sharing</h2>
+            <p>SEO (Search Engine Optimization) = getting found on Google. Good HTML is most of the work!
+            These head tags make your links look great when shared on WhatsApp/Facebook:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>&lt;head&gt;
+    &lt;!-- Google --&gt;
+    &lt;title&gt;My Cool Site&lt;/title&gt;
+    &lt;meta name="description"
+          content="Free HTML lessons
+                   with live examples"&gt;
+    &lt;link rel="canonical"
+          href="https://mysite.com/"&gt;
+
+    &lt;!-- Facebook / WhatsApp --&gt;
+    &lt;meta property="og:title"
+          content="My Cool Site"&gt;
+    &lt;meta property="og:description"
+          content="Learn HTML the fun way"&gt;
+    &lt;meta property="og:image"
+          content="https://mysite.com/
+                   banner.png"&gt;
+    &lt;meta property="og:url"
+          content="https://mysite.com/"&gt;
+
+    &lt;!-- Twitter / X --&gt;
+    &lt;meta name="twitter:card"
+          content="summary_large_image"&gt;
+
+    &lt;!-- Schema.org structured data --&gt;
+    &lt;script type="application/ld+json"&gt;
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "My Cool Site",
+      "url": "https://mysite.com/"
+    }
+    &lt;/script&gt;
+&lt;/head&gt;</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <p style="font-weight:700;">The #1 SEO rules for beginners:</p>
+                        <ol style="padding-left:20px;">
+                            <li>One <code class="inline">&lt;h1&gt;</code> per page, logical heading order</li>
+                            <li>Good <code class="inline">&lt;title&gt;</code> + <code class="inline">description</code> meta</li>
+                            <li>Semantic tags (article, nav, main)</li>
+                            <li><code class="inline">alt</code> on every image</li>
+                            <li>Descriptive, readable URLs</li>
+                            <li>Fast pages &amp; mobile-friendly (viewport)</li>
+                            <li>Internal links between your pages</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+            <div class="tip"><strong>Where to verify:</strong> Google Search Console (free) shows how Google sees your
+            site. The <code class="inline">og:</code> tags (Open Graph) control the preview card when someone shares your
+            link on WhatsApp, Facebook, Discord or Telegram.</div>
+        </section>
+
+        <!-- ================= 37 PERFORMANCE ================= -->
+        <section class="card" id="performance">
+            <h2><span class="num">37</span>Performance — make pages fast</h2>
+            <p>Slow pages lose visitors: every extra second = more people leaving. Big wins, small effort:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>&lt;!-- 1. lazy load images below the fold --&gt;
+&lt;img src="big.jpg" loading="lazy"&gt;
+
+&lt;!-- 2. always set width+height --&gt;
+&lt;!-- stops layout jumping while loading --&gt;
+&lt;img src="x.jpg" width="400"
+     height="300"&gt;
+
+&lt;!-- 3. preload critical resources --&gt;
+&lt;link rel="preload"
+      href="font.woff2"
+      as="font"&gt;
+
+&lt;!-- 4. compress images (WebP) --&gt;
+&lt;picture&gt;
+    &lt;source srcset="photo.webp"
+            type="image/webp"&gt;
+    &lt;img src="photo.jpg" alt="photo"&gt;
+&lt;/picture&gt;</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <p style="font-weight:700;">Performance checklist:</p>
+                        <ul style="padding-left:20px;">
+                            <li>✅ <code class="inline">loading="lazy"</code> on images</li>
+                            <li>✅ width/height set on images</li>
+                            <li>✅ compress images (tinyjpg, squoosh)</li>
+                            <li>✅ modern format: WebP/AVIF</li>
+                            <li>✅ few files, not many tiny ones</li>
+                            <li>✅ CSS &amp; JS at the right place</li>
+                            <li>✅ test with Lighthouse (F12 → Lighthouse)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="tip"><strong>Rule of thumb:</strong> images are 60-70% of a typical page's weight.
+            Optimizing images alone makes most sites feel instant.</div>
+        </section>
+
+        <!-- ================= 38 DEVTOOLS ================= -->
+        <section class="card" id="devtools">
+            <h2><span class="num">38</span>DevTools — your superpower (F12)</h2>
+            <p>Every browser has built-in developer tools. Press <strong>F12</strong> (or right-click → Inspect).
+            This is where you'll <em>debug</em> every bug you'll ever write:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>&lt;!-- TRY IT: right-click this heading
+     and choose Inspect --&gt;
+&lt;h1&gt;Inspect me!&lt;/h1&gt;
+
+&lt;!-- then look at the Elements panel:
+     you'll see this exact code --&gt;</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <h1 style="font-size:22px;">Inspect me! 👀</h1>
+                        <p style="font-weight:700;">The panels you'll use most:</p>
+                        <ul style="padding-left:20px;">
+                            <li><strong>Elements</strong> — see/edit the HTML live</li>
+                            <li><strong>Console</strong> — errors &amp; messages</li>
+                            <li><strong>Network</strong> — what loads &amp; how fast</li>
+                            <li><strong>Sources</strong> — your actual files</li>
+                            <li><strong>Lighthouse</strong> — performance score</li>
+                            <li>📱 Toggle Device Toolbar = phone view</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>&lt;!-- The most useful trick ever: --&gt;
+&lt;!-- Edit HTML live, no save needed --&gt;
+&lt;p&gt;Right-click me → Edit as HTML&lt;/p&gt;
+
+&lt;!-- Debug with the console: --&gt;
+&lt;script&gt;
+    console.log("I am here");
+    console.error("fake error");
+&lt;/script&gt;</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <p style="font-weight:700;">Your debugging workflow:</p>
+                        <ol style="padding-left:20px;">
+                            <li>Open F12 → check the <strong>Console</strong> for red errors</li>
+                            <li><strong>Elements</strong> → inspect the broken thing</li>
+                            <li>Right-click → <em>Edit as HTML</em> → test a fix instantly</li>
+                            <li>Copy the fix back into your file</li>
+                            <li>Save → refresh (Ctrl+R / F5)</li>
+                        </ol>
+                        <p style="margin-top:8px;">✅ You just became a debugger. Every pro does exactly this.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="warn"><strong>Myth:</strong> "I broke the page in DevTools!" — impossible. Changes in the
+            Elements panel vanish on refresh. DevTools edits are <em>temporary experiments</em> — safe playground.</div>
+        </section>
+
+        <!-- ================= 39 HISTORY ================= -->
+        <section class="card" id="history">
+            <h2><span class="num">39</span>A Short History of HTML</h2>
+            <p>Know your roots — the whole story in one table:</p>
+            <table>
+                <thead><tr><th>Year</th><th>Event</th></tr></thead>
+                <tbody>
+                    <tr><td>1991</td><td>Tim Berners-Lee invents HTML at CERN — 18 tags, just for sharing physics papers</td></tr>
+                    <tr><td>1995</td><td>HTML 2.0 — first standard version</td></tr>
+                    <tr><td>1997</td><td>HTML 3.2 — tables, applets (the wild 90s)</td></tr>
+                    <tr><td>1999</td><td>HTML 4.01 — the version that ruled for 15 years</td></tr>
+                    <tr><td>2000</td><td>XHTML — strict XML rules, everyone hated it</td></tr>
+                    <tr><td>2014</td><td>HTML5 — video, canvas, semantic tags, forms on steroids</td></tr>
+                    <tr><td>Today</td><td>HTML is a <em>Living Standard</em> — new features ship constantly (popover, dialog…)</td></tr>
+                </tbody>
+            </table>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>&lt;!-- 1991: the very first web page
+     had tags like these --&gt;
+&lt;title&gt;World Wide Web&lt;/title&gt;
+&lt;h1&gt;The World Wide Web project&lt;/h1&gt;
+&lt;p&gt;The WorldWideWeb (W3) is a wide-
+area hypermedia information retrieval
+initiative...&lt;/p&gt;</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <p style="font-weight:700;">Fun facts:</p>
+                        <ul style="padding-left:20px;">
+                            <li>Tim Berners-Lee made the web <strong>free</strong> — no patents</li>
+                            <li>The first browser was called <em>WorldWideWeb</em></li>
+                            <li>His first message: "This is a good sign"… then "OK" 😅</li>
+                            <li>You're writing the same language as the very first web page</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= 40 MINI PROJECT ================= -->
+        <section class="card" id="project">
+            <h2><span class="num">40</span>Mini Project — Build Your Profile Page</h2>
+            <p>Now combine <em>everything</em> you learned. Here's a complete small page you can copy and extend.
+            Count how many tags from this course it uses:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;meta name="viewport"
+          content="width=device-width,
+                   initial-scale=1.0"&gt;
+    &lt;title&gt;My Profile&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;header&gt;
+        &lt;h1&gt;Hi, I'm Alex 👋&lt;/h1&gt;
+        &lt;p&gt;Web learner &amp; coffee lover&lt;/p&gt;
+    &lt;/header&gt;
+
+    &lt;nav&gt;
+        &lt;a href="#about"&gt;About&lt;/a&gt;
+        &lt;a href="#skills"&gt;Skills&lt;/a&gt;
+        &lt;a href="#contact"&gt;Contact&lt;/a&gt;
+    &lt;/nav&gt;
+
+    &lt;main&gt;
+        &lt;section id="about"&gt;
+            &lt;h2&gt;About&lt;/h2&gt;
+            &lt;img src="me.jpg"
+                 alt="A photo of Alex"
+                 width="150"&gt;
+            &lt;p&gt;I'm learning &lt;strong&gt;HTML&lt;/strong&gt;
+            and &lt;em&gt;loving it&lt;/em&gt;.&lt;/p&gt;
+        &lt;/section&gt;
+
+        &lt;section id="skills"&gt;
+            &lt;h2&gt;Skills&lt;/h2&gt;
+            &lt;ul&gt;
+                &lt;li&gt;HTML &amp;amp; CSS&lt;/li&gt;
+                &lt;li&gt;Making tea 🍵&lt;/li&gt;
+                &lt;li&gt;Playing guitar&lt;/li&gt;
+            &lt;/ul&gt;
+        &lt;/section&gt;
+
+        &lt;section id="contact"&gt;
+            &lt;h2&gt;Contact&lt;/h2&gt;
+            &lt;p&gt;Email:
+              &lt;a href="mailto:alex@mail.com"&gt;
+                alex@mail.com&lt;/a&gt;&lt;/p&gt;
+            &lt;form action="#"&gt;
+                &lt;label for="msg"&gt;
+                    Send a message:&lt;/label&gt;
+                &lt;textarea id="msg"&gt;&lt;/textarea&gt;
+                &lt;button type="submit"&gt;
+                    Send&lt;/button&gt;
+            &lt;/form&gt;
+        &lt;/section&gt;
+    &lt;/main&gt;
+
+    &lt;footer&gt;
+        &lt;p&gt;&amp;copy; 2026 Alex&lt;/p&gt;
+    &lt;/footer&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <div class="profile-demo">
+                            <div class="pd-header">
+                                <div style="width:44px;height:44px;border-radius:50%;background:#fff;display:grid;place-items:center;font-size:24px;">👋</div>
+                                <div>
+                                    <div style="font-size:17px;font-weight:700;">Hi, I'm Alex</div>
+                                    <div style="font-size:12px;opacity:0.85;">Web learner &amp; coffee lover</div>
+                                </div>
+                            </div>
+                            <div class="pd-nav">
+                                <a href="#about">About</a><a href="#skills">Skills</a><a href="#contact">Contact</a>
+                            </div>
+                            <div class="pd-body">
+                                <div style="background:#fff;border-radius:8px;padding:10px;border:1px solid #d0d7de;">
+                                    <strong>About</strong>
+                                    <p style="margin:6px 0 0;">I'm learning <strong>HTML</strong> and <em>loving it</em>.</p>
+                                </div>
+                                <div style="background:#fff;border-radius:8px;padding:10px;border:1px solid #d0d7de;">
+                                    <strong>Skills</strong>
+                                    <ul style="margin:6px 0 0;padding-left:18px;">
+                                        <li>HTML &amp; CSS</li><li>Making tea 🍵</li><li>Playing guitar</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="pd-foot">© 2026 Alex · built from 15+ tags you just learned</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="tip"><strong>Challenge:</strong> copy this into a new file <code class="inline">profile.html</code>, add your own
+            photo, a table of your class schedule, a hobbies list, and a skills progress bar
+            (<code class="inline">&lt;progress&gt;</code>). Then open it — you've built a real website!</div>
+        </section>
+
+        <!-- ================= 41 QUIZ ================= -->
+        <section class="card" id="quiz">
+            <h2><span class="num">41</span>Quiz — Test Yourself 🧠</h2>
+            <p>12 questions covering everything above. Answer, then press <strong>Check</strong>.</p>
+
+            <div class="quiz-q" data-answer="0">
+                <p>1. Which is the <em>biggest</em> heading tag?</p>
+                <label><input type="radio" name="q1" value="0"> &lt;h1&gt;</label>
+                <label><input type="radio" name="q1" value="1"> &lt;h3&gt;</label>
+                <label><input type="radio" name="q1" value="2"> &lt;h6&gt;</label>
+                <label><input type="radio" name="q1" value="3"> &lt;head&gt;</label>
+            </div>
+
+            <div class="quiz-q" data-answer="1">
+                <p>2. Which tag is bold <em>and</em> tells search engines it's important?</p>
+                <label><input type="radio" name="q2" value="0"> &lt;b&gt;</label>
+                <label><input type="radio" name="q2" value="1"> &lt;strong&gt;</label>
+                <label><input type="radio" name="q2" value="2"> &lt;bold&gt;</label>
+                <label><input type="radio" name="q2" value="3"> &lt;em&gt;</label>
+            </div>
+
+            <div class="quiz-q" data-answer="2">
+                <p>3. Which tag creates a bullet-point (unordered) list?</p>
+                <label><input type="radio" name="q3" value="0"> &lt;ol&gt;</label>
+                <label><input type="radio" name="q3" value="1"> &lt;li&gt;</label>
+                <label><input type="radio" name="q3" value="2"> &lt;ul&gt;</label>
+                <label><input type="radio" name="q3" value="3"> &lt;list&gt;</label>
+            </div>
+
+            <div class="quiz-q" data-answer="3">
+                <p>4. Which attribute describes an image for screen readers &amp; broken links?</p>
+                <label><input type="radio" name="q4" value="0"> src</label>
+                <label><input type="radio" name="q4" value="1"> href</label>
+                <label><input type="radio" name="q4" value="2"> width</label>
+                <label><input type="radio" name="q4" value="3"> alt</label>
+            </div>
+
+            <div class="quiz-q" data-answer="0">
+                <p>5. What opens a link in a NEW tab?</p>
+                <label><input type="radio" name="q5" value="0"> target="_blank"</label>
+                <label><input type="radio" name="q5" value="1"> target="_newtab"</label>
+                <label><input type="radio" name="q5" value="2"> new="true"</label>
+                <label><input type="radio" name="q5" value="3"> open="tab"</label>
+            </div>
+
+            <div class="quiz-q" data-answer="2">
+                <p>6. Which tag makes a line break inside text?</p>
+                <label><input type="radio" name="q6" value="0"> &lt;lb&gt;</label>
+                <label><input type="radio" name="q6" value="1"> &lt;break&gt;</label>
+                <label><input type="radio" name="q6" value="2"> &lt;br&gt;</label>
+                <label><input type="radio" name="q6" value="3"> &lt;hr&gt;</label>
+            </div>
+
+            <div class="quiz-q" data-answer="1">
+                <p>7. Which input type hides what you type (for passwords)?</p>
+                <label><input type="radio" name="q7" value="0"> type="text"</label>
+                <label><input type="radio" name="q7" value="1"> type="password"</label>
+                <label><input type="radio" name="q7" value="2"> type="secret"</label>
+                <label><input type="radio" name="q7" value="3"> type="hidden"</label>
+            </div>
+
+            <div class="quiz-q" data-answer="3">
+                <p>8. Which is a <em>semantic</em> layout tag?</p>
+                <label><input type="radio" name="q8" value="0"> &lt;div&gt;</label>
+                <label><input type="radio" name="q8" value="1"> &lt;span&gt;</label>
+                <label><input type="radio" name="q8" value="2"> &lt;b&gt;</label>
+                <label><input type="radio" name="q8" value="3"> &lt;article&gt;</label>
+            </div>
+
+            <div class="quiz-q" data-answer="0">
+                <p>9. To SHOW a &lt; on the page you must type…</p>
+                <label><input type="radio" name="q9" value="0"> &amp;lt;</label>
+                <label><input type="radio" name="q9" value="1"> &lt;</label>
+                <label><input type="radio" name="q9" value="2"> &amp;gt;</label>
+                <label><input type="radio" name="q9" value="3"> \&lt;</label>
+            </div>
+
+            <div class="quiz-q" data-answer="2">
+                <p>10. Which input type shows a date picker?</p>
+                <label><input type="radio" name="q10" value="0"> type="day"</label>
+                <label><input type="radio" name="q10" value="1"> type="calendar"</label>
+                <label><input type="radio" name="q10" value="2"> type="date"</label>
+                <label><input type="radio" name="q10" value="3"> type="datetime"</label>
+            </div>
+
+            <div class="quiz-q" data-answer="3">
+                <p>11. What does the viewport meta tag do?</p>
+                <label><input type="radio" name="q11" value="0"> speeds up loading</label>
+                <label><input type="radio" name="q11" value="1"> adds a favicon</label>
+                <label><input type="radio" name="q11" value="2"> hides the page from Google</label>
+                <label><input type="radio" name="q11" value="3"> makes pages fit mobile screens</label>
+            </div>
+
+            <div class="quiz-q" data-answer="1">
+                <p>12. Which attribute gives an element a UNIQUE name?</p>
+                <label><input type="radio" name="q12" value="0"> class</label>
+                <label><input type="radio" name="q12" value="1"> id</label>
+                <label><input type="radio" name="q12" value="2"> name</label>
+                <label><input type="radio" name="q12" value="3"> key</label>
+            </div>
+
+            <div style="margin-top:6px;">
+                <button class="quiz-btn" onclick="checkQuiz()">Check my answers ✅</button>
+                <span id="quizScore"></span>
+            </div>
+        </section>
+
+    </main>
+
+    <footer>
+        <p>Made with ♥ for learning · Open this file's code with <strong>Ctrl+U</strong> in your browser</p>
+        <p>Full documentation: <a href="https://developer.mozilla.org/en-US/docs/Web/HTML" target="_blank">MDN — HTML</a></p>
+    </footer>
+
+    <button class="theme-btn" id="themeBtn" type="button">☀️ Light mode</button>
+    <button class="plain-btn" id="plainBtn" type="button" aria-pressed="false">📄 Plain code</button>
+
+    <script>
+        // --- Theme toggle ---
+        document.getElementById('themeBtn').addEventListener('click', function () {
+            document.body.classList.toggle('light');
+            this.textContent = document.body.classList.contains('light') ? '🌙 Dark mode' : '☀️ Light mode';
+        });
+        // --- Plain code mode (view-source friendly): strip colors, keep code plain ---
+        var plainBtn = document.getElementById('plainBtn');
+        function applyPlain(on) {
+            document.body.classList.toggle('plain-mode', on);
+            plainBtn.textContent = on ? '🎨 Colored code' : '📄 Plain code';
+            plainBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+            try { localStorage.setItem('notesPlain', on ? '1' : '0'); } catch (e) {}
+        }
+        plainBtn.addEventListener('click', function () {
+            applyPlain(!document.body.classList.contains('plain-mode'));
+        });
+        try { if (localStorage.getItem('notesPlain') === '1') applyPlain(true); } catch (e) {}
+
+
+        // --- Search: filter sections live ---
+        var searchBox = document.getElementById('search');
+        searchBox.addEventListener('input', function () {
+            var q = searchBox.value.toLowerCase().trim();
+            var found = 0;
+            document.querySelectorAll('.card').forEach(function (card) {
+                var show = !q || card.textContent.toLowerCase().indexOf(q) !== -1;
+                card.style.display = show ? '' : 'none';
+                if (show) found++;
+            });
+        });
+
+        // --- Quiz ---
+        function checkQuiz() {
+            var score = 0, total = 0;
+            document.querySelectorAll('.quiz-q').forEach(function (q) {
+                q.classList.remove('correct', 'wrong');
+                var chosen = q.querySelector('input:checked');
+                if (!chosen) return;
+                total++;
+                var right = chosen.value === q.getAttribute('data-answer');
+                q.classList.add(right ? 'correct' : 'wrong');
+                if (right) score++;
+            });
+            var box = document.getElementById('quizScore');
+            if (total === 12) {
+                box.textContent = 'Your score: ' + score + '/12 ' + (score >= 10 ? '🏆 Amazing!' : score >= 7 ? '👍 Good job!' : '💪 Keep practicing!');
+            } else {
+                box.textContent = 'Answered ' + total + '/12 — ' + (score) + ' correct so far. Answer all 12!';
+            }
+        }
+
+        // --- Copy buttons for code panels ---
+        document.querySelectorAll('.copy-btn').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var code = btn.closest('.panel').querySelector('code');
+                navigator.clipboard.writeText(code.textContent).then(function () {
+                    btn.textContent = 'Copied!';
+                    setTimeout(function () { btn.textContent = 'Copy'; }, 1500);
+                });
+            });
+        });
+
+        // --- Light syntax highlighting: tag names + comments ---
+        document.querySelectorAll('pre code').forEach(function (code) {
+            var html = code.innerHTML;
+            html = html.replace(/&lt;(\/?)([a-z][a-z0-9-]*)/g, '&lt;$1<span class="t">$2</span>');
+            html = html.replace(/&lt;!--([\s\S]*?)--&gt;/g, '<span class="c">&lt;!--$1--&gt;</span>');
+            code.innerHTML = html;
+        });
+    </script>
+
+</body>
+</html>

@@ -195,7 +195,7 @@ function timeAgo(dateStr: string): string {
 }
 
 function renderMarkdown(text: string): string {
-  let html = text
+  const html = text
     .replace(/```(\w*)\n([\s\S]*?)```/g, '<pre class="rounded-xl bg-muted/50 border border-border p-4 my-3 overflow-x-auto"><code class="text-sm font-mono">$2</code></pre>')
     .replace(/^### (.+)$/gm, '<h3 class="text-lg font-bold text-foreground mt-4 mb-2">$1</h3>')
     .replace(/^## (.+)$/gm, '<h2 class="text-xl font-bold text-foreground mt-6 mb-3">$1</h2>')

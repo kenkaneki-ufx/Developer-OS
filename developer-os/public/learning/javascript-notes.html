@@ -1,0 +1,2729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JavaScript Notes — Every Concept, Every Demo</title>
+    <style>
+        /* ============ Base ============ */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #0d1117;
+            --card: #161b22;
+            --card-2: #1c2128;
+            --border: #30363d;
+            --text: #e6edf3;
+            --muted: #9aa5b1;
+            --accent: #58a6ff;
+            --purple: #a371f7;
+            --cyan: #39c5cf;
+            --green: #7ee787;
+            --yellow: #d29922;
+            --red: #f85149;
+            --code-bg: #0d1117;
+            --preview-bg: #ffffff;
+            --preview-text: #1f2328;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        /* ============ Hero ============ */
+        .hero {
+            padding: 56px 20px 40px;
+            text-align: center;
+            background:
+                radial-gradient(600px 200px at 20% 0%, rgba(163, 113, 247, 0.15), transparent),
+                radial-gradient(600px 200px at 80% 0%, rgba(57, 197, 207, 0.15), transparent);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .hero h1 {
+            font-size: clamp(28px, 5vw, 46px);
+            background: linear-gradient(90deg, var(--purple), var(--accent), var(--cyan));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: -0.5px;
+        }
+
+        .hero p {
+            color: var(--muted);
+            max-width: 680px;
+            margin: 12px auto 0;
+            font-size: 17px;
+        }
+
+        .hero .badge {
+            display: inline-block;
+            margin-top: 16px;
+            padding: 6px 14px;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            font-size: 13px;
+            color: var(--accent);
+            background: rgba(88, 166, 255, 0.08);
+        }
+
+        /* ============ Sticky TOC ============ */
+        nav.toc {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: rgba(13, 17, 23, 0.92);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid var(--border);
+            padding: 10px 16px;
+            overflow-x: auto;
+            white-space: nowrap;
+            display: flex;
+            gap: 8px;
+            scrollbar-width: thin;
+        }
+
+        nav.toc a {
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 13px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        nav.toc a:hover {
+            color: var(--text);
+            border-color: var(--accent);
+            background: rgba(88, 166, 255, 0.1);
+        }
+
+        /* ============ Layout ============ */
+        main {
+            max-width: 1080px;
+            margin: 0 auto;
+            padding: 28px 20px 60px;
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 28px;
+            scroll-margin-top: 70px;
+        }
+
+        .card h2 {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 22px;
+            margin-bottom: 10px;
+        }
+
+        .card h2 .num {
+            flex-shrink: 0;
+            width: 34px;
+            height: 34px;
+            display: grid;
+            place-items: center;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--bg);
+            background: linear-gradient(135deg, var(--purple), var(--cyan));
+            border-radius: 9px;
+        }
+
+        .card > p { color: var(--muted); margin-bottom: 16px; }
+        .card h3 { font-size: 16px; color: var(--accent); margin: 18px 0 8px; }
+        .card ul, .card ol { padding-left: 22px; margin-bottom: 14px; }
+        .card li { margin-bottom: 4px; }
+
+        .card table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12px 0;
+            font-size: 14px;
+        }
+
+        .card th, .card td {
+            border: 1px solid var(--border);
+            padding: 8px 12px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        .card th { background: var(--card-2); color: var(--accent); }
+
+        code.inline {
+            background: var(--card-2);
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            padding: 1px 7px;
+            font-family: 'Cascadia Code', 'Consolas', 'Courier New', monospace;
+            font-size: 0.88em;
+            color: var(--cyan);
+        }
+
+        /* ============ Demo: code + preview ============ */
+        .demo {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        @media (max-width: 800px) {
+            .demo { grid-template-columns: 1fr; }
+        }
+
+        .panel {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+            min-width: 0;
+        }
+
+        .panel-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 7px 12px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            border-bottom: 1px solid var(--border);
+            background: var(--card-2);
+        }
+
+        .panel-bar .tag-code { color: var(--green); }
+        .panel-bar .tag-result { color: var(--purple); }
+
+        .copy-btn {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            color: var(--muted);
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 3px 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .copy-btn:hover {
+            color: var(--text);
+            border-color: var(--accent);
+            background: rgba(88, 166, 255, 0.12);
+        }
+
+        pre {
+            background: var(--code-bg);
+            padding: 16px;
+            overflow-x: auto;
+            font-size: 13.5px;
+            line-height: 1.55;
+        }
+
+        pre code {
+            font-family: 'Cascadia Code', 'Consolas', 'Courier New', monospace;
+            color: var(--text);
+            white-space: pre;
+        }
+
+        /* JS syntax colors */
+        pre code .k { color: #ff7b72; font-weight: 600; }
+        pre code .st { color: #ffa657; }
+        pre code .n { color: #d29922; }
+        pre code .c { color: var(--green); font-style: italic; }
+        pre code .s { color: var(--purple); font-weight: 600; }
+
+        .preview {
+            background: var(--preview-bg);
+            color: var(--preview-text);
+            padding: 16px;
+            min-height: 60px;
+            font-size: 14px;
+        }
+
+        .preview p { margin: 0 0 8px; }
+        .preview h1, .preview h2, .preview h3 { color: var(--preview-text); margin: 0 0 6px; }
+        .preview button {
+            background: #0969da; color: #fff; border: 0; padding: 8px 16px;
+            border-radius: 8px; cursor: pointer; font-size: 13px; transition: opacity 0.2s;
+        }
+        .preview button:hover { opacity: 0.85; }
+        .preview button.secondary { background: #8250df; }
+        .preview button.green { background: #1a7f37; }
+        .preview input, .preview select, .preview textarea {
+            padding: 8px; border: 1px solid #d0d7de; border-radius: 8px; font-size: 13px; font-family: inherit;
+        }
+        .preview .out {
+            background: #f6f8fa; border: 1px solid #d0d7de; border-radius: 8px;
+            padding: 10px 12px; font-family: 'Cascadia Code', 'Consolas', monospace;
+            font-size: 13px; margin-top: 8px; min-height: 20px; white-space: pre-wrap;
+        }
+
+        /* ============ Theme toggle ============ */
+        body.light {
+            --bg: #ffffff;
+            --card: #f6f8fa;
+            --card-2: #eaeef2;
+            --border: #d0d7de;
+            --text: #1f2328;
+            --muted: #57606a;
+            --code-bg: #f6f8fa;
+        }
+        body.light nav.toc { background: rgba(255,255,255,0.92); }
+        body.light pre { color: #1f2328; }
+        body.light .panel-bar { background: #eaeef2; }
+
+        /* ============ Plain code mode (view-source friendly) ============ */
+        .plain-btn {
+            position: fixed;
+            right: 18px;
+            bottom: 70px;
+            z-index: 60;
+            border: 1px solid var(--border);
+            background: var(--card);
+            color: var(--text);
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(0,0,0,.25);
+            transition: border-color .2s, transform .15s;
+        }
+        .plain-btn:hover { border-color: var(--accent); transform: translateY(-2px); }
+        .plain-btn[aria-pressed="true"] { border-color: var(--accent); }
+        /* Neutralize every token color so code reads as plain source text */
+        body.plain-mode pre code,
+        body.plain-mode pre code span,
+        body.plain-mode .terminal span {
+            color: var(--text) !important;
+            background: none !important;
+            font-weight: normal !important;
+            font-style: normal !important;
+            text-decoration: none !important;
+            text-shadow: none !important;
+        }
+        .theme-btn {
+            position: fixed;
+            right: 18px;
+            bottom: 18px;
+            z-index: 60;
+            border: 1px solid var(--border);
+            background: var(--card);
+            color: var(--text);
+            padding: 10px 16px;
+            border-radius: 999px;
+            font-size: 14px;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.35);
+            transition: all 0.2s;
+        }
+        .theme-btn:hover { border-color: var(--accent); }
+
+        /* ============ Search ============ */
+        .search-wrap { max-width: 1080px; margin: 0 auto; padding: 18px 20px 0; }
+        #search {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--card);
+            color: var(--text);
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        #search:focus { border-color: var(--accent); }
+        #search::placeholder { color: var(--muted); }
+
+        /* ============ Quiz ============ */
+        .quiz-q {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 14px;
+            background: var(--card-2);
+        }
+        .quiz-q p { font-weight: 700; margin-bottom: 8px; }
+        .quiz-q label {
+            display: block;
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.15s;
+            font-weight: 400;
+        }
+        .quiz-q label:hover { background: rgba(88,166,255,0.12); }
+        .quiz-q.correct { border-color: var(--green); }
+        .quiz-q.wrong { border-color: var(--red); }
+        .quiz-btn {
+            background: linear-gradient(135deg, var(--purple), var(--cyan));
+            color: var(--bg);
+            font-weight: 700;
+            border: 0;
+            padding: 12px 28px;
+            border-radius: 10px;
+            font-size: 15px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .quiz-btn:hover { opacity: 0.88; }
+        #quizScore { display: inline-block; margin-left: 14px; font-weight: 700; font-size: 16px; }
+
+        /* ============ Tip / warn ============ */
+        .tip {
+            border-left: 4px solid var(--green);
+            background: rgba(126, 231, 135, 0.08);
+            padding: 12px 16px;
+            border-radius: 0 8px 8px 0;
+            margin: 16px 0;
+            font-size: 14px;
+        }
+        .tip strong { color: var(--green); }
+
+        .warn {
+            border-left: 4px solid var(--yellow);
+            background: rgba(210, 153, 34, 0.08);
+            padding: 12px 16px;
+            border-radius: 0 8px 8px 0;
+            margin: 16px 0;
+            font-size: 14px;
+        }
+        .warn strong { color: var(--yellow); }
+
+        /* ============ Footer ============ */
+        footer {
+            text-align: center;
+            color: var(--muted);
+            padding: 30px 20px 50px;
+            border-top: 1px solid var(--border);
+            font-size: 14px;
+        }
+        footer a { color: var(--accent); text-decoration: none; }
+        footer a:hover { text-decoration: underline; }
+
+        /* ============ Mini project demo ============ */
+        .todo-demo { font-family: 'Segoe UI', Arial, sans-serif; }
+        .todo-demo .row { display: flex; gap: 8px; margin-bottom: 10px; }
+        .todo-demo .row input { flex: 1; }
+        .todo-demo ul { list-style: none; padding: 0; margin: 0; }
+        .todo-demo li {
+            display: flex; justify-content: space-between; align-items: center;
+            background: #f6f8fa; border: 1px solid #d0d7de; border-radius: 8px;
+            padding: 8px 12px; margin-bottom: 6px; font-size: 13px;
+        }
+        .todo-demo li.done { text-decoration: line-through; opacity: 0.6; }
+        .todo-demo .del { background: #cf222e; }
+    </style>
+</head>
+<body>
+
+    <header class="hero">
+        <h1>⚡ JavaScript Notes — Every Concept, Every Demo</h1>
+        <p>The third chapter of your web journey. HTML builds, CSS styles,
+           <strong style="color:var(--green)">JavaScript brings it to life</strong>.
+           Every topic has the <strong style="color:var(--green)">code</strong> on the left and a
+           <strong style="color:var(--purple)">LIVE interactive demo</strong> on the right — press the buttons!</p>
+        <span class="badge">JavaScript · 36 sections · Live demos · Search 🔍 · Quiz 🧠 · Dark/Light 🌙</span>
+    </header>
+
+    <nav class="toc">
+        <a href="#what">01 What is JS</a>
+        <a href="#adding">02 Adding JS</a>
+        <a href="#console">03 Console</a>
+        <a href="#variables">04 Variables</a>
+        <a href="#types">05 Types</a>
+        <a href="#operators">06 Operators</a>
+        <a href="#strings">07 Strings</a>
+        <a href="#numbers">08 Numbers</a>
+        <a href="#conditions">09 Conditions</a>
+        <a href="#loops">10 Loops</a>
+        <a href="#arrays">11 Arrays</a>
+        <a href="#arraymethods">12 Array methods</a>
+        <a href="#objects">13 Objects</a>
+        <a href="#functions">14 Functions</a>
+        <a href="#arrows">15 Arrow fns</a>
+        <a href="#scope">16 Scope</a>
+        <a href="#modern">17 Modern syntax</a>
+        <a href="#destructure">18 Destructure</a>
+        <a href="#dom">19 The DOM</a>
+        <a href="#select">20 Select</a>
+        <a href="#content">21 Content</a>
+        <a href="#create">22 Create</a>
+        <a href="#styling">23 Styling</a>
+        <a href="#events">24 Events</a>
+        <a href="#eventtypes">25 Event types</a>
+        <a href="#forms">26 Forms</a>
+        <a href="#bubbling">27 Bubbling</a>
+        <a href="#traversing">28 Traversing</a>
+        <a href="#timers">29 Timers</a>
+        <a href="#storage">30 Storage</a>
+        <a href="#json">31 JSON</a>
+        <a href="#errors">32 Errors</a>
+        <a href="#promises">33 Promises</a>
+        <a href="#fetch">34 Fetch</a>
+        <a href="#project">35 Mini project</a>
+        <a href="#quiz">36 Quiz</a>
+    </nav>
+
+    <div class="search-wrap">
+        <input id="search" type="search" placeholder="🔍 Search the notes… (e.g. 'array', 'event', 'fetch', 'function')">
+    </div>
+
+    <main>
+
+        <!-- ================= 01 WHAT IS JS ================= -->
+        <section class="card" id="what">
+            <h2><span class="num">01</span>What is JavaScript?</h2>
+            <p><strong>JavaScript</strong> (JS) is the only programming language your browser understands natively.
+            It reads the page (the <em>DOM</em>), reacts to users, talks to servers, and changes everything live.
+            Press the button — that's JS:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>const btn = document.querySelector("#magic");
+const out = document.querySelector("#magicOut");
+let clicks = 0;
+
+btn.addEventListener("click", () =&gt; {
+    clicks++;
+    out.textContent = "Clicked " + clicks +
+        " time(s)!";
+    btn.style.background = clicks % 2
+        ? "#8250df" : "#0969da";
+});</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <p style="font-weight:700;">The three web languages:</p>
+                        <p>🧱 <strong>HTML</strong> — structure (the skeleton)</p>
+                        <p>🎨 <strong>CSS</strong> — style (the clothes)</p>
+                        <p>⚡ <strong>JS</strong> — behavior (the muscles)</p>
+                        <div style="margin-top:10px;">
+                            <button id="magic">Click me! 🪄</button>
+                            <div class="out" id="magicOut">0 clicks</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                (function () {
+                    var btn = document.getElementById('magic');
+                    var out = document.getElementById('magicOut');
+                    if (!btn || !out) return;
+                    var clicks = 0;
+                    btn.addEventListener('click', function () {
+                        clicks++;
+                        out.textContent = 'Clicked ' + clicks + (clicks === 1 ? ' time!' : ' times!');
+                        btn.style.background = clicks % 2 ? '#8250df' : '#0969da';
+                    });
+                })();
+            </script>
+            <div class="tip"><strong>Note:</strong> JavaScript ≠ Java. Java is a big server language;
+            JavaScript is the web's own language. Don't confuse them (interviewers love this trap).</div>
+        </section>
+
+        <!-- ================= 02 ADDING JS ================= -->
+        <section class="card" id="adding">
+            <h2><span class="num">02</span>Adding JavaScript to a Page</h2>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code class="lang-html">&lt;!-- 1. EXTERNAL (best): separate file --&gt;
+&lt;script src="app.js"&gt;&lt;/script&gt;
+
+&lt;!-- 2. INTERNAL: in the page --&gt;
+&lt;script&gt;
+    console.log("Hello from inside!");
+&lt;/script&gt;
+
+&lt;!-- 3. INLINE: directly on an element --&gt;
+&lt;button onclick="alert('Hi!')"&gt;Say hi&lt;/button&gt;
+
+&lt;!-- best practice: put scripts before &lt;/body&gt;
+     so the page renders first, then runs --&gt;</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <p style="font-weight:700;">Which one when?</p>
+                        <ul style="padding-left:20px;margin-bottom:10px;">
+                            <li><strong>External</strong> — real projects (cached, reusable, clean)</li>
+                            <li><strong>Internal</strong> — small demos like this page</li>
+                            <li><strong>Inline</strong> — avoid; mixing JS into HTML gets messy</li>
+                        </ul>
+                        <p>⚡ Fun demo — this button was wired with an inline handler:</p>
+                        <button onclick="document.getElementById('inlineOut').textContent = 'Inline JS worked! ' + (Math.random()*100).toFixed(0) + ' lucky number'">Try inline JS</button>
+                        <div class="out" id="inlineOut">click the button above</div>
+                    </div>
+                </div>
+            </div>
+            <div class="warn"><strong>Placement matters:</strong> a script in the &lt;head&gt; runs BEFORE the body exists —
+            it can't find elements yet. That's why most scripts go at the end of &lt;body&gt;, or use
+            <code class="inline">defer</code>.</div>
+        </section>
+
+        <!-- ================= 03 CONSOLE ================= -->
+        <section class="card" id="console">
+            <h2><span class="num">03</span>The Console — your playground</h2>
+            <p><code class="inline">console.log()</code> prints to the browser's console (F12 → Console).
+            It's your best friend for testing and debugging. Every page has one — try it:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>// open F12 → Console and run:
+console.log("Hello, world!");
+console.log(1 + 2);
+console.warn("This is a warning");
+console.error("This is an error");
+
+// inspect variables and objects:
+const user = { name: "Alex", age: 21 };
+console.log(user);
+
+// multiple values at once:
+console.log("Age:", user.age);</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <p>Press the button, then open <strong>F12 → Console</strong> to see the output:</p>
+                        <button id="consoleBtn">console.log("Hello!")</button>
+                        <div class="out" id="consoleOut">(open the console — output appears there)</div>
+                        <p style="font-size:12px;color:#57606a;margin-top:8px;">console.log is like a print statement.
+                        You will use it 1000 times before you're a pro. Guaranteed.</p>
+                    </div>
+                </div>
+            </div>
+            <script>
+                (function () {
+                    var btn = document.getElementById('consoleBtn');
+                    if (!btn) return;
+                    btn.addEventListener('click', function () {
+                        console.log('Hello from the button!');
+                        console.log('1 + 2 =', 1 + 2);
+                        console.warn('A warning looks like this');
+                        console.error('An error looks like this');
+                    });
+                })();
+            </script>
+        </section>
+
+        <!-- ================= 04 VARIABLES ================= -->
+        <section class="card" id="variables">
+            <h2><span class="num">04</span>Variables — let, const, var</h2>
+            <p>Variables store values. Use <code class="inline">const</code> for values that never change and
+            <code class="inline">let</code> for values that do. Forget <code class="inline">var</code> (old, buggy).</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>const appName = "My App";  // can NOT change
+let score = 0;           // CAN change
+let player = "Alex";
+
+score = score + 10;         // 10
+score += 5;                // 15 (shorter)
+player = "Sam";            // reassign let — ok
+
+// appName = "Other"; // ERROR!
+// const can't be reassigned
+
+console.log(score, player);</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <p style="font-weight:700;">Live counter — `let` changes, `const` stays:</p>
+                        <div style="display:flex;gap:8px;align-items:center;">
+                            <button id="decBtn">−</button>
+                            <span id="counterVal" style="font-size:28px;font-weight:700;min-width:50px;text-align:center;">0</span>
+                            <button id="incBtn">+</button>
+                        </div>
+                        <div class="out" id="counterLog">let count = 0;  ← in action</div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                (function () {
+                    var count = 0;
+                    var val = document.getElementById('counterVal');
+                    var log = document.getElementById('counterLog');
+                    function update() {
+                        val.textContent = count;
+                        log.textContent = 'count = ' + count + '   (let lets us change it)';
+                    }
+                    document.getElementById('incBtn').addEventListener('click', function () { count++; update(); });
+                    document.getElementById('decBtn').addEventListener('click', function () { count--; update(); });
+                })();
+            </script>
+            <table>
+                <thead><tr><th>Keyword</th><th>Can change?</th><th>Use when</th></tr></thead>
+                <tbody>
+                    <tr><td><code class="inline">const</code></td><td>No</td><td>default choice — 80% of your variables</td></tr>
+                    <tr><td><code class="inline">let</code></td><td>Yes</td><td>counters, game scores, anything that updates</td></tr>
+                    <tr><td><code class="inline">var</code></td><td>Yes</td><td>never — it's from 1995 and behaves oddly</td></tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- ================= 05 DATA TYPES ================= -->
+        <section class="card" id="types">
+            <h2><span class="num">05</span>Data Types</h2>
+            <p>JavaScript has 8 types. You'll use these 6 daily — check any value's type with
+            <code class="inline">typeof</code>:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>const name     = "Alex";          // string
+const age      = 21;              // number
+const isCool   = true;           // boolean
+const nothing  = null;           // null (empty)
+let   notSet;                     // undefined
+const fruits   = ["🍎", "🍌"];  // array
+const user     = { name: "Sam" }; // object
+
+console.log(typeof name);    // "string"
+console.log(typeof age);     // "number"
+console.log(typeof fruits);  // "object" (!)</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <p style="font-weight:700;">Click a value to see its typeof:</p>
+                        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;">
+                            <button class="secondary" onclick="showType('&quot;Alex&quot;')">"Alex"</button>
+                            <button class="secondary" onclick="showType('21')">21</button>
+                            <button class="secondary" onclick="showType('true')">true</button>
+                            <button class="secondary" onclick="showType('null')">null</button>
+                            <button class="secondary" onclick="showType('[1,2]')">[1,2]</button>
+                            <button class="secondary" onclick="showType('{name:&quot;Sam&quot;}')">{name:"Sam"}</button>
+                        </div>
+                        <div class="out" id="typeOut">click a value above</div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                function showType(v) {
+                    var out = document.getElementById('typeOut');
+                    var val;
+                    try { val = eval(v); } catch (e) { out.textContent = 'oops'; return; }
+                    out.textContent = 'typeof ' + v + ' → ' + (val === null ? 'object' : typeof val);
+                }
+            </script>
+            <div class="warn"><strong>Famous gotchas:</strong> <code class="inline">typeof null</code> returns
+            <code class="inline">"object"</code> (a historical bug, kept for compatibility), and arrays are objects too.
+            Don't panic — <code class="inline">Array.isArray([])</code> is the fix.</div>
+        </section>
+
+        <!-- ================= 06 OPERATORS ================= -->
+        <section class="card" id="operators">
+            <h2><span class="num">06</span>Operators</h2>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>// arithmetic
+10 + 3;   // 13
+10 - 3;   // 7
+10 * 3;   // 30
+10 / 3;   // 3.33
+10 % 3;   // 1 (remainder)
+
+// comparison → boolean
+5 &gt; 3;        // true
+5 === "5";    // false (types differ)
+5 == "5";     // true (loose — avoid!)
+5 !== 3;       // true
+
+// logical
+true &amp;&amp; false;  // AND → false
+true || false;  // OR → true
+!true;          // NOT → false
+
+// shorthand
+let n = 1;
+n++;            // n = 2
+n += 5;         // n = 7</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <p style="font-weight:700;">Live calculator — real JS evaluating real math:</p>
+                        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                            <button class="secondary" onclick="calc('7 + 5')">7 + 5</button>
+                            <button class="secondary" onclick="calc('10 * 3')">10 * 3</button>
+                            <button class="secondary" onclick="calc('10 % 3')">10 % 3</button>
+                            <button class="secondary" onclick="calc('2 ** 10')">2 ** 10</button>
+                            <button class="secondary" onclick="calc('5 === &quot;5&quot;')">5 === "5"</button>
+                            <button class="secondary" onclick="calc('(4 + 6) / 2')">(4+6)/2</button>
+                        </div>
+                        <div class="out" id="calcOut">click an expression</div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                function calc(expr) {
+                    var out = document.getElementById('calcOut');
+                    var result;
+                    try { result = eval(expr); } catch (e) { result = 'error'; }
+                    out.textContent = expr + ' = ' + result;
+                }
+            </script>
+            <div class="warn"><strong>Always use ===</strong> (strict). The loose == converts types silently and causes
+            the weirdest bugs in programming history: <code class="inline">0 == false</code> is <em>true</em>. Seriously.</div>
+        </section>
+
+        <!-- ================= 07 STRINGS ================= -->
+        <section class="card" id="strings">
+            <h2><span class="num">07</span>Strings</h2>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>const name = "Alex";
+
+name.length;                // 4
+name.toUpperCase();         // "ALEX"
+name.toLowerCase();         // "alex"
+name.includes("ex");     // true
+name.slice(0, 2);         // "Al"
+name.replace("A", "E"); // "Elex"
+name.split("");           // ["A","l","e","x"]
+"  hi  ".trim();          // "hi"
+
+// template literals (backticks):
+const msg = `Hello ${name}!
+You have ${3} messages`;</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <p style="font-weight:700;">Type your name and hit Enter:</p>
+                        <input id="strIn" placeholder="Alex" style="width:100%;">
+                        <div class="out" id="strOut">waiting…</div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                (function () {
+                    var inp = document.getElementById('strIn');
+                    var out = document.getElementById('strOut');
+                    function go() {
+                        var name = inp.value.trim() || 'Alex';
+                        out.textContent =
+                            'length: ' + name.length + '\n' +
+                            'upper: ' + name.toUpperCase() + '\n' +
+                            'includes "ex": ' + name.toLowerCase().includes('ex') + '\n' +
+                            'slice(0,3): ' + name.slice(0, 3) + '\n' +
+                            'template: `Hello ${name}!` → Hello ' + name + '!';
+                    }
+                    inp.addEventListener('input', go);
+                })();
+            </script>
+            <div class="tip"><strong>Template literals</strong> (backticks) beat string + concatenation every time:
+            <code class="inline">`Hi ${name}, you are ${age}`</code> — readable, and multi-line works naturally.</div>
+        </section>
+
+        <!-- ================= 08 NUMBERS ================= -->
+        <section class="card" id="numbers">
+            <h2><span class="num">08</span>Numbers &amp; Math</h2>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>Math.floor(4.7);      // 4 (down)
+Math.ceil(4.2);       // 5 (up)
+Math.round(4.5);      // 5
+Math.max(1, 9, 4);  // 9
+Math.min(1, 9, 4);  // 1
+Math.random();          // 0 to 1
+Math.random() * 10;   // 0 to 10
+
+// dice 1-6:
+Math.floor(Math.random() * 6) + 1;
+
+// numbers from text:
+Number("42");     // 42
+parseInt("3.7");  // 3
+parseFloat("3.7"); // 3.7
+
+// rounding money:
+(19.99 * 1.1).toFixed(2); // "21.99"</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <p style="font-weight:700;">🎲 Click for a random number:</p>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                            <button id="diceBtn">Roll a dice (1–6)</button>
+                            <button class="secondary" id="coinBtn">Flip a coin</button>
+                        </div>
+                        <div class="out" id="numOut">ready…</div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                (function () {
+                    var out = document.getElementById('numOut');
+                    document.getElementById('diceBtn').addEventListener('click', function () {
+                        var dice = Math.floor(Math.random() * 6) + 1;
+                        out.textContent = '🎲 ' + dice + '  (Math.floor(Math.random()*6)+1)';
+                    });
+                    document.getElementById('coinBtn').addEventListener('click', function () {
+                        out.textContent = Math.random() < 0.5 ? '🪙 Heads!' : '🪙 Tails!';
+                    });
+                })();
+            </script>
+        </section>
+
+        <!-- ================= 09 CONDITIONS ================= -->
+        <section class="card" id="conditions">
+            <h2><span class="num">09</span>Conditions — if / else / switch</h2>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>const age = 17;
+
+if (age &gt;= 18) {
+    console.log("Adult");
+} else if (age &gt;= 13) {
+    console.log("Teenager");
+} else {
+    console.log("Child");
+}
+
+// ternary — one-line if/else:
+const status = age &gt;= 18 ? "adult" : "minor";
+
+// switch — many fixed options:
+const day = "monday";
+switch (day) {
+    case "monday":
+        console.log("Back to work");
+        break;
+    default:
+        console.log("Relax");
+}</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <p style="font-weight:700;">Enter your age:</p>
+                        <input id="ageIn" type="number" value="17" style="width:100%;">
+                        <div class="out" id="ageOut">17 → ?</div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                (function () {
+                    var inp = document.getElementById('ageIn');
+                    var out = document.getElementById('ageOut');
+                    function go() {
+                        var age = parseInt(inp.value, 10);
+                        var label;
+                        if (isNaN(age)) label = 'please enter a number';
+                        else if (age >= 18) label = 'Adult 🍀';
+                        else if (age >= 13) label = 'Teenager 🎒';
+                        else if (age >= 0) label = 'Child 🧸';
+                        else label = 'hmm, negative age?';
+                        out.textContent = age + ' → ' + label;
+                    }
+                    inp.addEventListener('input', go);
+                    go();
+                })();
+            </script>
+            <div class="tip"><strong>Truthy &amp; falsy:</strong> <code class="inline">0, "", null, undefined, NaN, false</code> are
+            falsy — <code class="inline">if (value)</code> is a shortcut for "if it exists and is meaningful".</div>
+        </section>
+
+        <!-- ================= 10 LOOPS ================= -->
+        <section class="card" id="loops">
+            <h2><span class="num">10</span>Loops — repeat without copying</h2>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>// for — know how many times
+for (let i = 1; i &lt;= 5; i++) {
+    console.log(i);   // 1 2 3 4 5
+}
+
+// while — run while true
+let n = 10;
+while (n &gt; 0) {
+    n--;
+}
+
+// for...of — loop over items
+const fruits = ["🍎", "🍌", "🍇"];
+for (const fruit of fruits) {
+    console.log(fruit);
+}
+
+// break &amp; continue
+for (let i = 0; i &lt; 10; i++) {
+    if (i === 2) continue;  // skip 2
+    if (i === 5) break;     // stop at 5
+}</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <p style="font-weight:700;">Countdown with a real for loop:</p>
+                        <div style="display:flex;gap:8px;">
+                            <button id="countBtn">▶ Run countdown</button>
+                        </div>
+                        <div class="out" id="countOut">ready…</div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                (function () {
+                    var btn = document.getElementById('countBtn');
+                    var out = document.getElementById('countOut');
+                    btn.addEventListener('click', function () {
+                        out.textContent = '';
+                        var lines = [];
+                        for (var i = 5; i >= 1; i--) {
+                            lines.push('t-minus ' + i + '…');
+                        }
+                        lines.push('🚀 Launch!');
+                        out.textContent = lines.join('\n');
+                    });
+                })();
+            </script>
+            <div class="warn"><strong>Infinite loop danger:</strong> if the condition never becomes false,
+            <code class="inline">while(true)</code> freezes the tab (the browser may offer to kill it).
+            Always make sure the loop eventually ends!</div>
+        </section>
+
+        <!-- ================= 11 ARRAYS ================= -->
+        <section class="card" id="arrays">
+            <h2><span class="num">11</span>Arrays</h2>
+            <p>Arrays are ordered lists. Indexes start at <strong>0</strong>:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>const fruits = ["🍎", "🍌", "🍇"];
+
+fruits.length;             // 3
+fruits[0];                  // "🍎" (first)
+fruits[fruits.length - 1]; // "🍇" (last)
+fruits.push("🍓");        // add to END → 4
+fruits.pop();              // remove END → 🍓
+fruits.unshift("🥭");     // add to START
+fruits.shift();            // remove START
+fruits.indexOf("🍌");    // 1
+fruits.includes("🍇");  // true
+fruits.slice(1);         // ["🍌","🍇"] copy
+fruits.splice(1, 1);   // remove 1 at idx 1</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <p style="font-weight:700;">Add &amp; remove from a real array:</p>
+                        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
+                            <button class="green" onclick="arrAdd('🍎')">push 🍎</button>
+                            <button class="green" onclick="arrAdd('🍌')">push 🍌</button>
+                            <button class="green" onclick="arrAdd('🍇')">push 🍇</button>
+                            <button onclick="arrPop()">pop</button>
+                            <button class="secondary" onclick="arrClear()">clear</button>
+                        </div>
+                        <div class="out" id="arrOut">[]</div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                var demoArr = [];
+                function arrRender() {
+                    document.getElementById('arrOut').textContent =
+                        '[' + demoArr.join(', ') + ']  (length: ' + demoArr.length + ')';
+                }
+                function arrAdd(item) { demoArr.push(item); arrRender(); }
+                function arrPop() { var x = demoArr.pop(); arrRender(); if (x) console.log('popped', x); }
+                function arrClear() { demoArr = []; arrRender(); }
+                arrRender();
+            </script>
+        </section>
+
+        <!-- ================= 12 ARRAY METHODS ================= -->
+        <section class="card" id="arraymethods">
+            <h2><span class="num">12</span>Array Methods — map, filter, reduce</h2>
+            <p>The modern way to transform arrays. These three cover 80% of real work:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>const prices = [10, 25, 40];
+
+// map: transform every item
+const withTax = prices
+    .map(p =&gt; p * 1.1);        // [11, 27.5, 44]
+
+// filter: keep what matches
+const big = prices
+    .filter(p =&gt; p &gt;= 20);      // [25, 40]
+
+// reduce: combine into one value
+const total = prices
+    .reduce((sum, p) =&gt; sum + p, 0); // 75
+
+// forEach: do something for each
+prices.forEach(p =&gt; console.log(p));
+
+// find &amp; sort
+prices.find(p =&gt; p &gt; 20);   // 25
+[3, 1, 2].sort((a, b) =&gt; a - b); // [1,2,3]</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <p style="font-weight:700;">Live pipeline on [10, 25, 40]:</p>
+                        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                            <button onclick="arrPipe('map')">map ×1.1</button>
+                            <button onclick="arrPipe('filter')">filter ≥20</button>
+                            <button onclick="arrPipe('reduce')">reduce sum</button>
+                            <button class="secondary" onclick="arrPipe('sort')">sort</button>
+                        </div>
+                        <div class="out" id="pipeOut">click a method</div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                function arrPipe(method) {
+                    var prices = [10, 25, 40];
+                    var out = document.getElementById('pipeOut');
+                    var result;
+                    if (method === 'map') result = prices.map(p => p * 1.1);
+                    else if (method === 'filter') result = prices.filter(p => p >= 20);
+                    else if (method === 'reduce') result = prices.reduce((sum, p) => sum + p, 0);
+                    else if (method === 'sort') result = [3, 1, 2].sort((a, b) => a - b);
+                    out.textContent = method + ' → ' + JSON.stringify(result);
+                }
+            </script>
+            <div class="tip"><strong>Chain them:</strong> <code class="inline">prices.filter(p =&gt; p &gt; 10).map(p =&gt; p * 2)</code>
+            — each method returns a new array, so they link together like a pipeline.</div>
+        </section>
+
+        <!-- ================= 13 OBJECTS ================= -->
+        <section class="card" id="objects">
+            <h2><span class="num">13</span>Objects — key-value containers</h2>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>const user = {
+    name: "Alex",
+    age: 21,
+    skills: ["HTML", "CSS"],
+    greet() {                    // method
+        return `Hi, I'm ${this.name}`;
+    }
+};
+
+user.name;                // "Alex" (dot)
+user["age"];              // 21 (bracket)
+user.skills.push("JS"); // works!
+user.city = "Mumbai";   // add property
+delete user.city;         // remove it
+
+Object.keys(user);       // ["name",...]
+Object.values(user);     // values
+"name" in user;         // true
+user.greet();             // "Hi, I'm Alex"</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <p style="font-weight:700;">Live profile card (an object!):</p>
+                        <div style="background:#f6f8fa;border-radius:10px;padding:14px;border:1px solid #d0d7de;">
+                            <div style="font-size:34px;">👤</div>
+                            <div style="font-weight:700;font-size:16px;" id="objName">Alex</div>
+                            <div id="objAge" style="color:#57606a;font-size:13px;">21 years old</div>
+                            <div id="objSkills" style="font-size:13px;margin-top:4px;">HTML, CSS</div>
+                            <div style="margin-top:8px;display:flex;gap:6px;">
+                                <button class="green" onclick="objAgeUp()">age +1</button>
+                                <button class="secondary" onclick="objAddSkill()">+ skill</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                var demoUser = { name: 'Alex', age: 21, skills: ['HTML', 'CSS'] };
+                function objRender() {
+                    document.getElementById('objName').textContent = demoUser.name;
+                    document.getElementById('objAge').textContent = demoUser.age + ' years old';
+                    document.getElementById('objSkills').textContent = demoUser.skills.join(', ');
+                }
+                function objAgeUp() { demoUser.age++; objRender(); }
+                function objAddSkill() {
+                    var skills = ['JS', 'React', 'Python', 'Tea making'];
+                    demoUser.skills.push(skills[demoUser.skills.length - 3]);
+                    objRender();
+                }
+                objRender();
+            </script>
+        </section>
+
+        <!-- ================= 14 FUNCTIONS ================= -->
+        <section class="card" id="functions">
+            <h2><span class="num">14</span>Functions — reusable actions</h2>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>// declare a function
+function greet(name) {
+    return `Hello, ${name}!`;
+}
+
+// call it (run it)
+greet("Alex");   // "Hello, Alex!"
+greet("Sam");    // "Hello, Sam!"
+
+// multiple parameters
+function add(a, b) {
+    return a + b;
+}
+add(2, 3);   // 5
+
+// default values
+function greet2(name = "friend") {
+    return `Hi, ${name}`;
+}
+greet2();       // "Hi, friend"
+
+// no return? returns undefined
+function logIt(msg) {
+    console.log(msg);
+}</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <p style="font-weight:700;">A function that builds a card:</p>
+                        <input id="fnIn" value="Alex" style="width:100%;">
+                        <div style="margin:8px 0;"><button id="fnBtn">greet(name)</button></div>
+                        <div class="out" id="fnOut"></div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                (function () {
+                    function greet(name) {
+                        return 'Hello, ' + name + '! 🎉';
+                    }
+                    function go() {
+                        var name = document.getElementById('fnIn').value.trim() || 'friend';
+                        document.getElementById('fnOut').textContent = greet(name);
+                    }
+                    document.getElementById('fnBtn').addEventListener('click', go);
+                    document.getElementById('fnIn').addEventListener('input', go);
+                    go();
+                })();
+            </script>
+            <div class="tip"><strong>Why functions?</strong> Write once, use 100 times. Change the logic in ONE place.
+            That's the DRY principle: Don't Repeat Yourself.</div>
+        </section>
+
+        <!-- ================= 15 ARROW FUNCTIONS ================= -->
+        <section class="card" id="arrows">
+            <h2><span class="num">15</span>Arrow Functions — the modern style</h2>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>// old style
+function square(x) {
+    return x * x;
+}
+
+// arrow, multi-line
+const square = (x) =&gt; {
+    return x * x;
+};
+
+// arrow, single expression (implicit return)
+const square = x =&gt; x * x;
+
+// one param → no parens needed
+const double = n =&gt; n * 2;
+
+// zero params → empty parens
+const hi = () =&gt; "hello";
+
+// perfect with arrays:
+[1, 2, 3].map(n =&gt; n * 10); // [10,20,30]</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <p style="font-weight:700;">Live: map with arrows</p>
+                        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                            <button onclick="arrowDemo('x2')">n =&gt; n*2</button>
+                            <button class="secondary" onclick="arrowDemo('square')">n =&gt; n*n</button>
+                            <button class="secondary" onclick="arrowDemo('label')">n =&gt; `#${n}`</button>
+                        </div>
+                        <div class="out" id="arrowOut">[1,2,3,4,5].map(...)</div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                function arrowDemo(which) {
+                    var nums = [1, 2, 3, 4, 5];
+                    var result;
+                    if (which === 'x2') result = nums.map(n => n * 2);
+                    else if (which === 'square') result = nums.map(n => n * n);
+                    else result = nums.map(n => '#' + n);
+                    document.getElementById('arrowOut').textContent =
+                        '[1,2,3,4,5].map(...) → ' + JSON.stringify(result);
+                }
+            </script>
+            <div class="tip"><strong>Which to use?</strong> Arrows are shorter and don't bind their own
+            <code class="inline">this</code> (usually what you want). Function declarations are better for named,
+            hoisted utilities. Modern code is ~90% arrows.</div>
+        </section>
+
+        <!-- ================= 16 SCOPE ================= -->
+        <section class="card" id="scope">
+            <h2><span class="num">16</span>Scope &amp; Closures</h2>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>// GLOBAL: visible everywhere
+const app = "MyApp";
+
+function demo() {
+    // FUNCTION scope: only inside demo
+    const inner = "secret";
+
+    if (true) {
+        // BLOCK scope: only inside the { }
+        let blockVar = 1;
+        var oldVar = 2;  // var escapes the block! (bad)
+    }
+    console.log(oldVar);  // 2 — visible (bad)
+    // console.log(blockVar); // ERROR
+}
+
+// CLOSURE: inner fn remembers outer vars
+function makeCounter() {
+    let count = 0;
+    return () =&gt; ++count;  // remembers count!
+}
+const counter = makeCounter();
+counter(); // 1
+counter(); // 2 — count survived</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <p style="font-weight:700;">Closure in action — count is private:</p>
+                        <div style="display:flex;gap:8px;align-items:center;">
+                            <button id="closBtn">call counter()</button>
+                            <span id="closVal" style="font-size:26px;font-weight:700;">0</span>
+                        </div>
+                        <div class="out">let count = 0 lives INSIDE the function — nothing else can touch it.</div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                (function () {
+                    function makeCounter() {
+                        var count = 0;
+                        return function () { return ++count; };
+                    }
+                    var counter = makeCounter();
+                    var val = document.getElementById('closVal');
+                    document.getElementById('closBtn').addEventListener('click', function () {
+                        val.textContent = counter();
+                    });
+                })();
+            </script>
+            <div class="warn"><strong>let vs var:</strong> <code class="inline">let</code> respects block { } scopes,
+            <code class="inline">var</code> doesn't. This is the main reason var caused bugs. Use let/const, always.</div>
+        </section>
+
+        <!-- ================= 17 MODERN SYNTAX ================= -->
+        <section class="card" id="modern">
+            <h2><span class="num">17</span>Modern Syntax — the little saviors</h2>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>// template literals (backticks)
+const n = 3;
+`You have ${n} messages`;
+
+// optional chaining — no crash
+const user = { profile: { name: "A" } };
+user.profile?.name;      // "A"
+user.bio?.age;           // undefined (no error!)
+
+// nullish coalescing — default if null/undefined
+const x = user.bio ?? "default"; // "default"
+
+// ternary (one-line if)
+const type = n &gt; 2 ? "big" : "small";
+
+// shortcuts
+n &gt; 2 &amp;&amp; console.log("yes!"); // runs if true
+// older equivalent:
+if (n &gt; 2) console.log("yes!");</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <p style="font-weight:700;">Safe access — no errors, ever:</p>
+                        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                            <button onclick="modernDemo('safe')">user.bio?.age</button>
+                            <button class="secondary" onclick="modernDemo('nullish')">?? default</button>
+                            <button class="secondary" onclick="modernDemo('ternary')">ternary</button>
+                        </div>
+                        <div class="out" id="modernOut"></div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                function modernDemo(which) {
+                    var out = document.getElementById('modernOut');
+                    var user = { profile: { name: 'A' } };
+                    var lines = [];
+                    if (which === 'safe') {
+                        lines.push('user.profile?.name → ' + user.profile?.name);
+                        lines.push('user.bio?.age → ' + user.bio?.age + ' (no crash!)');
+                    } else if (which === 'nullish') {
+                        lines.push('user.bio ?? "default" → ' + (user.bio ?? 'default'));
+                    } else {
+                        var n = 3;
+                        lines.push('n > 2 ? "big" : "small" → ' + (n > 2 ? 'big' : 'small'));
+                    }
+                    out.textContent = lines.join('\n');
+                }
+            </script>
+        </section>
+
+        <!-- ================= 18 DESTRUCTURING ================= -->
+        <section class="card" id="destructure">
+            <h2><span class="num">18</span>Destructuring &amp; Spread</h2>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>// OBJECT destructuring — pull out fields
+const user = { name: "Alex", age: 21 };
+const { name, age } = user;
+// name = "Alex", age = 21
+
+// ARRAY destructuring
+const [first, second] = ["a", "b"];
+
+// SPREAD — copy &amp; combine
+const copy = [...fruits, "🍓"]; // new array
+const merged = { ...user, city: "Mumbai" };
+// merged = user + city, original untouched
+
+// rest — collect the rest
+function sum(...nums) {
+    return nums.reduce((a, b) =&gt; a + b, 0);
+}
+sum(1, 2, 3); // 6</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <p style="font-weight:700;">Spread is how you update WITHOUT mutating:</p>
+                        <div class="out" id="destrOut"></div>
+                        <div style="margin-top:8px;display:flex;gap:6px;">
+                            <button onclick="destrDemo()">run demo</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                function destrDemo() {
+                    var out = document.getElementById('destrOut');
+                    var user = { name: 'Alex', age: 21 };
+                    var merged = { ...user, city: 'Mumbai' };
+                    var nums = [1, 2, 3];
+                    var withMore = [...nums, 4, 5];
+                    out.textContent =
+                        'user: ' + JSON.stringify(user) + '\n' +
+                        'merged: ' + JSON.stringify(merged) + '\n' +
+                        'spread array: ' + JSON.stringify(withMore);
+                }
+            </script>
+            <div class="tip"><strong>Golden habit:</strong> don't mutate (change) objects/arrays in place —
+            create new ones with spread. It prevents a whole class of confusing bugs.</div>
+        </section>
+
+        <!-- ================= 19 THE DOM ================= -->
+        <section class="card" id="dom">
+            <h2><span class="num">19</span>The DOM — JavaScript sees your page</h2>
+            <p><strong>DOM</strong> = Document Object Model. When the browser reads your HTML, it builds a
+            <em>tree</em> of objects — one for every tag. JavaScript can walk that tree, change it, add to it.
+            The entry point is <code class="inline">document</code>:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>// the document IS the page
+document.title;              // page title
+document.body;              // the &lt;body&gt; element
+document.URL;               // current address
+
+// the tree: html → body → div → p
+document.body.children;     // direct kids
+document.body.firstElementChild;
+
+// every element is an object
+// with properties like:
+element.textContent;      // the text
+element.style;            // inline CSS
+element.className;        // class list
+element.id;               // id
+
+// change the page live:
+document.title = "New title!";</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <p style="font-weight:700;">This page IS a DOM tree. Try it:</p>
+                        <button onclick="domDemo()">Rename this tab</button>
+                        <button class="secondary" onclick="domCount()">Count this page's sections</button>
+                        <div class="out" id="domOut"></div>
+                        <p style="font-size:12px;color:#57606a;">Every card, button, and panel on this page is a
+                        node in the DOM — JS can touch any of them.</p>
+                    </div>
+                </div>
+            </div>
+            <script>
+                function domDemo() {
+                    document.title = 'DOM changed me! 😎';
+                    document.getElementById('domOut').textContent = 'document.title = "DOM changed me! 😎" — look at the browser tab! Reload to restore.';
+                }
+                function domCount() {
+                    var n = document.querySelectorAll('.card').length;
+                    document.getElementById('domOut').textContent = 'This page has ' + n + ' section cards in its DOM.';
+                }
+            </script>
+        </section>
+
+        <!-- ================= 20 SELECTING ================= -->
+        <section class="card" id="select">
+            <h2><span class="num">20</span>Selecting Elements</h2>
+            <p>Before you can change an element, you must <strong>find</strong> it. The two modern kings:
+            <code class="inline">querySelector</code> (one) and <code class="inline">querySelectorAll</code> (many):</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>// OLD ways (still everywhere in tutorials)
+document.getElementById("hero");
+document.getElementsByClassName("card");
+document.getElementsByTagName("div");
+
+// MODERN ways (use these)
+// first element matching a CSS selector:
+document.querySelector("#hero");
+document.querySelector(".card");
+document.querySelector("nav a");
+
+// ALL matches → NodeList (loop it)
+document.querySelectorAll(".card")
+    .forEach(card =&gt; console.log(card));
+
+// search inside another element
+const nav = document.querySelector("nav");
+nav.querySelector("a");</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <p style="font-weight:700;">querySelector targets the items below:</p>
+                        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                            <button onclick="selDemo('.item')">select .item</button>
+                            <button class="secondary" onclick="selDemo('#special')">select #special</button>
+                            <button class="secondary" onclick="selDemo('div.box')">select div.box</button>
+                        </div>
+                        <div style="margin-top:8px;">
+                            <div class="item" style="background:#f6f8fa;padding:6px 10px;border-radius:6px;margin-bottom:4px;font-size:13px;">item 1</div>
+                            <div id="special" style="background:#ddf4ff;padding:6px 10px;border-radius:6px;margin-bottom:4px;font-size:13px;">#special</div>
+                            <div class="item box" style="background:#f6f8fa;padding:6px 10px;border-radius:6px;font-size:13px;">item 2 (also .box)</div>
+                        </div>
+                        <div class="out" id="selOut"></div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                function selDemo(selector) {
+                    var found = document.querySelectorAll(selector);
+                    var out = document.getElementById('selOut');
+                    out.textContent = 'querySelectorAll("' + selector + '") → ' + found.length + ' element(s) found';
+                }
+            </script>
+            <div class="tip"><strong>CSS selectors work as-is:</strong> anything you can target in CSS
+            (<code class="inline">.card &gt; p</code>, <code class="inline">a:hover</code>…) works in querySelector. One syntax to learn twice.</div>
+        </section>
+
+        <!-- ================= 21 CONTENT ================= -->
+        <section class="card" id="content">
+            <h2><span class="num">21</span>Changing Content</h2>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>const el = document.querySelector("#box");
+
+// text only — safe, fast, no HTML
+el.textContent = "New text";
+
+// HTML — parses tags (careful!)
+el.innerHTML = "&lt;strong&gt;Hi&lt;/strong&gt;";
+
+// attributes
+el.setAttribute("title", "a tooltip");
+el.id = "newId";
+el.href = "https://example.com";
+
+// values from inputs
+const name = document
+    .querySelector("#nameInput").value;</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <p style="font-weight:700;">Type and press the button:</p>
+                        <input id="contentIn" placeholder="Something cool" style="width:100%;">
+                        <div style="margin:8px 0;display:flex;gap:6px;flex-wrap:wrap;">
+                            <button onclick="contentSet('text')">textContent</button>
+                            <button class="secondary" onclick="contentSet('html')">innerHTML</button>
+                        </div>
+                        <div id="contentBox" style="background:#f6f8fa;border-radius:8px;padding:12px;border:1px solid #d0d7de;">original text</div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                function contentSet(mode) {
+                    var box = document.getElementById('contentBox');
+                    var value = document.getElementById('contentIn').value.trim() || 'default text';
+                    if (mode === 'text') box.textContent = 'textContent: ' + value;
+                    else box.innerHTML = '<strong>innerHTML:</strong> ' + value;
+                }
+            </script>
+            <div class="warn"><strong>XSS warning:</strong> never put user input into innerHTML directly — they could inject
+            scripts. Use textContent for user data. innerHTML is for content YOU write.</div>
+        </section>
+
+        <!-- ================= 22 CREATE ================= -->
+        <section class="card" id="create">
+            <h2><span class="num">22</span>Creating &amp; Removing Elements</h2>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>// create a fresh element
+const li = document.createElement("li");
+li.textContent = "New item";
+li.className = "item";
+
+// attach it
+const list = document.querySelector("#list");
+list.appendChild(li);        // at the end
+list.prepend(li);            // at the start
+
+// insert before another element
+list.insertBefore(li, list.firstElementChild);
+
+// build with innerHTML (quick but XSS-aware)
+list.innerHTML += "&lt;li&gt;one more&lt;/li&gt;";
+
+// remove
+li.remove();                 // goodbye!
+list.innerHTML = "";        // clear all</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <p style="font-weight:700;">Add &amp; remove list items — real createElement:</p>
+                        <div style="display:flex;gap:6px;margin-bottom:8px;">
+                            <button onclick="createAdd()">+ item</button>
+                            <button class="secondary" onclick="createClear()">clear</button>
+                        </div>
+                        <ul id="createList" style="list-style:none;padding:0;margin:0;">
+                            <li style="background:#f6f8fa;border:1px solid #d0d7de;border-radius:6px;padding:6px 10px;margin-bottom:4px;font-size:13px;display:flex;justify-content:space-between;">
+                                item 1 <span style="cursor:pointer;color:#cf222e;" onclick="this.parentElement.remove()">✕</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <script>
+                var createCount = 1;
+                function createAdd() {
+                    createCount++;
+                    var li = document.createElement('li');
+                    li.textContent = 'item ' + createCount + '  ';
+                    li.style.cssText = 'background:#ddf4ff;border:1px solid #0969da;border-radius:6px;padding:6px 10px;margin-bottom:4px;font-size:13px;display:flex;justify-content:space-between;';
+                    var x = document.createElement('span');
+                    x.textContent = '✕';
+                    x.style.cssText = 'cursor:pointer;color:#cf222e;';
+                    x.onclick = function () { li.remove(); };
+                    li.appendChild(x);
+                    document.getElementById('createList').appendChild(li);
+                }
+                function createClear() {
+                    document.getElementById('createList').innerHTML = '';
+                    createCount = 0;
+                }
+            </script>
+        </section>
+
+        <!-- ================= 23 STYLING ================= -->
+        <section class="card" id="styling">
+            <h2><span class="num">23</span>Styling with JavaScript</h2>
+            <p>Two ways: set <code class="inline">style</code> properties directly, or (better) toggle CSS classes.
+            Classes keep your styles in CSS where they belong:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>// 1. direct style (camelCase!)
+el.style.color = "red";
+el.style.backgroundColor = "#eee";
+// background-color → backgroundColor
+el.style.fontSize = "20px";
+
+// 2. classes — the pro way
+el.classList.add("active");
+el.classList.remove("active");
+el.classList.toggle("active"); // flip
+el.classList.contains("active"); // check
+
+// styles live in CSS:
+/* .active { background: #0969da; color: white; } */</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <p style="font-weight:700;">classList.toggle in action:</p>
+                        <div id="styleBox" style="background:#f6f8fa;border:2px solid #d0d7de;border-radius:10px;padding:18px;text-align:center;font-size:14px;transition:all .3s;margin-bottom:10px;">Click the button — classList toggles .active on me</div>
+                        <button onclick="styleToggle()">toggle .active</button>
+                    </div>
+                </div>
+            </div>
+            <script>
+                function styleToggle() {
+                    var box = document.getElementById('styleBox');
+                    box.classList.toggle('active');
+                    if (box.classList.contains('active')) {
+                        box.style.background = '#0969da';
+                        box.style.color = '#fff';
+                        box.style.borderColor = '#0969da';
+                    } else {
+                        box.style.background = '#f6f8fa';
+                        box.style.color = '#1f2328';
+                        box.style.borderColor = '#d0d7de';
+                    }
+                }
+            </script>
+            <div class="tip"><strong>Why classes &gt; styles:</strong> changing looks later = edit one CSS rule, not 50 lines
+            of JS. And CSS handles hover/transitions that JS style can't.</div>
+        </section>
+
+        <!-- ================= 24 EVENTS ================= -->
+        <section class="card" id="events">
+            <h2><span class="num">24</span>Events — reacting to the user</h2>
+            <p>Events are the heart of interactivity. <code class="inline">addEventListener</code> runs a function
+            when something happens:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>const btn = document.querySelector("#btn");
+
+btn.addEventListener("click", () =&gt; {
+    console.log("Button was clicked!");
+});
+
+// you can add MULTIPLE handlers
+btn.addEventListener("click", () =&gt; {
+    btn.style.background = "#8250df";
+});
+
+// remove a handler
+const handler = () =&gt; {};
+btn.addEventListener("click", handler);
+btn.removeEventListener("click", handler);
+
+// old style (one per element):
+btn.onclick = () =&gt; {};  // replaces, not adds</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <p style="font-weight:700;">Click counter — one element, two handlers:</p>
+                        <button id="evtBtn">Click me</button>
+                        <div class="out" id="evtOut">0 clicks</div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                (function () {
+                    var btn = document.getElementById('evtBtn');
+                    var out = document.getElementById('evtOut');
+                    var clicks = 0;
+                    function handler1() {
+                        clicks++;
+                        out.textContent = clicks + ' clicks';
+                    }
+                    function handler2() {
+                        btn.style.background = clicks % 2 ? '#8250df' : '#0969da';
+                    }
+                    btn.addEventListener('click', handler1);
+                    btn.addEventListener('click', handler2);
+                })();
+            </script>
+            <div class="tip"><strong>addEventListener is the modern way:</strong> it allows many handlers, removes cleanly,
+            and works everywhere. The old <code class="inline">onclick</code> attribute still works but is limited.</div>
+        </section>
+
+        <!-- ================= 25 EVENT OBJECT ================= -->
+        <section class="card" id="eventtypes">
+            <h2><span class="num">25</span>The Event Object &amp; Event Types</h2>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>// the handler receives the EVENT object
+el.addEventListener("click", (event) =&gt; {
+    event.target;        // what was clicked
+    event.type;          // "click"
+    event.clientX;       // mouse X on screen
+    event.key;           // keyboard key (keydown)
+    event.preventDefault(); // stop default
+});
+
+// useful event types:
+"click", "dblclick", "mouseover",
+"mouseout", "mousemove",
+"keydown", "keyup", "input",
+"change", "submit", "focus",
+"blur", "scroll", "load"</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <p style="font-weight:700;">Hover the red area — see event.target:</p>
+                        <div id="evtZone" style="background:#ffebe9;border:2px solid #cf222e;border-radius:10px;padding:16px;text-align:center;font-size:13px;margin-bottom:8px;">🖱️ mouseover me</div>
+                        <p style="font-weight:700;">Press a key:</p>
+                        <input id="keyIn" placeholder="type here…" style="width:100%;">
+                        <div class="out" id="evtTypeOut"></div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                (function () {
+                    var zone = document.getElementById('evtZone');
+                    var out = document.getElementById('evtTypeOut');
+                    zone.addEventListener('mouseover', function (e) {
+                        zone.textContent = 'event.target is: ' + e.target.tagName;
+                    });
+                    zone.addEventListener('mouseout', function () {
+                        zone.textContent = '🖱️ mouseover me';
+                    });
+                    document.getElementById('keyIn').addEventListener('keydown', function (e) {
+                        out.textContent = 'event.key = "' + e.key + '" · event.code = "' + e.code + '"';
+                    });
+                })();
+            </script>
+        </section>
+
+        <!-- ================= 26 FORMS ================= -->
+        <section class="card" id="forms">
+            <h2><span class="num">26</span>Forms &amp; Input Events</h2>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>const form = document.querySelector("#myForm");
+
+form.addEventListener("submit", (e) =&gt; {
+    e.preventDefault();  // stop page reload
+
+    const data = new FormData(form);
+    const name = data.get("name");
+    console.log("submitted:", name);
+});
+
+// read input while typing:
+input.addEventListener("input", (e) =&gt; {
+    console.log(e.target.value);
+});
+
+// live validation
+input.addEventListener("blur", () =&gt; {
+    input.classList.toggle("error",
+        input.value.length &lt; 3);
+});</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <form id="demoForm" onsubmit="return false">
+                            <p style="font-weight:700;">Live form — type &amp; submit:</p>
+                            <div style="margin-bottom:6px;">
+                                <label for="fName" style="font-size:13px;display:block;">Name (min 3 chars):</label>
+                                <input id="fName" placeholder="Your name" style="width:100%;">
+                            </div>
+                            <div style="margin-bottom:6px;">
+                                <label for="fEmail" style="font-size:13px;display:block;">Email:</label>
+                                <input id="fEmail" type="email" placeholder="you@mail.com" style="width:100%;">
+                            </div>
+                            <button type="submit" onclick="formSubmit()">Submit</button>
+                        </form>
+                        <div class="out" id="formOut"></div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                function formSubmit() {
+                    var name = document.getElementById('fName').value.trim();
+                    var email = document.getElementById('fEmail').value.trim();
+                    var out = document.getElementById('formOut');
+                    if (!name || name.length < 3) {
+                        out.textContent = '❌ Name needs at least 3 characters';
+                        return;
+                    }
+                    if (!email.includes('@')) {
+                        out.textContent = '❌ Email looks wrong';
+                        return;
+                    }
+                    out.textContent = '✅ Submitted: ' + name + ' <' + email + '> (page did NOT reload — preventDefault!)';
+                }
+            </script>
+            <div class="warn"><strong>preventDefault() is the key:</strong> without it, submitting reloads the page and
+            your JS state vanishes. Every modern app calls it in the submit handler.</div>
+        </section>
+
+        <!-- ================= 27 BUBBLING ================= -->
+        <section class="card" id="bubbling">
+            <h2><span class="num">27</span>Event Bubbling &amp; Delegation</h2>
+            <p>Clicks travel UP the tree: click a button → its parent → grandparent… This lets you handle many
+            elements with ONE listener (delegation) — essential for lists:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>// 100 list items, ONE listener:
+list.addEventListener("click", (e) =&gt; {
+    const item = e.target.closest(".item");
+    if (!item) return;      // not an item
+
+    item.classList.toggle("done");
+    console.log("clicked:", item.textContent);
+});
+
+// e.target = what was actually clicked
+// closest() = nearest matching ancestor
+
+// stop the trip upward if needed:
+e.stopPropagation();
+
+// and target vs currentTarget:
+e.target;          // clicked element
+e.currentTarget;   // element with listener</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <p style="font-weight:700;">ONE listener on the list — click any item:</p>
+                        <ul id="delegList" style="list-style:none;padding:0;margin:0;">
+                            <li style="background:#f6f8fa;border:1px solid #d0d7de;border-radius:6px;padding:8px 10px;margin-bottom:4px;font-size:13px;cursor:pointer;">🍎 Apple</li>
+                            <li style="background:#f6f8fa;border:1px solid #d0d7de;border-radius:6px;padding:8px 10px;margin-bottom:4px;font-size:13px;cursor:pointer;">🍌 Banana</li>
+                            <li style="background:#f6f8fa;border:1px solid #d0d7de;border-radius:6px;padding:8px 10px;margin-bottom:4px;font-size:13px;cursor:pointer;">🍇 Grape</li>
+                        </ul>
+                        <div class="out" id="delegOut">click a fruit</div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                (function () {
+                    var list = document.getElementById('delegList');
+                    var out = document.getElementById('delegOut');
+                    list.addEventListener('click', function (e) {
+                        var item = e.target.closest('li');
+                        if (!item) return;
+                        item.style.textDecoration = item.style.textDecoration === 'line-through' ? '' : 'line-through';
+                        item.style.opacity = item.style.opacity === '0.5' ? '1' : '0.5';
+                        out.textContent = 'e.target = ' + e.target.textContent.trim();
+                    });
+                })();
+            </script>
+        </section>
+
+        <!-- ================= 28 TRAVERSING ================= -->
+        <section class="card" id="traversing">
+            <h2><span class="num">28</span>Walking the DOM</h2>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>const el = document.querySelector("#start");
+
+// children
+el.children;                // all child ELEMENTS
+el.firstElementChild;      // first
+el.lastElementChild;       // last
+
+// parent
+el.parentElement;          // the parent box
+
+// siblings
+el.nextElementSibling;     // the next box
+el.previousElementSibling; // the previous
+
+// closest ancestor matching a selector
+el.closest(".card");
+
+// search within
+el.querySelector("p");
+
+// check if it contains another
+el.contains(otherEl);       // boolean</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <p style="font-weight:700;">Walk the tree of this mini page:</p>
+                        <div id="walkRoot" style="background:#f6f8fa;border:1px solid #d0d7de;border-radius:8px;padding:10px;font-size:13px;">
+                            <p id="walkP" style="margin:0 0 6px;">I am a &lt;p&gt;</p>
+                            <span>I am a &lt;span&gt; sibling</span>
+                        </div>
+                        <button style="margin-top:8px;" onclick="walkDemo()">Inspect with JS</button>
+                        <div class="out" id="walkOut"></div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                function walkDemo() {
+                    var p = document.getElementById('walkP');
+                    var out = document.getElementById('walkOut');
+                    out.textContent =
+                        'p.parentElement.tagName → ' + p.parentElement.tagName + '\n' +
+                        'p.nextElementSibling.tagName → ' + p.nextElementSibling.tagName + '\n' +
+                        'parent.firstElementChild.tagName → ' + p.parentElement.firstElementChild.tagName;
+                }
+            </script>
+        </section>
+
+        <!-- ================= 29 TIMERS ================= -->
+        <section class="card" id="timers">
+            <h2><span class="num">29</span>Timers — run code later</h2>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>// run ONCE after 2 seconds
+const t = setTimeout(() =&gt; {
+    console.log("2s passed");
+}, 2000);
+
+// cancel it before it fires
+clearTimeout(t);
+
+// run REPEATEDLY every 1 second
+const id = setInterval(() =&gt; {
+    console.log("tick");
+}, 1000);
+
+// stop the interval
+clearInterval(id);
+
+// timeout can chain like a loop:
+function tick() {
+    console.log("tick");
+    setTimeout(tick, 1000);  // again…
+}
+
+// millisecond time, remember:
+1000 ms = 1 second</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <p style="font-weight:700;">Stopwatch — setInterval + clearInterval:</p>
+                        <div style="display:flex;gap:8px;align-items:center;">
+                            <span id="stopVal" style="font-size:30px;font-weight:700;font-family:monospace;min-width:90px;">0.0s</span>
+                            <button onclick="stopStart()">start</button>
+                            <button class="secondary" onclick="stopStop()">stop</button>
+                            <button class="secondary" onclick="stopReset()">reset</button>
+                        </div>
+                        <div class="out">setInterval updates the display every 100ms</div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                var stopInterval = null;
+                var stopTime = 0;
+                function stopTick() {
+                    stopTime += 0.1;
+                    document.getElementById('stopVal').textContent = stopTime.toFixed(1) + 's';
+                }
+                function stopStart() {
+                    if (stopInterval) return;
+                    stopInterval = setInterval(stopTick, 100);
+                }
+                function stopStop() {
+                    clearInterval(stopInterval);
+                    stopInterval = null;
+                }
+                function stopReset() {
+                    stopStop();
+                    stopTime = 0;
+                    document.getElementById('stopVal').textContent = '0.0s';
+                }
+            </script>
+            <div class="warn"><strong>Always clean up:</strong> a setInterval you never clearInterval keeps running forever
+            (and keeps the page alive). Store the id and clear it when done.</div>
+        </section>
+
+        <!-- ================= 30 STORAGE ================= -->
+        <section class="card" id="storage">
+            <h2><span class="num">30</span>localStorage — remember between visits</h2>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>// save (string only!)
+localStorage.setItem("theme", "dark");
+
+// read
+const theme = localStorage.getItem("theme");
+// "dark" or null if missing
+
+// remove one / clear all
+localStorage.removeItem("theme");
+localStorage.clear();
+
+// objects need JSON:
+const user = { name: "Alex" };
+localStorage.setItem("user",
+    JSON.stringify(user));
+const back = JSON.parse(
+    localStorage.getItem("user"));
+
+// survives refresh &amp; restart!
+// sessionStorage = until tab closes</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <p style="font-weight:700;">This demo SURVIVES page refresh:</p>
+                        <input id="storeIn" placeholder="Type something…" style="width:100%;">
+                        <div style="margin:8px 0;display:flex;gap:6px;">
+                            <button class="green" onclick="storeSave()">save</button>
+                            <button class="secondary" onclick="storeClear()">clear</button>
+                        </div>
+                        <div class="out" id="storeOut"></div>
+                        <p style="font-size:12px;color:#57606a;">Press F5 after saving — your text comes back. That's localStorage.</p>
+                    </div>
+                </div>
+            </div>
+            <script>
+                (function () {
+                    var inp = document.getElementById('storeIn');
+                    var out = document.getElementById('storeOut');
+                    function render() {
+                        var saved = localStorage.getItem('notesDemo');
+                        out.textContent = saved === null ? '(nothing saved yet)' : 'Saved: "' + saved + '"';
+                        if (saved !== null) inp.value = saved;
+                    }
+                    window.storeSave = function () {
+                        localStorage.setItem('notesDemo', inp.value);
+                        render();
+                    };
+                    window.storeClear = function () {
+                        localStorage.removeItem('notesDemo');
+                        inp.value = '';
+                        render();
+                    };
+                    render();
+                })();
+            </script>
+            <div class="tip"><strong>Perfect for:</strong> theme preference, cart contents, high scores, draft text.
+            Limit ~5MB, and never store passwords — it's readable by any script on the page.</div>
+        </section>
+
+        <!-- ================= 31 JSON ================= -->
+        <section class="card" id="json">
+            <h2><span class="num">31</span>JSON — the data language of the web</h2>
+            <p><strong>JSON</strong> is how every API talks: it's just objects/arrays as text. Two functions
+            cover 100% of the work:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>// object → JSON string (to send/save)
+const user = { name: "Alex", age: 21 };
+const text = JSON.stringify(user);
+// '{"name":"Alex","age":21}'
+
+// JSON string → object (from API)
+const back = JSON.parse(text);
+back.name;   // "Alex"
+
+// pretty print (readable)
+JSON.stringify(user, null, 2);
+
+// an API response looks like:
+{
+  "users": [
+    { "id": 1, "name": "Alex" },
+    { "id": 2, "name": "Sam" }
+  ]
+}</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <p style="font-weight:700;">Edit JSON — live parse (no crash on error):</p>
+                        <textarea id="jsonIn" rows="5" style="width:100%;font-family:monospace;font-size:12px;">{"name":"Alex","age":21,"skills":["HTML","CSS"]}</textarea>
+                        <div class="out" id="jsonOut"></div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                (function () {
+                    var inp = document.getElementById('jsonIn');
+                    var out = document.getElementById('jsonOut');
+                    function go() {
+                        try {
+                            var obj = JSON.parse(inp.value);
+                            out.textContent = '✅ valid JSON → ' + JSON.stringify(obj, null, 2).slice(0, 200) +
+                                '\n\nobject.name = ' + obj.name;
+                        } catch (e) {
+                            out.textContent = '❌ Not valid JSON: ' + e.message;
+                        }
+                    }
+                    inp.addEventListener('input', go);
+                    go();
+                })();
+            </script>
+            <div class="warn"><strong>JSON rules:</strong> double quotes only (no '), no trailing commas, no comments.
+            One mistake = parse error. <code class="inline">JSON.parse</code> inside try/catch is the safe pattern.</div>
+        </section>
+
+        <!-- ================= 32 ERRORS ================= -->
+        <section class="card" id="errors">
+            <h2><span class="num">32</span>Errors &amp; Debugging</h2>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>// try / catch — don't let it crash
+try {
+    JSON.parse("not json");
+} catch (error) {
+    console.error("Failed:", error.message);
+} finally {
+    console.log("always runs");
+}
+
+// throw your own errors
+function divide(a, b) {
+    if (b === 0) {
+        throw new Error("can't divide by zero");
+    }
+    return a / b;
+}
+
+// debugging tools
+console.log("normal");
+console.warn("warning");
+console.error("error");
+console.table([{a:1},{a:2}]);
+debugger;  // pause point (F12)</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <p style="font-weight:700;">Divide safely — try/catch in action:</p>
+                        <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px;">
+                            <input id="errA" type="number" value="10" style="width:70px;"> ÷
+                            <input id="errB" type="number" value="0" style="width:70px;"> =
+                            <button onclick="errDivide()">=</button>
+                        </div>
+                        <div class="out" id="errOut"></div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                function errDivide() {
+                    var a = parseFloat(document.getElementById('errA').value);
+                    var b = parseFloat(document.getElementById('errB').value);
+                    var out = document.getElementById('errOut');
+                    try {
+                        if (b === 0) throw new Error('cannot divide by zero');
+                        out.textContent = a + ' ÷ ' + b + ' = ' + (a / b);
+                    } catch (e) {
+                        out.textContent = '❌ Caught: ' + e.message;
+                    }
+                }
+            </script>
+            <div class="tip"><strong>Debugging workflow:</strong> 1) F12 → Console for red errors (they name the file & line!)
+            2) console.log values at each step 3) use breakpoints in the Sources panel for complex logic.
+            You'll spend 50% of dev time here — it's normal and it's how pros work.</div>
+        </section>
+
+        <!-- ================= 33 PROMISES ================= -->
+        <section class="card" id="promises">
+            <h2><span class="num">33</span>Promises &amp; async/await</h2>
+            <p>Some work takes time (loading data, waiting for a response). Promises handle "later" —
+            and <code class="inline">async/await</code> makes it read like normal code:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>// a Promise = "I'll give you a value LATER"
+const wait = new Promise((resolve) =&gt; {
+    setTimeout(() =&gt; resolve("done!"), 2000);
+});
+
+// consume it
+wait.then(result =&gt; console.log(result));
+
+// the MODERN way: async/await
+async function main() {
+    const result = await wait;
+    console.log(result);   // "done!"
+}
+main();
+
+// error handling like try/catch
+async function load() {
+    try {
+        const data = await fetchSomething();
+    } catch (err) {
+        console.error(err);
+    }
+}</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <p style="font-weight:700;">A real 2-second promise — watch the button:</p>
+                        <button id="promBtn">Start async task</button>
+                        <div class="out" id="promOut">idle</div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                (function () {
+                    var btn = document.getElementById('promBtn');
+                    var out = document.getElementById('promOut');
+                    function wait(ms, value) {
+                        return new Promise(function (resolve) {
+                            setTimeout(function () { resolve(value); }, ms);
+                        });
+                    }
+                    btn.addEventListener('click', async function () {
+                        btn.disabled = true;
+                        out.textContent = '⏳ waiting 2s… (page keeps working!)';
+                        var result = await wait(2000, 'done!');
+                        out.textContent = '✅ Promise resolved: ' + result;
+                        btn.disabled = false;
+                    });
+                })();
+            </script>
+            <div class="tip"><strong>Why it matters:</strong> while the promise waits, the page keeps responding.
+            That's how apps load data without freezing. `await` only works inside `async` functions.</div>
+        </section>
+
+        <!-- ================= 34 FETCH ================= -->
+        <section class="card" id="fetch">
+            <h2><span class="num">34</span>Fetch — talk to the internet</h2>
+            <p><code class="inline">fetch()</code> requests data from a URL — an API, a file, your own server.
+            This demo loads real data from a free public API:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>async function loadUsers() {
+    try {
+        const res = await fetch(
+            "https://jsonplaceholder."
+             + "typicode.com/users");
+        if (!res.ok) throw new
+            Error("HTTP " + res.status);
+        const users = await res.json();
+        console.log(users[0].name);
+    } catch (err) {
+        console.error("fetch failed", err);
+    }
+}
+
+// POST data:
+const res = await fetch("/api/save", {
+    method: "POST",
+    headers: { "Content-Type":
+        "application/json" },
+    body: JSON.stringify({ name }),
+});</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <p style="font-weight:700;">Fetch 3 real users (needs internet):</p>
+                        <button id="fetchBtn" onclick="fetchDemo()">fetch users</button>
+                        <div class="out" id="fetchOut">ready…</div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                async function fetchDemo() {
+                    var out = document.getElementById('fetchOut');
+                    out.textContent = '⏳ fetching…';
+                    try {
+                        var res = await fetch('https://jsonplaceholder.typicode.com/users');
+                        if (!res.ok) throw new Error('HTTP ' + res.status);
+                        var users = await res.json();
+                        out.textContent = users.slice(0, 3).map(function (u) {
+                            return '👤 ' + u.name + ' — ' + u.email;
+                        }).join('\n');
+                    } catch (e) {
+                        out.textContent = '❌ ' + e.message + ' (need internet)';
+                    }
+                }
+            </script>
+            <div class="warn"><strong>Two awaits:</strong> <code class="inline">await fetch(url)</code> gets the response headers;
+            <code class="inline">await res.json()</code> parses the body. Always check <code class="inline">res.ok</code> —
+            a 404 still "resolves"!</div>
+        </section>
+
+        <!-- ================= 35 MINI PROJECT ================= -->
+        <section class="card" id="project">
+            <h2><span class="num">35</span>Mini Project — the classic Todo App</h2>
+            <p>Everything you learned, in one app: variables, functions, arrays, the DOM, events,
+            and localStorage. This is <strong>the</strong> first app every developer builds:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>// 1. state = an array of tasks
+let tasks = [];
+
+// 2. add a task
+function addTask() {
+    const input =
+        document.querySelector("#taskInput");
+    const text = input.value.trim();
+    if (!text) return;
+    tasks.push({ text, done: false });
+    input.value = "";
+    render();
+}
+
+// 3. render the list
+function render() {
+    const list =
+        document.querySelector("#taskList");
+    list.innerHTML = "";
+    tasks.forEach((task, i) =&gt; {
+        const li = document
+            .createElement("li");
+        li.textContent = task.text;
+        li.onclick = () =&gt; {
+            task.done = !task.done;   // toggle
+            render();
+        };
+        if (task.done) li.classList
+            .add("done");
+        list.appendChild(li);
+    });
+}
+
+// 4. save between visits
+localStorage.setItem("tasks",
+    JSON.stringify(tasks));
+// load on start:
+// tasks = JSON.parse(localStorage
+//   .getItem("tasks")) || []</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <div class="todo-demo">
+                            <p style="font-weight:700;">Fully working — add, click to finish, delete:</p>
+                            <div class="row">
+                                <input id="taskInput" placeholder="Add a task…">
+                                <button onclick="todoAdd()">+ Add</button>
+                            </div>
+                            <ul id="taskList"></ul>
+                            <p style="font-size:12px;color:#57606a;">Tasks are saved in localStorage — refresh the page!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                (function () {
+                    var tasks = [];
+                    try {
+                        tasks = JSON.parse(localStorage.getItem('jsNotesTasks')) || [];
+                    } catch (e) { tasks = []; }
+                    if (!tasks.length) tasks = [{ text: 'Learn JavaScript', done: true }, { text: 'Build this todo app', done: false }];
+
+                    function render() {
+                        var list = document.getElementById('taskList');
+                        list.innerHTML = '';
+                        tasks.forEach(function (task, i) {
+                            var li = document.createElement('li');
+                            var span = document.createElement('span');
+                            span.textContent = task.text;
+                            var del = document.createElement('span');
+                            del.textContent = '✕';
+                            del.className = 'del';
+                            del.style.cssText = 'cursor:pointer;padding:2px 6px;border-radius:4px;color:#fff;';
+                            del.onclick = function (e) {
+                                e.stopPropagation();
+                                tasks.splice(i, 1);
+                                save();
+                                render();
+                            };
+                            li.appendChild(span);
+                            li.appendChild(del);
+                            li.style.cursor = 'pointer';
+                            if (task.done) li.classList.add('done');
+                            li.onclick = function () {
+                                task.done = !task.done;
+                                save();
+                                render();
+                            };
+                            list.appendChild(li);
+                        });
+                    }
+                    function save() {
+                        localStorage.setItem('jsNotesTasks', JSON.stringify(tasks));
+                    }
+                    window.todoAdd = function () {
+                        var input = document.getElementById('taskInput');
+                        var text = input.value.trim();
+                        if (!text) return;
+                        tasks.push({ text: text, done: false });
+                        input.value = '';
+                        save();
+                        render();
+                    };
+                    document.getElementById('taskInput').addEventListener('keydown', function (e) {
+                        if (e.key === 'Enter') todoAdd();
+                    });
+                    render();
+                })();
+            </script>
+            <div class="tip"><strong>Challenge:</strong> add a counter ("3 left") and a clear-completed button.
+            You have every tool — data in an array, render on change, save to localStorage.</div>
+        </section>
+
+        <!-- ================= 36 QUIZ ================= -->
+        <section class="card" id="quiz">
+            <h2><span class="num">36</span>Quiz — Test Yourself 🧠</h2>
+            <p>12 questions covering everything above. Answer, then press <strong>Check</strong>.</p>
+
+            <div class="quiz-q" data-answer="0">
+                <p>1. Which keyword creates a variable that CANNOT be reassigned?</p>
+                <label><input type="radio" name="q1" value="0"> const</label>
+                <label><input type="radio" name="q1" value="1"> let</label>
+                <label><input type="radio" name="q1" value="2"> var</label>
+                <label><input type="radio" name="q1" value="3"> static</label>
+            </div>
+
+            <div class="quiz-q" data-answer="2">
+                <p>2. What does <code class="inline">typeof "hi"</code> return?</p>
+                <label><input type="radio" name="q2" value="0"> number</label>
+                <label><input type="radio" name="q2" value="1"> text</label>
+                <label><input type="radio" name="q2" value="2"> string</label>
+                <label><input type="radio" name="q2" value="3"> char</label>
+            </div>
+
+            <div class="quiz-q" data-answer="3">
+                <p>3. Which comparison should you ALWAYS use?</p>
+                <label><input type="radio" name="q3" value="0"> ==</label>
+                <label><input type="radio" name="q3" value="1"> =</label>
+                <label><input type="radio" name="q3" value="2"> !=</label>
+                <label><input type="radio" name="q3" value="3"> ===</label>
+            </div>
+
+            <div class="quiz-q" data-answer="1">
+                <p>4. Which method creates a NEW array with every item transformed?</p>
+                <label><input type="radio" name="q4" value="0"> filter</label>
+                <label><input type="radio" name="q4" value="1"> map</label>
+                <label><input type="radio" name="q4" value="2"> push</label>
+                <label><input type="radio" name="q4" value="3"> pop</label>
+            </div>
+
+            <div class="quiz-q" data-answer="0">
+                <p>5. Which selects the FIRST element matching a CSS selector?</p>
+                <label><input type="radio" name="q5" value="0"> document.querySelector(".card")</label>
+                <label><input type="radio" name="q5" value="1"> document.getBySelector(".card")</label>
+                <label><input type="radio" name="q5" value="2"> document.find(".card")</label>
+                <label><input type="radio" name="q5" value="3"> window.pick(".card")</label>
+            </div>
+
+            <div class="quiz-q" data-answer="2">
+                <p>6. Which sets the plain TEXT of an element (safe for user input)?</p>
+                <label><input type="radio" name="q6" value="0"> el.html = text</label>
+                <label><input type="radio" name="q6" value="1"> el.innerHTML = text</label>
+                <label><input type="radio" name="q6" value="2"> el.textContent = text</label>
+                <label><input type="radio" name="q6" value="3"> el.value = text</label>
+            </div>
+
+            <div class="quiz-q" data-answer="1">
+                <p>7. Which event listener stops the page from reloading on submit?</p>
+                <label><input type="radio" name="q7" value="0"> e.stop()</label>
+                <label><input type="radio" name="q7" value="1"> e.preventDefault()</label>
+                <label><input type="radio" name="q7" value="2"> e.cancel()</label>
+                <label><input type="radio" name="q7" value="3"> e.halt()</label>
+            </div>
+
+            <div class="quiz-q" data-answer="0">
+                <p>8. Which correctly adds a class without removing others?</p>
+                <label><input type="radio" name="q8" value="0"> el.classList.add("active")</label>
+                <label><input type="radio" name="q8" value="1"> el.className = "active"</label>
+                <label><input type="radio" name="q8" value="2"> el.class += "active"</label>
+                <label><input type="radio" name="q8" value="3"> el.classList.push("active")</label>
+            </div>
+
+            <div class="quiz-q" data-answer="3">
+                <p>9. Which method turns an object into a JSON string?</p>
+                <label><input type="radio" name="q9" value="0"> JSON.toText(obj)</label>
+                <label><input type="radio" name="q9" value="1"> JSON.parse(obj)</label>
+                <label><input type="radio" name="q9" value="2"> obj.toJSON()</label>
+                <label><input type="radio" name="q9" value="3"> JSON.stringify(obj)</label>
+            </div>
+
+            <div class="quiz-q" data-answer="2">
+                <p>10. Which keeps data even after the browser closes?</p>
+                <label><input type="radio" name="q10" value="0"> sessionStorage</label>
+                <label><input type="radio" name="q10" value="1"> cookies only</label>
+                <label><input type="radio" name="q10" value="2"> localStorage</label>
+                <label><input type="radio" name="q10" value="3"> a global variable</label>
+            </div>
+
+            <div class="quiz-q" data-answer="1">
+                <p>11. What does <code class="inline">[1,2,3].filter(n =&gt; n &gt; 1)</code> return?</p>
+                <label><input type="radio" name="q11" value="0"> [1,2,3]</label>
+                <label><input type="radio" name="q11" value="1"> [2,3]</label>
+                <label><input type="radio" name="q11" value="2"> [1]</label>
+                <label><input type="radio" name="q11" value="3"> true</label>
+            </div>
+
+            <div class="quiz-q" data-answer="3">
+                <p>12. Which keyword makes async code read like normal code?</p>
+                <label><input type="radio" name="q12" value="0"> pause</label>
+                <label><input type="radio" name="q12" value="1"> then</label>
+                <label><input type="radio" name="q12" value="2"> delay</label>
+                <label><input type="radio" name="q12" value="3"> await</label>
+            </div>
+
+            <div style="margin-top:6px;">
+                <button class="quiz-btn" onclick="checkQuiz()">Check my answers ✅</button>
+                <span id="quizScore"></span>
+            </div>
+        </section>
+
+    </main>
+
+    </main>
+
+    <footer>
+        <p>Made with ♥ for learning · Part 3 of your notes: <a href="HTML-Complete-Notes.html">HTML</a> · <a href="CSS-Notes.html">CSS</a> · JS</p>
+        <p>Full documentation: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript" target="_blank">MDN — JavaScript</a></p>
+    </footer>
+
+    <button class="theme-btn" id="themeBtn" type="button">☀️ Light mode</button>
+    <button class="plain-btn" id="plainBtn" type="button" aria-pressed="false">📄 Plain code</button>
+
+    <script>
+        // --- Theme toggle ---
+        document.getElementById('themeBtn').addEventListener('click', function () {
+            document.body.classList.toggle('light');
+            this.textContent = document.body.classList.contains('light') ? '🌙 Dark mode' : '☀️ Light mode';
+        });
+        // --- Plain code mode (view-source friendly): strip colors, keep code plain ---
+        var plainBtn = document.getElementById('plainBtn');
+        function applyPlain(on) {
+            document.body.classList.toggle('plain-mode', on);
+            plainBtn.textContent = on ? '🎨 Colored code' : '📄 Plain code';
+            plainBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+            try { localStorage.setItem('notesPlain', on ? '1' : '0'); } catch (e) {}
+        }
+        plainBtn.addEventListener('click', function () {
+            applyPlain(!document.body.classList.contains('plain-mode'));
+        });
+        try { if (localStorage.getItem('notesPlain') === '1') applyPlain(true); } catch (e) {}
+
+
+        // --- Copy buttons: inject one into every code panel ---
+        document.querySelectorAll('.panel').forEach(function (panel) {
+            var pre = panel.querySelector('pre');
+            var bar = panel.querySelector('.panel-bar');
+            if (!pre || !bar) return;
+            var btn = document.createElement('button');
+            btn.className = 'copy-btn';
+            btn.textContent = 'Copy';
+            btn.addEventListener('click', function () {
+                var code = pre.querySelector('code');
+                navigator.clipboard.writeText(code.textContent).then(function () {
+                    btn.textContent = 'Copied!';
+                    setTimeout(function () { btn.textContent = 'Copy'; }, 1500);
+                });
+            });
+            bar.appendChild(btn);
+        });
+
+        // --- Search: filter sections ---
+        var searchBox = document.getElementById('search');
+        searchBox.addEventListener('input', function () {
+            var q = searchBox.value.toLowerCase().trim();
+            document.querySelectorAll('.card').forEach(function (card) {
+                var show = !q || card.textContent.toLowerCase().indexOf(q) !== -1;
+                card.style.display = show ? '' : 'none';
+            });
+        });
+
+        // --- Quiz ---
+        function checkQuiz() {
+            var score = 0, total = 0;
+            document.querySelectorAll('.quiz-q').forEach(function (q) {
+                q.classList.remove('correct', 'wrong');
+                var chosen = q.querySelector('input:checked');
+                if (!chosen) return;
+                total++;
+                var right = chosen.value === q.getAttribute('data-answer');
+                q.classList.add(right ? 'correct' : 'wrong');
+                if (right) score++;
+            });
+            var box = document.getElementById('quizScore');
+            if (total === 12) {
+                box.textContent = 'Your score: ' + score + '/12 ' + (score >= 10 ? '🏆 Amazing!' : score >= 7 ? '👍 Good job!' : '💪 Keep practicing!');
+            } else {
+                box.textContent = 'Answered ' + total + '/12 — ' + score + ' correct so far. Answer all 12!';
+            }
+        }
+
+        // --- Syntax highlighting ---
+        var JS_RE = /(\/\/[^\n]*|\/\*[\s\S]*?\*\/|"(?:\\.|[^"\\\n])*"|'(?:\\.|[^'\\\n])*'|`(?:\\.|[^`\\])*`|\b(?:const|let|var|function|return|if|else|for|while|do|switch|case|break|continue|new|typeof|instanceof|this|true|false|null|undefined|class|extends|try|catch|finally|throw|async|await|import|export|from|default|of|in|delete|void|yield)\b|\b\d+(?:\.\d+)?\b)/g;
+
+        function colorJS(match) {
+            var first = match.charAt(0);
+            if (first === '/') return '<span class="c">' + match + '</span>';
+            if (first === '"' || first === "'" || first === '`') return '<span class="st">' + match + '</span>';
+            if (/^\d/.test(match)) return '<span class="n">' + match + '</span>';
+            return '<span class="k">' + match + '</span>';
+        }
+
+        document.querySelectorAll('pre code').forEach(function (code) {
+            var html = code.innerHTML;
+            if (code.className.indexOf('lang-html') !== -1) {
+                html = html.replace(/&lt;(\/?)([a-z][a-z0-9-]*)/g, '&lt;$1<span class="s">$2</span>');
+                html = html.replace(/&lt;!--([\s\S]*?)--&gt;/g, '<span class="c">&lt;!--$1--&gt;</span>');
+                code.innerHTML = html;
+            } else {
+                code.innerHTML = html.replace(JS_RE, colorJS);
+            }
+        });
+    </script>
+
+</body>
+</html>

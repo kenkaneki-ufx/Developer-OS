@@ -1,0 +1,2277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSS Notes — Every Topic, Every Selector</title>
+    <style>
+        /* ============ Base ============ */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #0d1117;
+            --card: #161b22;
+            --card-2: #1c2128;
+            --border: #30363d;
+            --text: #e6edf3;
+            --muted: #9aa5b1;
+            --accent: #58a6ff;
+            --purple: #a371f7;
+            --cyan: #39c5cf;
+            --green: #7ee787;
+            --yellow: #d29922;
+            --red: #f85149;
+            --code-bg: #0d1117;
+            --preview-bg: #ffffff;
+            --preview-text: #1f2328;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        /* ============ Hero ============ */
+        .hero {
+            padding: 56px 20px 40px;
+            text-align: center;
+            background:
+                radial-gradient(600px 200px at 20% 0%, rgba(163, 113, 247, 0.15), transparent),
+                radial-gradient(600px 200px at 80% 0%, rgba(57, 197, 207, 0.15), transparent);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .hero h1 {
+            font-size: clamp(28px, 5vw, 46px);
+            background: linear-gradient(90deg, var(--purple), var(--accent), var(--cyan));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: -0.5px;
+        }
+
+        .hero p {
+            color: var(--muted);
+            max-width: 680px;
+            margin: 12px auto 0;
+            font-size: 17px;
+        }
+
+        .hero .badge {
+            display: inline-block;
+            margin-top: 16px;
+            padding: 6px 14px;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            font-size: 13px;
+            color: var(--accent);
+            background: rgba(88, 166, 255, 0.08);
+        }
+
+        /* ============ Sticky TOC ============ */
+        nav.toc {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: rgba(13, 17, 23, 0.92);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid var(--border);
+            padding: 10px 16px;
+            overflow-x: auto;
+            white-space: nowrap;
+            display: flex;
+            gap: 8px;
+            scrollbar-width: thin;
+        }
+
+        nav.toc a {
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 13px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        nav.toc a:hover {
+            color: var(--text);
+            border-color: var(--accent);
+            background: rgba(88, 166, 255, 0.1);
+        }
+
+        /* ============ Layout ============ */
+        main {
+            max-width: 1080px;
+            margin: 0 auto;
+            padding: 28px 20px 60px;
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 28px;
+            scroll-margin-top: 70px;
+        }
+
+        .card h2 {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 22px;
+            margin-bottom: 10px;
+        }
+
+        .card h2 .num {
+            flex-shrink: 0;
+            width: 34px;
+            height: 34px;
+            display: grid;
+            place-items: center;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--bg);
+            background: linear-gradient(135deg, var(--purple), var(--cyan));
+            border-radius: 9px;
+        }
+
+        .card > p { color: var(--muted); margin-bottom: 16px; }
+        .card h3 { font-size: 16px; color: var(--accent); margin: 18px 0 8px; }
+        .card ul, .card ol { padding-left: 22px; margin-bottom: 14px; }
+        .card li { margin-bottom: 4px; }
+
+        .card table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12px 0;
+            font-size: 14px;
+        }
+
+        .card th, .card td {
+            border: 1px solid var(--border);
+            padding: 8px 12px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        .card th { background: var(--card-2); color: var(--accent); }
+
+        code.inline {
+            background: var(--card-2);
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            padding: 1px 7px;
+            font-family: 'Cascadia Code', 'Consolas', 'Courier New', monospace;
+            font-size: 0.88em;
+            color: var(--cyan);
+        }
+
+        /* ============ Demo: code + preview ============ */
+        .demo {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        @media (max-width: 800px) {
+            .demo { grid-template-columns: 1fr; }
+        }
+
+        .panel {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+            min-width: 0;
+        }
+
+        .panel-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 7px 12px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            border-bottom: 1px solid var(--border);
+            background: var(--card-2);
+        }
+
+        .panel-bar .tag-code { color: var(--green); }
+        .panel-bar .tag-result { color: var(--purple); }
+
+        .copy-btn {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            color: var(--muted);
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 3px 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .copy-btn:hover {
+            color: var(--text);
+            border-color: var(--accent);
+            background: rgba(88, 166, 255, 0.12);
+        }
+
+        pre {
+            background: var(--code-bg);
+            padding: 16px;
+            overflow-x: auto;
+            font-size: 13.5px;
+            line-height: 1.55;
+        }
+
+        pre code {
+            font-family: 'Cascadia Code', 'Consolas', 'Courier New', monospace;
+            color: var(--text);
+            white-space: pre;
+        }
+
+        /* CSS syntax colors */
+        pre code .s { color: var(--purple); font-weight: 600; }
+        pre code .p { color: var(--cyan); }
+        pre code .c { color: var(--green); font-style: italic; }
+        pre code .h { color: #ffa657; }
+        pre code .a { color: #ff7b72; font-weight: 600; }
+
+        .preview {
+            background: var(--preview-bg);
+            color: var(--preview-text);
+            padding: 16px;
+            min-height: 60px;
+            font-size: 14px;
+        }
+
+        .preview p { margin: 0 0 8px; }
+        .preview h1, .preview h2, .preview h3 { color: var(--preview-text); margin: 0 0 6px; }
+
+        /* ============ Theme toggle ============ */
+        body.light {
+            --bg: #ffffff;
+            --card: #f6f8fa;
+            --card-2: #eaeef2;
+            --border: #d0d7de;
+            --text: #1f2328;
+            --muted: #57606a;
+            --code-bg: #f6f8fa;
+        }
+        body.light nav.toc { background: rgba(255,255,255,0.92); }
+        body.light pre { color: #1f2328; }
+        body.light .panel-bar { background: #eaeef2; }
+
+        /* ============ Plain code mode (view-source friendly) ============ */
+        .plain-btn {
+            position: fixed;
+            right: 18px;
+            bottom: 70px;
+            z-index: 60;
+            border: 1px solid var(--border);
+            background: var(--card);
+            color: var(--text);
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(0,0,0,.25);
+            transition: border-color .2s, transform .15s;
+        }
+        .plain-btn:hover { border-color: var(--accent); transform: translateY(-2px); }
+        .plain-btn[aria-pressed="true"] { border-color: var(--accent); }
+        /* Neutralize every token color so code reads as plain source text */
+        body.plain-mode pre code,
+        body.plain-mode pre code span,
+        body.plain-mode .terminal span {
+            color: var(--text) !important;
+            background: none !important;
+            font-weight: normal !important;
+            font-style: normal !important;
+            text-decoration: none !important;
+            text-shadow: none !important;
+        }
+        .theme-btn {
+            position: fixed;
+            right: 18px;
+            bottom: 18px;
+            z-index: 60;
+            border: 1px solid var(--border);
+            background: var(--card);
+            color: var(--text);
+            padding: 10px 16px;
+            border-radius: 999px;
+            font-size: 14px;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.35);
+            transition: all 0.2s;
+        }
+        .theme-btn:hover { border-color: var(--accent); }
+
+        /* ============ Search ============ */
+        .search-wrap { max-width: 1080px; margin: 0 auto; padding: 18px 20px 0; }
+        #search {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--card);
+            color: var(--text);
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        #search:focus { border-color: var(--accent); }
+        #search::placeholder { color: var(--muted); }
+
+        /* ============ Quiz ============ */
+        .quiz-q {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 14px;
+            background: var(--card-2);
+        }
+        .quiz-q p { font-weight: 700; margin-bottom: 8px; }
+        .quiz-q label {
+            display: block;
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.15s;
+            font-weight: 400;
+        }
+        .quiz-q label:hover { background: rgba(88,166,255,0.12); }
+        .quiz-q.correct { border-color: var(--green); }
+        .quiz-q.wrong { border-color: var(--red); }
+        .quiz-btn {
+            background: linear-gradient(135deg, var(--purple), var(--cyan));
+            color: var(--bg);
+            font-weight: 700;
+            border: 0;
+            padding: 12px 28px;
+            border-radius: 10px;
+            font-size: 15px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .quiz-btn:hover { opacity: 0.88; }
+        #quizScore { display: inline-block; margin-left: 14px; font-weight: 700; font-size: 16px; }
+
+        /* ============ Tip / warn ============ */
+        .tip {
+            border-left: 4px solid var(--green);
+            background: rgba(126, 231, 135, 0.08);
+            padding: 12px 16px;
+            border-radius: 0 8px 8px 0;
+            margin: 16px 0;
+            font-size: 14px;
+        }
+        .tip strong { color: var(--green); }
+
+        .warn {
+            border-left: 4px solid var(--yellow);
+            background: rgba(210, 153, 34, 0.08);
+            padding: 12px 16px;
+            border-radius: 0 8px 8px 0;
+            margin: 16px 0;
+            font-size: 14px;
+        }
+        .warn strong { color: var(--yellow); }
+
+        /* ============ Footer ============ */
+        footer {
+            text-align: center;
+            color: var(--muted);
+            padding: 30px 20px 50px;
+            border-top: 1px solid var(--border);
+            font-size: 14px;
+        }
+        footer a { color: var(--accent); text-decoration: none; }
+        footer a:hover { text-decoration: underline; }
+
+        /* ============ Mini project demo ============ */
+        .profile-demo { font-family: 'Segoe UI', Arial, sans-serif; background: #f6f8fa; border: 2px dashed #d0d7de; border-radius: 10px; overflow: hidden; }
+        .profile-demo .pd-header { background: linear-gradient(135deg, #0969da, #8250df); color: #fff; padding: 14px; display: flex; align-items: center; gap: 12px; }
+        .profile-demo .pd-nav { background: #eaeef2; padding: 6px 14px; font-size: 13px; }
+        .profile-demo .pd-nav a { margin-right: 14px; color: #0969da; text-decoration: none; font-weight: 600; }
+        .profile-demo .pd-body { padding: 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 13px; }
+        .profile-demo .pd-foot { background: #d8dee4; padding: 8px 14px; font-size: 12px; color: #57606a; }
+    </style>
+</head>
+<body>
+
+    <header class="hero">
+        <h1>🎨 CSS Notes — Every Topic, Every Selector</h1>
+        <p>The complete beginner-friendly CSS reference — the sequel to your HTML notes.
+           Every topic has the <strong style="color:var(--green)">code</strong> on the left and the
+           <strong style="color:var(--purple)">live result</strong> on the right.</p>
+        <span class="badge">CSS3 · 31 sections · Search 🔍 · Quiz 🧠 · Dark/Light 🌙</span>
+    </header>
+
+    <nav class="toc">
+        <a href="#what">01 What is CSS</a>
+        <a href="#syntax">02 Syntax</a>
+        <a href="#selectors">03 Selectors</a>
+        <a href="#advanced">04 Advanced</a>
+        <a href="#specificity">05 Specificity</a>
+        <a href="#inheritance">06 Inheritance</a>
+        <a href="#colors">07 Colors</a>
+        <a href="#text">08 Text &amp; fonts</a>
+        <a href="#backgrounds">09 Backgrounds</a>
+        <a href="#borders">10 Borders</a>
+        <a href="#boxmodel">11 Box model</a>
+        <a href="#sizing">12 Sizing</a>
+        <a href="#display">13 Display</a>
+        <a href="#position">14 Position</a>
+        <a href="#float">15 Float</a>
+        <a href="#flex">16 Flexbox</a>
+        <a href="#flexitem">17 Flex items</a>
+        <a href="#grid">18 Grid</a>
+        <a href="#griditem">19 Grid placement</a>
+        <a href="#units">20 Units</a>
+        <a href="#responsive">21 Responsive</a>
+        <a href="#transitions">22 Transitions</a>
+        <a href="#animations">23 Animations</a>
+        <a href="#variables">24 Variables</a>
+        <a href="#shadows">25 Shadows</a>
+        <a href="#pseudos">26 Pseudo classes</a>
+        <a href="#styling">27 Style real things</a>
+        <a href="#overflow">28 Overflow</a>
+        <a href="#reset">29 Reset &amp; BEM</a>
+        <a href="#project">30 Mini project</a>
+        <a href="#quiz">31 Quiz</a>
+    </nav>
+
+    <div class="search-wrap">
+        <input id="search" type="search" placeholder="🔍 Search the notes… (e.g. 'flex', 'color', 'position', 'grid')">
+    </div>
+
+    <main>
+
+        <!-- ================= 01 WHAT IS CSS ================= -->
+        <section class="card" id="what">
+            <h2><span class="num">01</span>What is CSS?</h2>
+            <p><strong>CSS</strong> (Cascading Style Sheets) is the language of <em>appearance</em>.
+            HTML builds the skeleton; CSS adds the skin. Same HTML can look completely different with different CSS.
+            There are <strong>3 ways</strong> to add CSS to a page:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>&lt;!-- 1. EXTERNAL (best, most used) --&gt;
+&lt;link rel="stylesheet"
+      href="style.css"&gt;
+
+&lt;!-- 2. INTERNAL (inside the head) --&gt;
+&lt;style&gt;
+    p { color: blue; }
+&lt;/style&gt;
+
+&lt;!-- 3. INLINE (on the element) --&gt;
+&lt;p style="color: red;"&gt;Hi&lt;/p&gt;</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <style>
+                            .w1 p { color: #0969da; }
+                        </style>
+                        <div class="w1">
+                            <p><strong>External</strong> — style.css file: reusable across many pages, cached by browser. Use this 95% of the time.</p>
+                            <p><strong>Internal</strong> — a &lt;style&gt; block in the head: fine for one-page demos.</p>
+                            <p style="color:#cf222e;"><strong>Inline</strong> — style attribute: works, but messy. Avoid unless it's a one-off.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="tip"><strong>Golden rule:</strong> external CSS file + <code class="inline">class</code> attributes =
+            clean, reusable, professional. Inline styles = quick hack.</div>
+        </section>
+
+        <!-- ================= 02 SYNTAX ================= -->
+        <section class="card" id="syntax">
+            <h2><span class="num">02</span>CSS Syntax — the recipe</h2>
+            <p>Every CSS rule is a <strong>selector</strong> (who to style), then a <strong>declaration block</strong>
+            of <strong>properties</strong> (what to change) and <strong>values</strong> (how to change it):</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>p {
+    color: #3366cc;     /* property: value; */
+    font-size: 18px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.card {                  /* class = dot */
+    background: #f0f4ff;
+    padding: 20px;
+    border-radius: 12px;
+}</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <style>
+                            .w2 p { color: #3366cc; font-size: 18px; font-weight: bold; text-align: center; }
+                            .w2 .card { background: #f0f4ff; padding: 20px; border-radius: 12px; }
+                        </style>
+                        <div class="w2">
+                            <p>I am styled by the "p" rule</p>
+                            <div class="card" style="font-size:14px;text-align:center;">I am styled by the ".card" class rule</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <ul>
+                <li><strong>Selector</strong> — which element(s)</li>
+                <li><strong>Property</strong> — the thing to change (color, size, spacing…)</li>
+                <li><strong>Value</strong> — the setting (blue, 18px, center…)</li>
+                <li><strong>; </strong> — separates declarations (don't forget it!)</li>
+                <li><code class="inline">/* comment */</code> — notes for humans</li>
+            </ul>
+        </section>
+
+        <!-- ================= 03 BASIC SELECTORS ================= -->
+        <section class="card" id="selectors">
+            <h2><span class="num">03</span>Basic Selectors</h2>
+            <p>Selectors answer one question: <em>"which elements should I style?"</em> The four basics:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>/* element selector — all &lt;p&gt; */
+p { color: #0969da; }
+
+/* class — dot. reuse anywhere */
+.highlight { background: #fff8c5; }
+
+/* id — hash. ONE element only */
+#main-title { color: #cf222e; }
+
+/* universal — everything */
+* { margin: 0; }
+
+/* group — same styles, many */
+h1, h2, h3 { font-weight: bold; }</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <style>
+                            .w3 p { color: #0969da; }
+                            .w3 .highlight { background: #fff8c5; }
+                            .w3 #main-title { color: #cf222e; }
+                            .w3 h3 { font-weight: bold; }
+                        </style>
+                        <div class="w3">
+                            <h3 id="main-title">#main-title → red</h3>
+                            <p>p → blue</p>
+                            <p class="highlight">.highlight → yellow background</p>
+                            <p>p again → blue</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <table>
+                <thead><tr><th>Selector</th><th>Starts with</th><th>Matches</th></tr></thead>
+                <tbody>
+                    <tr><td><code class="inline">p</code></td><td>tag name</td><td>every &lt;p&gt;</td></tr>
+                    <tr><td><code class="inline">.class</code></td><td>dot</td><td>any element with that class (reusable)</td></tr>
+                    <tr><td><code class="inline">#id</code></td><td>hash</td><td>the ONE element with that id</td></tr>
+                    <tr><td><code class="inline">*</code></td><td>star</td><td>every element</td></tr>
+                    <tr><td><code class="inline">a, b</code></td><td>comma</td><td>all a and b (grouping)</td></tr>
+                </tbody>
+            </table>
+            <div class="tip"><strong>Naming:</strong> classes use <code class="inline">kebab-case</code> (my-card, btn-primary).
+            Never start a class with a number!</div>
+        </section>
+
+        <!-- ================= 04 ADVANCED SELECTORS ================= -->
+        <section class="card" id="advanced">
+            <h2><span class="num">04</span>Advanced Selectors</h2>
+            <p>Combinators and pseudo-classes — how you target specific elements without adding classes everywhere:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>/* descendant: p inside .box */
+.box p { color: #0969da; }
+
+/* child: li DIRECT child of ul */
+ul &gt; li { color: #cf222e; }
+
+/* sibling: p right after h2 */
+h2 + p { font-weight: bold; }
+
+/* attribute: links opening new tab */
+a[target="_blank"] { color: #1a7f37; }
+
+/* pseudo-class: hover */
+.btn:hover { background: #8250df; }
+
+/* pseudo-element: add content */
+.tag::before { content: "★ "; }</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <style>
+                            .w4 .box p { color: #0969da; }
+                            .w4 ul > li { color: #cf222e; }
+                            .w4 h2 + p { font-weight: bold; }
+                            .w4 a[target="_blank"] { color: #1a7f37; }
+                            .w4 .btn4:hover { background: #8250df; color: #fff; }
+                            .w4 .tag4::before { content: "★ "; color: #d4a72c; }
+                            .w4 .btn4 { display:inline-block; background:#0969da; color:#fff; padding:6px 14px; border-radius:6px; cursor:pointer; transition:all .2s; }
+                        </style>
+                        <div class="w4">
+                            <div class="box"><p>.box p → descendant, blue</p></div>
+                            <ul style="margin:0 0 8px 20px;"><li>ul &gt; li → child, red</li><li>direct child only</li></ul>
+                            <h2 style="font-size:15px;">Sibling demo</h2>
+                            <p>h2 + p → bold (first p after h2)</p>
+                            <p><a href="#" target="_blank">a[target="_blank"] → green</a></p>
+                            <p><span class="btn4">.btn:hover → hover me!</span></p>
+                            <p><span class="tag4">.tag::before</span> adds a star</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <table>
+                <thead><tr><th>Pattern</th><th>Means</th></tr></thead>
+                <tbody>
+                    <tr><td><code class="inline">A B</code></td><td>B anywhere inside A</td></tr>
+                    <tr><td><code class="inline">A &gt; B</code></td><td>B as a DIRECT child of A</td></tr>
+                    <tr><td><code class="inline">A + B</code></td><td>B immediately after A</td></tr>
+                    <tr><td><code class="inline">A ~ B</code></td><td>B after A (anywhere after)</td></tr>
+                    <tr><td><code class="inline">[attr]</code></td><td>has this attribute</td></tr>
+                    <tr><td><code class="inline">:hover</code></td><td>mouse over it</td></tr>
+                    <tr><td><code class="inline">::before</code> / <code class="inline">::after</code></td><td>inject content before/after</td></tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- ================= 05 SPECIFICITY ================= -->
+        <section class="card" id="specificity">
+            <h2><span class="num">05</span>Specificity &amp; the Cascade</h2>
+            <p>When two rules fight over the same element, the browser scores each selector.
+            <strong>More specific wins.</strong> The score has three columns: (id, class, element).</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>/* scores: (id, class, element) */
+p         { color: #0969da; } /* (0,0,1) */
+.special { color: #cf222e; } /* (0,1,0) — wins */
+#first   { color: #1a7f37; } /* (1,0,0) — wins more */
+p.special{ color: #8250df; } /* (0,1,1) — wins all */
+
+/* inline style beats everything: */
+&lt;p style="color:black"&gt;...&lt;/p&gt;
+
+/* !important beats even inline — avoid! */
+p { color: #57606a !important; }</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <style>
+                            .w5 p { color: #0969da; }
+                            .w5 .special { color: #cf222e; }
+                            .w5 #first { color: #1a7f37; }
+                            .w5 p.special2 { color: #8250df; }
+                        </style>
+                        <div class="w5">
+                            <p>plain p → blue (0,0,1)</p>
+                            <p class="special">.special → red (0,1,0) beats p</p>
+                            <p id="first">#first → green (1,0,0) beats class</p>
+                            <p class="special2">p.special2 → purple (0,1,1) beats all above</p>
+                        </div>
+                        <p style="font-size:12px;color:#57606a;margin-top:8px;">Whoever scores highest wins. If scores tie, the LAST rule in the file wins.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="warn"><strong>Beginner trap:</strong> "why isn't my style applying?" — 90% of the time it's
+            specificity. A more specific rule is silently beating yours. Check with F12 → Inspect → Styles.</div>
+        </section>
+
+        <!-- ================= 06 INHERITANCE ================= -->
+        <section class="card" id="inheritance">
+            <h2><span class="num">06</span>Inheritance — styles pass down</h2>
+            <p>Set a property on a parent, and children <em>inherit</em> it — until someone overrides it.
+            Text properties inherit; layout properties (margin, border, size) do <strong>not</strong>.</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>body {
+    font-family: Georgia, serif;  /* inherited */
+    color: #1f2328;          /* inherited */
+    margin: 0;                 /* NOT inherited */
+}
+
+.parent {
+    color: #8250df;
+    border: 2px solid gray;  /* not inherited */
+}
+
+/* force inheritance or undo it: */
+.child { border: inherit; }   /* yes, take it */
+.plain { color: initial; }    /* back to default */</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <style>
+                            .w6 { font-family: Georgia, serif; color: #1f2328; }
+                            .w6 .parent { color: #8250df; border: 2px solid #d0d7de; padding: 10px; border-radius: 8px; }
+                            .w6 .parent .grand { color: #cf222e; }
+                        </style>
+                        <div class="w6">
+                            <div class="parent">
+                                Parent — purple, has a border
+                                <div class="grand" style="margin-top:6px;">Child — overrides to red; border NOT inherited (only the parent has it)</div>
+                            </div>
+                            <p style="font-size:12px;color:#57606a;margin-top:8px;">Color inherits down the tree. Borders, margins, backgrounds don't.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <table>
+                <thead><tr><th>Inherited</th><th>Not inherited</th></tr></thead>
+                <tbody>
+                    <tr>
+                        <td>color, font-family, font-size, line-height, text-align, visibility</td>
+                        <td>margin, padding, border, background, width, height, position</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="tip"><strong>Why it matters:</strong> set font-family once on <code class="inline">body</code> and the whole
+            site inherits it. That one rule styles everything.</div>
+        </section>
+
+        <!-- ================= 07 COLORS ================= -->
+        <section class="card" id="colors">
+            <h2><span class="num">07</span>Colors</h2>
+            <p>CSS has many ways to write a color. The modern ones (hex, rgb, hsl) give you full control —
+            and <strong>opacity/alpha</strong> adds transparency:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>p {
+    color: tomato;              /* 140 named colors */
+    color: #ff6347;            /* HEX: RRGGBB */
+    color: #f63;               /* short hex (same!) */
+    color: rgb(255, 99, 71);    /* red, green, blue */
+    color: rgba(255, 99, 71, 0.5); /* + alpha 0-1 */
+    color: hsl(9, 100%, 64%);   /* hue, sat, light */
+    color: hsla(9, 100%, 64%, 0.5);
+
+    background: transparent;
+    opacity: 0.7;          /* fades WHOLE element */
+}</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <style>
+                            .w7 .sw { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px; }
+                            .w7 .sw span { width:70px; height:44px; border-radius:8px; display:grid; place-items:center; font-size:11px; color:#fff; font-weight:700; }
+                        </style>
+                        <div class="w7">
+                            <div class="sw">
+                                <span style="background:tomato;">tomato</span>
+                                <span style="background:#ff6347;">#ff6347</span>
+                                <span style="background:#f63;">#f63</span>
+                                <span style="background:rgb(255,99,71);">rgb()</span>
+                                <span style="background:hsl(9,100%,64%);">hsl()</span>
+                                <span style="background:#8250df;">hex</span>
+                                <span style="background:#39c5cf;">cyan</span>
+                                <span style="background:#0969da;">blue</span>
+                            </div>
+                            <div style="display:flex;gap:8px;align-items:center;">
+                                <span style="background:rgba(255,99,71,0.3);padding:6px 12px;border-radius:6px;">rgba 30%</span>
+                                <span style="background:rgba(255,99,71,0.6);padding:6px 12px;border-radius:6px;">rgba 60%</span>
+                                <span style="background:rgba(255,99,71,1);padding:6px 12px;border-radius:6px;">rgba 100%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <h3>Pick colors like a designer</h3>
+            <ul>
+                <li><strong>hsl()</strong> is the most intuitive: hue = the wheel (0 red, 120 green, 240 blue)</li>
+                <li>Use <strong>rgba/hex-with-alpha</strong> for overlays: <code class="inline">rgba(0,0,0,0.5)</code> = dark veil</li>
+                <li><code class="inline">opacity</code> fades the whole element <em>including children</em>; rgba fades just the background</li>
+                <li>Tools: <a href="https://coolors.co" target="_blank" style="color:var(--accent);">coolors.co</a> (palettes), <a href="https://colorhunt.co" target="_blank" style="color:var(--accent);">colorhunt.co</a></li>
+            </ul>
+            <div class="tip"><strong>Tip:</strong> copy the color of anything on the web — F12 → pick the element →
+            click the color square → eyedropper tool.</div>
+        </section>
+
+        <!-- ================= 08 TEXT & FONTS ================= -->
+        <section class="card" id="text">
+            <h2><span class="num">08</span>Text &amp; Fonts</h2>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>.card {
+    font-family: Georgia, serif;  /* fallbacks */
+    font-size: 20px;
+    font-weight: bold;           /* 100-900 */
+    font-style: italic;
+
+    line-height: 1.6;            /* space between lines */
+    letter-spacing: 2px;        /* space between letters */
+    word-spacing: 4px;
+
+    text-align: center;          /* left/center/right/justify */
+    text-decoration: underline;  /* links use this */
+    text-transform: uppercase;    /* uppercase/lowercase/capitalize */
+    text-shadow: 1px 1px 2px gray;
+    white-space: nowrap;        /* no wrapping */
+}</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <p style="font-family:Georgia, serif;font-size:20px;font-weight:bold;margin-bottom:4px;">Georgia bold 20px</p>
+                        <p style="font-style:italic;">Italic</p>
+                        <p style="line-height:1.9;">Line-height 1.9:<br>line two<br>line three</p>
+                        <p style="letter-spacing:3px;">letter-spacing: 3px</p>
+                        <p style="text-align:center;background:#f6f8fa;padding:6px;border-radius:6px;">text-align: center</p>
+                        <p style="text-decoration:underline;">text-decoration: underline</p>
+                        <p style="text-transform:uppercase;color:#0969da;">text-transform: uppercase</p>
+                    </div>
+                </div>
+            </div>
+            <h3>Fonts from Google Fonts (free)</h3>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>&lt;!-- 1. link it in the head --&gt;
+&lt;link href="https://fonts.googleapis.com/
+    css2?family=Roboto:wght@400;700"
+      rel="stylesheet"&gt;
+
+/* 2. use it in CSS */
+body {
+    font-family: 'Roboto', sans-serif;
+}</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Lobster&display=swap" rel="stylesheet">
+                        <p style="font-family:'Roboto',sans-serif;"><strong>Roboto</strong> — the most popular Google font.</p>
+                        <p style="font-family:'Lobster',cursive;font-size:22px;">Lobster — for fun headings.</p>
+                        <p style="font-size:12px;color:#57606a;">Needs internet for this preview. font-weight 700 = bold variant.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="tip"><strong>Font stacks:</strong> <code class="inline">font-family: 'Segoe UI', system-ui, sans-serif</code> —
+            the browser tries each in order. Always end with a <em>generic</em> family (serif, sans-serif, monospace).</div>
+        </section>
+
+        <!-- ================= 09 BACKGROUNDS ================= -->
+        <section class="card" id="backgrounds">
+            <h2><span class="num">09</span>Backgrounds</h2>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>.banner {
+    background-color: #0969da;
+    background-image: url("bg.jpg");
+    background-repeat: no-repeat; /* repeat-x/y */
+    background-position: center;
+    background-size: cover;   /* cover/contain */
+    background-attachment: fixed; /* parallax! */
+}
+
+/* gradient (no image file needed) */
+.grad {
+    background: linear-gradient(
+        45deg, #8250df, #39c5cf);
+}
+
+/* multiple layers */
+.layers {
+    background:
+        url("overlay.png") no-repeat center,
+        linear-gradient(#ffebf0, #ddf4ff);
+}</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <div style="background:linear-gradient(45deg,#8250df,#39c5cf);color:#fff;padding:18px;border-radius:10px;margin-bottom:10px;text-align:center;font-weight:700;">linear-gradient — no image needed</div>
+                        <div style="background:radial-gradient(circle,#ffd33d,#ff9f1c);color:#5b4600;padding:14px;border-radius:10px;margin-bottom:10px;text-align:center;font-weight:700;">radial-gradient</div>
+                        <div style="background-image:url('https://picsum.photos/seed/csnotes/400/90');background-size:cover;background-position:center;color:#fff;padding:20px;border-radius:10px;text-align:center;font-weight:700;text-shadow:0 1px 3px rgba(0,0,0,0.6);">background-image + size: cover (needs internet)</div>
+                    </div>
+                </div>
+            </div>
+            <table>
+                <thead><tr><th>Shorthand</th><th>Means</th></tr></thead>
+                <tbody>
+                    <tr><td><code class="inline">background-size: cover</code></td><td>image fills the box, crops edges</td></tr>
+                    <tr><td><code class="inline">background-size: contain</code></td><td>whole image fits, letterboxed</td></tr>
+                    <tr><td><code class="inline">background-attachment: fixed</code></td><td>image stays while page scrolls (parallax)</td></tr>
+                    <tr><td><code class="inline">background: #fff url(...) no-repeat center/cover</code></td><td>one-line version of everything</td></tr>
+                </tbody>
+            </table>
+            <div class="tip"><strong>Gradients are everywhere:</strong> this page's own title text uses
+            <code class="inline">linear-gradient</code> + <code class="inline">background-clip: text</code> — the gradient only shows
+            inside the letters!</div>
+        </section>
+
+        <!-- ================= 10 BORDERS ================= -->
+        <section class="card" id="borders">
+            <h2><span class="num">10</span>Borders &amp; Radius</h2>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>.box {
+    border: 3px solid #0969da;
+    border-top: 6px dashed #cf222e;
+    border-radius: 12px;  /* rounded */
+    border-radius: 50%;   /* circle! */
+    outline: 2px dotted #1a7f37;
+    outline-offset: 4px; /* outside the box */
+}
+
+/* pill button (classic!) */
+.btn {
+    border-radius: 999px;
+}</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+                            <div style="border:3px solid #0969da;border-radius:12px;padding:14px 18px;">rounded 12px</div>
+                            <div style="border-top:6px dashed #cf222e;border-bottom:2px solid #cf222e;border-left:2px solid #cf222e;border-right:2px solid #cf222e;border-radius:12px;padding:14px 18px;">dashed top</div>
+                            <div style="width:80px;height:80px;border:3px solid #8250df;border-radius:50%;display:grid;place-items:center;font-size:12px;text-align:center;">50% = circle</div>
+                            <div style="border:2px solid #0969da;border-radius:6px;padding:14px 18px;outline:2px dotted #1a7f37;outline-offset:4px;">outline outside</div>
+                            <div style="background:#0969da;color:#fff;padding:10px 26px;border-radius:999px;">pill button</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="warn"><strong>Border vs outline:</strong> border takes space <em>inside</em> the layout;
+            outline is drawn <em>outside</em> the box and never changes layout (that's why browsers use it for focus rings).</div>
+        </section>
+
+        <!-- ================= 11 BOX MODEL ================= -->
+        <section class="card" id="boxmodel">
+            <h2><span class="num">11</span>The Box Model — every element is a box</h2>
+            <p>This is <strong>the most important concept in CSS</strong>. Every element is a box made of four layers:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>.box {
+    width: 200px;
+    height: 100px;
+
+    padding: 20px;   /* INSIDE, around content */
+    border: 5px solid #0969da;
+    margin: 15px;    /* OUTSIDE, pushes others */
+}
+
+/* one value = all sides */
+margin: 10px;
+/* two: vertical, horizontal */
+margin: 10px 20px;
+/* four: top, right, bottom, left */
+margin: 10px 20px 30px 40px;</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <style>
+                            .w11 { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+                            .w11 .outer { background:#eaeef2; border-radius:8px; padding:6px; border:2px dashed #d0d7de; }
+                            .w11 .inner { width:120px; height:70px; padding:14px; border:5px solid #0969da; background:#ddf4ff; border-radius:6px; font-size:11px; color:#0550ae; }
+                        </style>
+                        <p style="font-weight:700;">The layers, outside → in:</p>
+                        <div style="background:#ffebe9;border:2px dashed #cf222e;border-radius:8px;padding:10px;">
+                            <div style="color:#cf222e;font-size:12px;font-weight:700;margin-bottom:4px;">margin — transparent space OUTSIDE the border</div>
+                            <div style="background:#fff8c5;border:2px solid #d4a72c;border-radius:6px;padding:10px;">
+                                <div style="color:#7d5908;font-size:12px;font-weight:700;margin-bottom:4px;">border — visible edge</div>
+                                <div style="background:#ddf4ff;border:2px solid #0969da;border-radius:6px;padding:10px;">
+                                    <div style="color:#0550ae;font-size:12px;font-weight:700;margin-bottom:4px;">padding — space INSIDE the border</div>
+                                    <div style="background:#fff;border:1px solid #0969da;border-radius:4px;padding:6px;font-size:12px;">content — your text</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <table>
+                <thead><tr><th>Layer</th><th>Role</th></tr></thead>
+                <tbody>
+                    <tr><td><code class="inline">content</code></td><td>your text/image</td></tr>
+                    <tr><td><code class="inline">padding</code></td><td>breathing room INSIDE the box (background color covers it)</td></tr>
+                    <tr><td><code class="inline">border</code></td><td>the visible edge</td></tr>
+                    <tr><td><code class="inline">margin</code></td><td>space OUTSIDE the box, pushes neighbors away (transparent)</td></tr>
+                </tbody>
+            </table>
+            <div class="tip"><strong>Memory hook:</strong> padding = <em>personal space inside</em>, margin = <em>social distance outside</em>.
+            Padding makes a box feel bigger; margin creates gaps between boxes.</div>
+        </section>
+
+        <!-- ================= 12 SIZING ================= -->
+        <section class="card" id="sizing">
+            <h2><span class="num">12</span>Width, Height &amp; box-sizing</h2>
+            <p>The most famous CSS surprise: with <code class="inline">box-sizing: content-box</code> (default),
+            the width you set <strong>excludes</strong> padding and border. With <code class="inline">border-box</code>
+            (what everyone uses), width = everything:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>/* content-box (default): */
+.a {
+    width: 200px;
+    padding: 20px;
+    border: 5px solid #0969da;
+    /* real total = 200 + 40 + 10 = 250px! */
+}
+
+/* border-box (the fix): */
+.b {
+    box-sizing: border-box;
+    width: 200px;   /* stays 200px, */
+    padding: 20px;  /* padding shrinks content */
+}
+
+/* apply to EVERYTHING: */
+*, *::before, *::after {
+    box-sizing: border-box;
+}</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <style>
+                            .w12 .row { display:flex; gap:10px; margin-bottom:10px; }
+                            .w12 .a { width:200px; padding:20px; border:5px solid #0969da; background:#ddf4ff; font-size:11px; border-radius:4px; }
+                            .w12 .b { width:200px; padding:20px; border:5px solid #1a7f37; background:#dafbe1; font-size:11px; box-sizing:border-box; border-radius:4px; }
+                        </style>
+                        <div class="w12">
+                            <p style="font-weight:700;">Both set to width:200px:</p>
+                            <div class="row">
+                                <div class="a">content-box → total 250px (wider!)</div>
+                                <div class="b">border-box → total 200px (as set)</div>
+                            </div>
+                            <p style="font-size:12px;color:#57606a;">This is why layouts "break" — boxes grow bigger than you planned.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <table>
+                <thead><tr><th>Property</th><th>What it does</th></tr></thead>
+                <tbody>
+                    <tr><td><code class="inline">width / height</code></td><td>size of the box</td></tr>
+                    <tr><td><code class="inline">min-width / max-width</code></td><td>limits (max-width: 600px = readable text!)</td></tr>
+                    <tr><td><code class="inline">min-height / max-height</code></td><td>vertical limits</td></tr>
+                    <tr><td><code class="inline">width: auto</code></td><td>block fills its parent by default</td></tr>
+                    <tr><td><code class="inline">margin: 0 auto</code></td><td>center a block horizontally (classic!)</td></tr>
+                </tbody>
+            </table>
+            <div class="tip"><strong>Do this once, in every project:</strong> the universal <code class="inline">box-sizing: border-box</code>
+            rule above. It's the #1 layout sanity fix.</div>
+        </section>
+
+        <!-- ================= 13 DISPLAY ================= -->
+        <section class="card" id="display">
+            <h2><span class="num">13</span>Display — block, inline, inline-block</h2>
+            <p>How a box behaves next to its neighbors depends on <code class="inline">display</code>:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>/* block: full width, new line (default
+   for p, div, h1, ul...) */
+div { display: block; }
+
+/* inline: sits in text, no size control
+   (default for span, a, strong...) */
+span { display: inline; }
+
+/* inline-block: best of both */
+.chip {
+    display: inline-block;
+    width: 120px;   /* CAN size it */
+    padding: 10px;
+}
+
+/* remove from layout entirely */
+.hidden { display: none; }
+.invisible { visibility: hidden; }</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <style>
+                            .w13 .chip { display:inline-block; width:110px; padding:10px; background:#ddf4ff; border:1px solid #0969da; border-radius:6px; margin:2px; font-size:12px; text-align:center; }
+                            .w13 .b { background:#eaeef2; padding:6px; border-radius:6px; margin:2px 0; font-size:12px; }
+                        </style>
+                        <div class="w13">
+                            <p style="font-weight:700;">Block boxes (each on its own line):</p>
+                            <div class="b">block 1</div>
+                            <div class="b">block 2</div>
+                            <p style="font-weight:700;margin-top:10px;">Inline: <span style="background:#ffebe9;">sits</span> <span style="background:#ffebe9;">inside</span> <span style="background:#ffebe9;">one line</span></p>
+                            <p style="font-weight:700;margin-top:10px;">Inline-block (sizeable, in a row):</p>
+                            <span class="chip">chip 1</span><span class="chip">chip 2</span><span class="chip">chip 3</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="warn"><strong>display:none vs visibility:hidden:</strong> none removes the box (layout closes the gap);
+            hidden keeps the space but shows nothing. Both hide content — none is used 99% of the time.</div>
+        </section>
+
+        <!-- ================= 14 POSITION ================= -->
+        <section class="card" id="position">
+            <h2><span class="num">14</span>Position — place boxes anywhere</h2>
+            <p><code class="inline">position</code> changes how a box is placed. The five values, each with a live demo:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>.a { position: static; }   /* default, normal flow */
+
+.b {
+    position: relative;
+    top: 10px; left: 20px;
+    /* nudged from its normal spot */
+}
+
+.c {
+    position: absolute;
+    top: 0; right: 0;
+    /* relative to nearest positioned
+       ancestor (or the page) */
+}
+
+.d {
+    position: fixed;
+    bottom: 10px; left: 10px;
+    /* glued to the screen while
+       scrolling (like the theme btn!) */
+}
+
+.e {
+    position: sticky;
+    top: 0;
+    /* sticks until its parent ends */
+}
+
+.badge {
+    position: absolute;
+    z-index: 10;  /* stacking order */
+}</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <style>
+                            .w14 { position:relative; }
+                            .w14 .s1 { background:#ddf4ff; border:1px solid #0969da; border-radius:6px; padding:8px; margin:2px 0; font-size:12px; }
+                            .w14 .rel { background:#fff8c5; border:1px solid #d4a72c; border-radius:6px; padding:8px; font-size:12px; position:relative; top:6px; left:14px; }
+                            .w14 .abs { position:absolute; top:8px; right:8px; background:#8250df; color:#fff; padding:4px 10px; border-radius:999px; font-size:11px; font-weight:700; }
+                        </style>
+                        <div class="w14">
+                            <div class="s1">static — normal position</div>
+                            <div class="rel">relative — nudged 6px down, 14px right</div>
+                            <div class="s1">absolute badge pinned to this panel: <span class="abs">TOP-RIGHT</span></div>
+                            <div style="height:12px;"></div>
+                            <p style="font-size:12px;color:#57606a;">fixed = this page's 🌙 theme button (bottom-right, always visible).
+                            sticky = the menu bar at the top of this page!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <table>
+                <thead><tr><th>Value</th><th>Use for</th></tr></thead>
+                <tbody>
+                    <tr><td><code class="inline">static</code></td><td>default — nothing special</td></tr>
+                    <tr><td><code class="inline">relative</code></td><td>nudge the box; also becomes the anchor for absolute children</td></tr>
+                    <tr><td><code class="inline">absolute</code></td><td>pin to the nearest positioned ancestor (badges, overlays)</td></tr>
+                    <tr><td><code class="inline">fixed</code></td><td>stays on screen (navbars, chat buttons)</td></tr>
+                    <tr><td><code class="inline">sticky</code></td><td>scrolls then sticks (section headers)</td></tr>
+                    <tr><td><code class="inline">z-index</code></td><td>who's on top when boxes overlap (bigger = higher)</td></tr>
+                </tbody>
+            </table>
+            <div class="warn"><strong>Absolute needs an anchor:</strong> set <code class="inline">position: relative</code> on the parent,
+            then <code class="inline">absolute</code> children position themselves inside it. Without the anchor, they
+            escape to the page corner — a classic bug!</div>
+        </section>
+
+        <!-- ================= 15 FLOAT ================= -->
+        <section class="card" id="float">
+            <h2><span class="num">15</span>Float — the old way (know it, rarely use it)</h2>
+            <p>Before Flexbox, <code class="inline">float</code> was how you put text next to an image. It still works —
+            you'll see it in old code. Flexbox/Grid replace it today:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>img {
+    float: left;        /* right too */
+    margin-right: 12px;
+}
+
+/* stop the float leaking: */
+.clearfix::after {
+    content: "";
+    display: block;
+    clear: both;
+}</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <div style="width:90px;height:60px;background:#ddf4ff;border:2px solid #0969da;border-radius:8px;float:left;margin:0 12px 6px 0;display:grid;place-items:center;font-size:11px;color:#0550ae;">floated</div>
+                        <p style="font-size:12.5px;">This text wraps around the floated box — that's what float was built for:
+                        magazines! Notice how the text flows along the right side of the box, then fills below it.</p>
+                        <div style="clear:both;"></div>
+                        <p style="font-size:12px;color:#57606a;margin-top:6px;">The clear:both div stops the wrap. Today: use Flexbox for layouts.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="tip"><strong>Verdict:</strong> understand float so old code isn't scary, but write new layouts
+            with Flexbox and Grid (coming right up).</div>
+        </section>
+
+        <!-- ================= 16 FLEXBOX ================= -->
+        <section class="card" id="flex">
+            <h2><span class="num">16</span>Flexbox — align anything, perfectly</h2>
+            <p>Put <code class="inline">display: flex</code> on a container and its children become flexible
+            <em>items</em> in a row. This one property ends the centering struggle forever:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>.container {
+    display: flex;              /* row by default */
+    flex-direction: row;       /* row | column */
+    justify-content: center;  /* MAIN axis */
+    align-items: center;      /* CROSS axis */
+    gap: 12px;                 /* spacing */
+    flex-wrap: wrap;          /* wrap on small */
+}</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <style>
+                            .w16 { display:flex; justify-content:center; align-items:center; gap:12px; flex-wrap:wrap; background:#f6f8fa; border:2px dashed #d0d7de; border-radius:10px; padding:16px; min-height:110px; }
+                            .w16 div { background:#0969da; color:#fff; padding:14px 18px; border-radius:8px; font-weight:700; }
+                        </style>
+                        <p style="font-weight:700;">5 lines of CSS = perfectly centered row:</p>
+                        <div class="w16">
+                            <div>1</div><div>2</div><div>3</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <h3>justify-content — the MAIN axis</h3>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>.row { display: flex; }
+
+.start   { justify-content: flex-start; }  /* left */
+.center  { justify-content: center; }
+.end     { justify-content: flex-end; }    /* right */
+.between { justify-content: space-between; }
+.around  { justify-content: space-around; }
+.evenly  { justify-content: space-evenly; }</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <style>
+                            .w16b { display:flex; background:#f6f8fa; border-radius:6px; padding:6px; margin-bottom:8px; }
+                            .w16b div { background:#8250df; color:#fff; width:26px; height:26px; border-radius:6px; display:grid; place-items:center; font-size:12px; }
+                        </style>
+                        <div class="w16b" style="justify-content:flex-start;"><div>1</div><div>2</div><div>3</div></div>
+                        <div class="w16b" style="justify-content:center;"><div>1</div><div>2</div><div>3</div></div>
+                        <div class="w16b" style="justify-content:flex-end;"><div>1</div><div>2</div><div>3</div></div>
+                        <div class="w16b" style="justify-content:space-between;"><div>1</div><div>2</div><div>3</div></div>
+                        <div class="w16b" style="justify-content:space-around;"><div>1</div><div>2</div><div>3</div></div>
+                        <p style="font-size:12px;color:#57606a;">flex-start · center · flex-end · space-between · space-around</p>
+                    </div>
+                </div>
+            </div>
+            <div class="tip"><strong>Memory hook:</strong> justify-content = position on the <em>main</em> axis (row → left/right).
+            align-items = position on the <em>cross</em> axis (row → up/down). One is for left-right, one for up-down.</div>
+        </section>
+
+        <!-- ================= 17 FLEX ITEMS ================= -->
+        <section class="card" id="flexitem">
+            <h2><span class="num">17</span>Flex Items — grow, shrink, order</h2>
+            <p>Once the container is flex, the <em>items</em> get their own superpowers:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>.container { display: flex; gap: 8px; }
+
+.item {
+    flex-grow: 1;   /* share extra space equally */
+}
+
+.big  { flex-grow: 2; }   /* gets 2x the space */
+.fixed{ flex-grow: 0; }   /* stays its size */
+
+.sidebar {
+    flex-basis: 250px;  /* starting width */
+}
+
+.first { order: -1; }    /* move to front */
+
+.stretch { align-self: center; } /* one item, different */</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <style>
+                            .w17 { display:flex; gap:8px; margin-bottom:10px; }
+                            .w17 div { background:#0969da; color:#fff; padding:16px 0; border-radius:8px; text-align:center; font-weight:700; font-size:13px; }
+                        </style>
+                        <p style="font-weight:700;">flex-grow: 1 on all three:</p>
+                        <div class="w17"><div style="flex:1;">1</div><div style="flex:1;">2</div><div style="flex:1;">3</div></div>
+                        <p style="font-weight:700;">flex-grow: 2 on the middle:</p>
+                        <div class="w17"><div style="flex:1;">1</div><div style="flex:2;">2 — double width</div><div style="flex:1;">3</div></div>
+                        <p style="font-weight:700;">Sidebar (fixed 130px) + content (grows):</p>
+                        <div class="w17"><div style="flex:0 0 130px;">sidebar</div><div style="flex:1;">content</div></div>
+                    </div>
+                </div>
+            </div>
+            <table>
+                <thead><tr><th>Property</th><th>What it does</th></tr></thead>
+                <tbody>
+                    <tr><td><code class="inline">flex-grow</code></td><td>how much extra space this item takes (ratio)</td></tr>
+                    <tr><td><code class="inline">flex-shrink</code></td><td>how fast it shrinks when space runs out</td></tr>
+                    <tr><td><code class="inline">flex-basis</code></td><td>starting size before grow/shrink</td></tr>
+                    <tr><td><code class="inline">flex: 1</code></td><td>shorthand = grow 1, shrink 1, basis 0 (the classic)</td></tr>
+                    <tr><td><code class="inline">order</code></td><td>reorder items without touching HTML (negative = earlier)</td></tr>
+                    <tr><td><code class="inline">align-self</code></td><td>override align-items for one item</td></tr>
+                </tbody>
+            </table>
+            <div class="tip"><strong>The layout you'll build 100 times:</strong> sidebar with <code class="inline">flex: 0 0 250px</code>
+            (fixed), content with <code class="inline">flex: 1</code> (fills the rest). That's it.</div>
+        </section>
+
+        <!-- ================= 18 GRID ================= -->
+        <section class="card" id="grid">
+            <h2><span class="num">18</span>Grid — 2D layouts (rows AND columns)</h2>
+            <p>Flexbox = one axis. Grid = <strong>both axes at once</strong> — perfect for page layouts
+            and photo galleries. You define the tracks; items fill them automatically:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>.gallery {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    /* 3 equal columns. 1fr = share space */
+    gap: 12px;
+}
+
+/* real sizes work too: */
+.page {
+    display: grid;
+    grid-template-columns: 250px 1fr;
+    /* sidebar 250px + content */
+}</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <style>
+                            .w18 { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+                            .w18 div { background:#0969da; color:#fff; padding:18px 0; border-radius:8px; text-align:center; font-weight:700; }
+                        </style>
+                        <p style="font-weight:700;">repeat(3, 1fr) — three equal columns:</p>
+                        <div class="w18"><div>1</div><div>2</div><div>3</div><div>4</div><div>5</div><div>6</div></div>
+                        <p style="font-weight:700;">Automatic row wrapping! Add items, grid makes rows:</p>
+                        <div class="w18"><div>7</div><div>8</div><div>9</div></div>
+                    </div>
+                </div>
+            </div>
+            <h3>Units for columns</h3>
+            <table>
+                <thead><tr><th>Value</th><th>Example</th></tr></thead>
+                <tbody>
+                    <tr><td><code class="inline">1fr</code></td><td>one fraction of the free space — equal-ish columns</td></tr>
+                    <tr><td><code class="inline">repeat(3, 1fr)</code></td><td>three identical columns</td></tr>
+                    <tr><td><code class="inline">auto</code></td><td>just as wide as the content</td></tr>
+                    <tr><td><code class="inline">minmax(200px, 1fr)</code></td><td>at least 200px, then grow — responsive without media queries!</td></tr>
+                    <tr><td><code class="inline">250px 1fr 250px</code></td><td>fixed sidebar + content + sidebar</td></tr>
+                </tbody>
+            </table>
+            <div class="tip"><strong>Grid vs Flexbox (the 1-minute answer):</strong> content is a row or column → Flexbox.
+            The whole PAGE or a gallery has rows AND columns → Grid. When in doubt, Flexbox is easier.</div>
+        </section>
+
+        <!-- ================= 19 GRID PLACEMENT ================= -->
+        <section class="card" id="griditem">
+            <h2><span class="num">19</span>Grid Placement — make items span</h2>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>.layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+}
+
+.header {
+    grid-column: 1 / -1;  /* full width */
+}
+
+.big {
+    grid-column: span 2;   /* 2 columns */
+    grid-row: span 2;      /* 2 rows */
+}
+
+/* named areas — readable layout: */
+.site {
+    display: grid;
+    grid-template-areas:
+        "nav nav nav"
+        "main main aside"
+        "foot foot foot";
+}
+.nav  { grid-area: nav; }
+.main { grid-area: main; }
+.aside{ grid-area: aside; }
+.foot { grid-area: foot; }</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <style>
+                            .w19 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; }
+                            .w19 div { background:#0969da; color:#fff; padding:14px; border-radius:8px; text-align:center; font-weight:700; font-size:13px; }
+                            .w19 .h { grid-column:1/-1; background:#8250df; }
+                            .w19 .big2 { grid-column:span 2; grid-row:span 2; background:#1a7f37; display:grid; place-items:center; }
+                        </style>
+                        <div class="w19">
+                            <div class="h">header — grid-column: 1 / -1</div>
+                            <div class="big2">big — spans 2×2</div>
+                            <div>a</div><div>b</div>
+                            <div>c</div><div>d</div>
+                        </div>
+                        <p style="font-weight:700;margin:12px 0 6px;">Named areas (see code):</p>
+                        <div style="display:grid;grid-template-areas:'nav nav nav' 'main main aside' 'foot foot foot';gap:6px;font-size:12px;">
+                            <div style="grid-area:nav;background:#ddf4ff;padding:8px;border-radius:6px;">nav</div>
+                            <div style="grid-area:main;background:#dafbe1;padding:14px;border-radius:6px;">main</div>
+                            <div style="grid-area:aside;background:#ffebe9;padding:8px;border-radius:6px;">aside</div>
+                            <div style="grid-area:foot;background:#d8dee4;padding:8px;border-radius:6px;">foot</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="tip"><strong>grid-column: 1 / -1</strong> = start at column 1, end at the last (-1).
+            It's the quickest way to make an element stretch the full width.</div>
+        </section>
+
+        <!-- ================= 20 UNITS ================= -->
+        <section class="card" id="units">
+            <h2><span class="num">20</span>Units — px, em, rem, %, vw, vh</h2>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>p {
+    font-size: 16px;        /* fixed pixel */
+    font-size: 1.5em;       /* 1.5x PARENT size */
+    font-size: 1.5rem;      /* 1.5x ROOT (html) size */
+    width: 50%;            /* half of parent */
+    height: 100vh;         /* full viewport height */
+    width: 100vw;          /* full viewport width */
+    max-width: 60ch;      /* 60 characters wide */
+}</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <div style="background:#eaeef2;border-radius:8px;padding:10px;margin-bottom:8px;">
+                            <div style="background:#0969da;width:50%;height:24px;border-radius:6px;"></div>
+                            <p style="font-size:12px;margin-top:4px;">width: 50% of parent</p>
+                        </div>
+                        <div style="background:#eaeef2;border-radius:8px;padding:10px;margin-bottom:8px;">
+                            <div style="background:#8250df;height:40vh;border-radius:6px;"></div>
+                            <p style="font-size:12px;margin-top:4px;">height: 40vh = 40% of your window height</p>
+                        </div>
+                        <div style="background:#eaeef2;border-radius:8px;padding:10px;">
+                            <p style="font-size:18px;margin:0;">em: parent-relative — nesting doubles sizes!</p>
+                            <p style="font-size:0.875rem;margin:0;color:#57606a;">rem: root-relative — the safe choice</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <table>
+                <thead><tr><th>Unit</th><th>Relative to</th><th>Use for</th></tr></thead>
+                <tbody>
+                    <tr><td><code class="inline">px</code></td><td>screen pixels (fixed)</td><td>borders, small fixed things</td></tr>
+                    <tr><td><code class="inline">%</code></td><td>parent element</td><td>widths, heights</td></tr>
+                    <tr><td><code class="inline">em</code></td><td>parent font-size</td><td>spacing that scales with text</td></tr>
+                    <tr><td><code class="inline">rem</code></td><td>root font-size (html)</td><td>font sizes — predictable, accessible</td></tr>
+                    <tr><td><code class="inline">vh / vw</code></td><td>viewport (window)</td><td>full-screen sections, overlays</td></tr>
+                    <tr><td><code class="inline">ch</code></td><td>character width</td><td>readable line length (60ch is perfect)</td></tr>
+                </tbody>
+            </table>
+            <div class="tip"><strong>Beginner choice:</strong> <code class="inline">rem</code> for font-size,
+            <code class="inline">%</code> for widths, <code class="inline">px</code> for borders/radii. Done — you can ignore em for a while.</div>
+        </section>
+
+        <!-- ================= 21 RESPONSIVE ================= -->
+        <section class="card" id="responsive">
+            <h2><span class="num">21</span>Responsive Design &amp; Media Queries</h2>
+            <p>One page, every screen. Media queries apply CSS only when conditions are true — like screen width.
+            <strong>Resize this window</strong> and watch the demo below change!</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>/* base: phone-first */
+.cards { display: grid;
+          grid-template-columns: 1fr; }
+
+/* tablet &amp; up */
+@media (min-width: 600px) {
+    .cards { grid-template-columns: 1fr 1fr; }
+}
+
+/* desktop */
+@media (min-width: 900px) {
+    .cards { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* dark mode preference */
+@media (prefers-color-scheme: dark) {
+    body { background: #0d1117; }
+}</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <style>
+                            .w21 { display:grid; grid-template-columns:1fr; gap:8px; }
+                            .w21 div { background:#0969da; color:#fff; padding:16px; border-radius:8px; text-align:center; font-weight:700; font-size:13px; }
+                            @media (min-width:600px) { .w21 { grid-template-columns:1fr 1fr; } }
+                            @media (min-width:900px) { .w21 { grid-template-columns:repeat(3,1fr); } }
+                        </style>
+                        <div class="w21">
+                            <div>1 col on phone</div><div>2 cols at 600px+</div><div>3 cols at 900px+</div>
+                        </div>
+                        <p style="font-size:12px;color:#57606a;margin-top:6px;">🖱️ Drag the window edge — the boxes rearrange live!</p>
+                    </div>
+                </div>
+            </div>
+            <ul>
+                <li><strong>Mobile-first</strong> — write the phone layout first, then <code class="inline">min-width</code> queries add more</li>
+                <li>Standard breakpoints: 600px (tablet), 900px (laptop), 1200px (desktop)</li>
+                <li>Never forget the viewport meta: <code class="inline">&lt;meta name="viewport" content="width=device-width, initial-scale=1"&gt;</code></li>
+                <li>Check your work: F12 → the phone icon (Device Toolbar)</li>
+            </ul>
+            <div class="tip"><strong>Modern shortcut:</strong> <code class="inline">grid-template-columns: repeat(auto-fit, minmax(200px, 1fr))</code>
+            does responsive columns with <em>zero</em> media queries!</div>
+        </section>
+
+        <!-- ================= 22 TRANSITIONS ================= -->
+        <section class="card" id="transitions">
+            <h2><span class="num">22</span>Transitions &amp; Transforms — smooth motion</h2>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>.btn {
+    background: #0969da;
+    transition: all 0.3s ease;
+    /* property duration timing */
+}
+
+.btn:hover {
+    background: #8250df;
+    transform: scale(1.1);  /* grow 10% */
+    box-shadow: 0 8px 20px
+        rgba(0,0,0,0.3);
+}
+
+/* transform tricks: */
+transform: rotate(45deg);
+transform: translate(10px, 20px); /* move */
+transform: skewX(-8deg);  /* tilt */
+transition: background 0.3s,
+              transform 0.2s;
+/* list multiple properties */</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;">
+                            <span style="background:#0969da;color:#fff;padding:12px 22px;border-radius:8px;cursor:pointer;display:inline-block;transition:all 0.3s ease;font-size:13px;" onmouseover="this.style.background='#8250df';this.style.transform='scale(1.1)'" onmouseout="this.style.background='#0969da';this.style.transform='scale(1)'">Hover me! 👆</span>
+                            <span style="background:#f6f8fa;border:2px solid #d0d7de;padding:12px;border-radius:8px;cursor:pointer;display:inline-block;transition:transform 0.4s;font-size:13px;" onmouseover="this.style.transform='rotate(8deg) translateY(-3px)'" onmouseout="this.style.transform='rotate(0)'">Rotate me</span>
+                        </div>
+                        <p style="font-size:12px;color:#57606a;margin-top:8px;">Two tiny CSS rules turned plain boxes into living buttons.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="tip"><strong>The rule:</strong> <code class="inline">transition</code> on the <em>base</em> state
+            (so hover-out animates too), <code class="inline">transform</code> on the hover state.</div>
+        </section>
+
+        <!-- ================= 23 ANIMATIONS ================= -->
+        <section class="card" id="animations">
+            <h2><span class="num">23</span>Animations — @keyframes</h2>
+            <p>Transitions react to a state change. Animations run <em>by themselves</em>, forever or a few times:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>.bounce {
+    animation: bounce 2s
+        infinite ease-in-out;
+    /* name duration repeat */
+}
+
+@keyframes bounce {
+    0%   { transform: translateY(0); }
+    50%  { transform: translateY(-16px); }
+    100% { transform: translateY(0); }
+}
+
+/* other animation properties */
+animation-delay: 1s;      /* wait before start */
+animation-iteration-count: 3; /* or: infinite */
+animation-direction: alternate;</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <style>
+                            @keyframes bounce22 { 0%{transform:translateY(0);} 50%{transform:translateY(-16px);} 100%{transform:translateY(0);} }
+                            @keyframes spin22 { from{transform:rotate(0);} to{transform:rotate(360deg);} }
+                            @keyframes pulse22 { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+                            .b22 { display:inline-block; animation:bounce22 1.2s infinite ease-in-out; background:#8250df; color:#fff; padding:10px 18px; border-radius:8px; font-size:13px; }
+                            .s22 { display:inline-block; animation:spin22 2.5s linear infinite; font-size:34px; }
+                            .p22 { display:inline-block; animation:pulse22 1.5s infinite; background:#0969da; color:#fff; padding:10px 18px; border-radius:8px; font-size:13px; }
+                        </style>
+                        <div style="display:flex;gap:22px;align-items:center;">
+                            <span class="b22">bounce</span>
+                            <span class="s22">🔄</span>
+                            <span class="p22">pulse</span>
+                        </div>
+                        <p style="font-size:12px;color:#57606a;margin-top:8px;">No JavaScript — pure CSS motion. Don't overdo it: motion should help, not distract.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="warn"><strong>Respect users:</strong> add
+            <code class="inline">@media (prefers-reduced-motion: reduce)</code> to disable animations for people who
+            get motion sickness. One small rule = inclusive site.</div>
+        </section>
+
+        <!-- ================= 24 VARIABLES ================= -->
+        <section class="card" id="variables">
+            <h2><span class="num">24</span>CSS Variables (custom properties)</h2>
+            <p>Define a value once, use it everywhere. Change the theme in ONE place:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>:root {
+    --main-color: #0969da;
+    --radius: 10px;
+    --space: 16px;
+}
+
+.btn {
+    background: var(--main-color);
+    border-radius: var(--radius);
+    padding: var(--space);
+}
+
+.link { color: var(--main-color); }
+
+/* with fallback: */
+.x { color: var(--unknown, red); }
+
+/* dark mode with ONE swap: */
+body.dark {
+    --main-color: #39c5cf;
+}</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <style>
+                            .w24 { --main-color:#0969da; --radius:10px; }
+                            .w24 .btn24 { background:var(--main-color); color:#fff; border-radius:var(--radius); padding:12px 20px; display:inline-block; font-size:13px; }
+                            .w24 .lnk24 { color:var(--main-color); }
+                        </style>
+                        <div class="w24">
+                            <p>Button uses <code>var(--main-color)</code> and <code>var(--radius)</code>:</p>
+                            <span class="btn24" style="margin-bottom:10px;display:inline-block;">I'm themed by variables</span>
+                            <p>This page itself runs on ~10 variables — click 🌙 to change them all at once!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="tip"><strong>Name with two dashes</strong> (<code class="inline">--color</code>), read with
+            <code class="inline">var(--color)</code>. Variables inherit like any property — define on <code class="inline">:root</code>
+            for site-wide access.</div>
+        </section>
+
+        <!-- ================= 25 SHADOWS ================= -->
+        <section class="card" id="shadows">
+            <h2><span class="num">25</span>Shadows — depth &amp; glow</h2>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>.card {
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    /* x y blur color */
+}
+
+.deep  { box-shadow: 0 20px 40px
+    rgba(0,0,0,0.3); }
+
+.neon {
+    box-shadow: 0 0 20px #39c5cf;
+    /* glow effect */
+}
+
+.inset { box-shadow: inset 0 2px 6px
+    rgba(0,0,0,0.15); }
+
+.text {
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+                            <div style="background:#fff;border-radius:10px;padding:20px 24px;box-shadow:0 4px 10px rgba(0,0,0,0.2);font-size:13px;">soft lift</div>
+                            <div style="background:#fff;border-radius:10px;padding:20px 24px;box-shadow:0 20px 40px rgba(0,0,0,0.3);font-size:13px;">floating</div>
+                            <div style="background:#0d1117;border-radius:10px;padding:20px 24px;box-shadow:0 0 20px #39c5cf;color:#39c5cf;font-size:13px;">neon glow</div>
+                            <div style="background:#f6f8fa;border-radius:10px;padding:20px 24px;box-shadow:inset 0 2px 6px rgba(0,0,0,0.15);font-size:13px;">inset (pressed)</div>
+                        </div>
+                        <p style="font-size:22px;font-weight:700;text-shadow:2px 2px 4px rgba(0,0,0,0.4);margin-top:14px;">text-shadow headline</p>
+                    </div>
+                </div>
+            </div>
+            <div class="tip"><strong>Layered shadows</strong> = realistic depth. Comma-separate them:
+            <code class="inline">box-shadow: 0 2px 5px rgba(0,0,0,0.15), 0 8px 20px rgba(0,0,0,0.1);</code></div>
+        </section>
+
+        <!-- ================= 26 PSEUDO CLASSES ================= -->
+        <section class="card" id="pseudos">
+            <h2><span class="num">26</span>Pseudo-classes — state &amp; position</h2>
+            <p>A <code class="inline">:</code> targets an element's <em>state</em> (hovered? checked? first child?)
+            without needing extra classes in your HTML:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>li:first-child   { color: #cf222e; }
+li:last-child    { font-weight: bold; }
+li:nth-child(2)  { color: #0969da; }
+
+/* every other row — zebra tables */
+tr:nth-child(even) { background: #f6f8fa; }
+
+input:focus    { border-color: #0969da; }
+input:checked + label { font-weight: bold; }
+a:visited     { color: #8250df; }
+
+p:not(.special) { color: #57606a; }
+
+input:disabled { opacity: 0.5; }</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <style>
+                            .w26 li:first-child { color:#cf222e; }
+                            .w26 li:last-child { font-weight:bold; }
+                            .w26 li:nth-child(2) { color:#0969da; }
+                            .w26 input:focus { border-color:#0969da; outline:none; }
+                        </style>
+                        <div class="w26">
+                            <ul style="padding-left:20px;margin-bottom:10px;">
+                                <li>first-child → red</li>
+                                <li>nth-child(2) → blue</li>
+                                <li>plain third</li>
+                                <li>last-child → bold</li>
+                            </ul>
+                            <p style="font-size:12px;margin-bottom:4px;">Click into the field → :focus:</p>
+                            <input type="text" placeholder="focus me" style="padding:8px;border:2px solid #d0d7de;border-radius:6px;width:100%;">
+                            <p style="font-size:12px;color:#57606a;margin-top:6px;">nth-child(odd/even/n/2n+1) does zebra stripes for free.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="tip"><strong>Superpower:</strong> pseudo-classes mean your HTML stays clean — the CSS targets
+            positions and states by itself. Fewer classes = less to maintain.</div>
+        </section>
+
+        <!-- ================= 27 STYLING REAL THINGS ================= -->
+        <section class="card" id="styling">
+            <h2><span class="num">27</span>Styling Real Elements</h2>
+            <p>Links, lists, buttons, tables, forms — the everyday styling patterns:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>/* LINKS: 4 states */
+a         { color: #0969da; }
+a:hover  { text-decoration: underline; }
+a:visited{ color: #8250df; }
+a:active { color: #cf222e; }
+
+/* remove the default underline */
+nav a { text-decoration: none; }
+
+/* BUTTONS */
+button {
+    border: 0;
+    border-radius: 8px;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+button:hover { opacity: 0.85; }
+
+/* LISTS: remove bullets */
+ul { list-style: none;
+      padding-left: 0; }</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <style>
+                            .w27 a { color:#0969da; }
+                            .w27 a:hover { text-decoration:underline; }
+                            .w27 .nav27 { background:#f6f8fa; border-radius:8px; padding:8px 12px; margin-bottom:10px; }
+                            .w27 .nav27 a { text-decoration:none; margin-right:14px; font-weight:600; }
+                            .w27 button { border:0; border-radius:8px; padding:10px 20px; cursor:pointer; transition:opacity .2s; background:#0969da; color:#fff; }
+                            .w27 button:hover { opacity:0.85; }
+                            .w27 ul.no { list-style:none; padding-left:0; }
+                        </style>
+                        <div class="w27">
+                            <p><a href="#">Normal link</a> · <a href="#" style="color:#8250df;">visited-looking</a> · hover them!</p>
+                            <div class="nav27"><a href="#">Home</a><a href="#">About</a><a href="#">Contact</a> — underlines removed</div>
+                            <button style="margin-bottom:10px;">Hover me</button>
+                            <ul class="no"><li>no bullets</li><li>no padding</li></ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="tip"><strong>Buttons:</strong> always set <code class="inline">cursor: pointer</code> and a hover state —
+            tiny details that make a site feel professional.</div>
+        </section>
+
+        <!-- ================= 28 OVERFLOW ================= -->
+        <section class="card" id="overflow">
+            <h2><span class="num">28</span>Overflow &amp; Text Tricks</h2>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>.scroll {
+    overflow: auto;      /* scrollbars */
+}
+
+.clip {
+    overflow: hidden;    /* cut it off */
+}
+
+/* 1-line ellipsis: */
+.ellipsis {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 2-line clamp (modern): */
+.clamp2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <div style="background:#f6f8fa;border-radius:8px;padding:10px;margin-bottom:10px;">
+                            <p style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:13px;">This is a very long title that absolutely will not fit on one line so it gets cut with three dots…</p>
+                            <p style="font-size:11px;color:#57606a;">white-space + overflow + text-overflow: ellipsis</p>
+                        </div>
+                        <div style="background:#f6f8fa;border-radius:8px;padding:10px;">
+                            <p style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:13px;">This paragraph is clamped to exactly two lines. The rest of the sentence is hidden even though it keeps going on and on and on and on and on and on…</p>
+                            <p style="font-size:11px;color:#57606a;">-webkit-line-clamp: 2 — great for card previews</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="warn"><strong>Classic bug:</strong> content overflowing a rounded card looks broken — fix with
+            <code class="inline">overflow: hidden</code> on the card, or the image will poke out of the rounded corners.</div>
+        </section>
+
+        <!-- ================= 29 RESET & BEM ================= -->
+        <section class="card" id="reset">
+            <h2><span class="num">29</span>Reset, Naming &amp; Project Setup</h2>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>/* start every project with this */
+*, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html { scroll-behavior: smooth; }
+body {
+    font-family: system-ui, sans-serif;
+    line-height: 1.6;
+}
+
+/* BEM naming: Block__Element--modifier */
+.card          /* block */
+.card__title   /* element */
+.card--featured /* modifier */
+
+/* project structure */
+my-site/
+├── index.html
+├── css/
+│   ├── reset.css
+│   ├── style.css
+│   └── responsive.css
+└── images/</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <p style="font-weight:700;">The beginner's file plan:</p>
+                        <ul style="padding-left:20px;">
+                            <li>One <code class="inline">style.css</code> for a small site (don't over-split)</li>
+                            <li>Order inside: reset → variables → base → components → pages</li>
+                            <li>BEM keeps class names predictable: <code class="inline">card__title--big</code></li>
+                            <li>Comment your sections: <code class="inline">/* ===== Navbar ===== */</code></li>
+                            <li>Use a linter/formatter (Prettier) so code stays consistent</li>
+                        </ul>
+                        <p style="font-size:12px;color:#57606a;margin-top:8px;">A 5-line reset fixes 90% of "why is there extra space?" problems.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="tip"><strong>Pro tip:</strong> open this very page's source (Ctrl+U) and look at its &lt;style&gt; tag —
+            it IS a real CSS file with variables, a reset, and organized sections. You already read one!</div>
+        </section>
+
+        <!-- ================= 30 MINI PROJECT ================= -->
+        <section class="card" id="project">
+            <h2><span class="num">30</span>Mini Project — Style the Profile Page</h2>
+            <p>Remember the profile page from the HTML notes? Here's the CSS that turns plain HTML into a
+            real-looking site. Copy both files into one folder and open:</p>
+            <div class="demo">
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-code">CODE</span></div>
+                    <pre><code>/* style.css — the whole profile site */
+* { margin: 0; box-sizing: border-box; }
+
+body {
+    font-family: system-ui, sans-serif;
+    line-height: 1.6;
+    color: #1f2328;
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+header {
+    text-align: center;
+    padding: 40px 0;
+    background: linear-gradient(
+        135deg, #0969da, #8250df);
+    color: #fff;
+    border-radius: 0 0 20px 20px;
+}
+
+nav {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    padding: 14px;
+}
+nav a { text-decoration: none;
+          color: #0969da;
+          font-weight: 600; }
+
+section {
+    background: #f6f8fa;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 16px 0;
+}
+
+img {
+    border-radius: 50%;
+    border: 4px solid #fff;
+}
+
+button {
+    background: #0969da;
+    color: #fff;
+    border: 0;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+}</code></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-bar"><span class="tag-result">RESULT</span></div>
+                    <div class="preview">
+                        <div class="profile-demo">
+                            <div class="pd-header">
+                                <div style="width:52px;height:52px;border-radius:50%;background:#fff;display:grid;place-items:center;font-size:28px;border:3px solid #fff;">👋</div>
+                                <div>
+                                    <div style="font-size:18px;font-weight:700;">Hi, I'm Alex</div>
+                                    <div style="font-size:12px;opacity:0.85;">Web learner &amp; coffee lover</div>
+                                </div>
+                            </div>
+                            <div class="pd-nav"><a href="#">About</a><a href="#">Skills</a><a href="#">Contact</a></div>
+                            <div class="pd-body">
+                                <div style="background:#fff;border-radius:8px;padding:10px;border:1px solid #d0d7de;">
+                                    <strong>Skills</strong>
+                                    <div style="margin-top:6px;">HTML</div>
+                                    <progress value="0.9" max="1" style="width:100%;"></progress>
+                                    <div style="margin-top:4px;">CSS</div>
+                                    <progress value="0.7" max="1" style="width:100%;"></progress>
+                                    <div style="margin-top:4px;">Tea ☕</div>
+                                    <progress value="1" max="1" style="width:100%;"></progress>
+                                </div>
+                                <div style="background:#fff;border-radius:8px;padding:10px;border:1px solid #d0d7de;">
+                                    <strong>Card</strong>
+                                    <p style="margin:6px 0 0;font-size:12px;">Gradient header, rounded cards,
+                                    flexbox nav, progress bars — this whole page is ~40 lines of CSS.</p>
+                                </div>
+                            </div>
+                            <div class="pd-foot">© 2026 Alex · styled with the CSS you just learned</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="tip"><strong>Challenge:</strong> rebuild this with your own colors, add a hover effect on the cards
+            (transform + transition), and make it responsive with one media query. You now know everything needed!</div>
+        </section>
+
+        <!-- ================= 31 QUIZ ================= -->
+        <section class="card" id="quiz">
+            <h2><span class="num">31</span>Quiz — Test Yourself 🧠</h2>
+            <p>12 questions covering everything above. Answer, then press <strong>Check</strong>.</p>
+
+            <div class="quiz-q" data-answer="1">
+                <p>1. Which selector targets elements by class?</p>
+                <label><input type="radio" name="q1" value="0"> #my-class</label>
+                <label><input type="radio" name="q1" value="1"> .my-class</label>
+                <label><input type="radio" name="q1" value="2"> &lt;class&gt;</label>
+                <label><input type="radio" name="q1" value="3"> class="my-class"</label>
+            </div>
+
+            <div class="quiz-q" data-answer="0">
+                <p>2. Two rules fight over one element: p (0,0,1) vs .special (0,1,0). Who wins?</p>
+                <label><input type="radio" name="q2" value="0"> .special — higher specificity</label>
+                <label><input type="radio" name="q2" value="1"> p — written first</label>
+                <label><input type="radio" name="q2" value="2"> the last one in the file</label>
+                <label><input type="radio" name="q2" value="3"> the browser decides randomly</label>
+            </div>
+
+            <div class="quiz-q" data-answer="2">
+                <p>3. Space INSIDE the border, covered by the background, is…</p>
+                <label><input type="radio" name="q3" value="0"> margin</label>
+                <label><input type="radio" name="q3" value="1"> border</label>
+                <label><input type="radio" name="q3" value="2"> padding</label>
+                <label><input type="radio" name="q3" value="3"> outline</label>
+            </div>
+
+            <div class="quiz-q" data-answer="3">
+                <p>4. Which makes an element a flex container?</p>
+                <label><input type="radio" name="q4" value="0"> position: flex</label>
+                <label><input type="radio" name="q4" value="1"> flex: container</label>
+                <label><input type="radio" name="q4" value="2"> align: center</label>
+                <label><input type="radio" name="q4" value="3"> display: flex</label>
+            </div>
+
+            <div class="quiz-q" data-answer="0">
+                <p>5. What aligns items on the MAIN axis?</p>
+                <label><input type="radio" name="q5" value="0"> justify-content</label>
+                <label><input type="radio" name="q5" value="1"> align-items</label>
+                <label><input type="radio" name="q5" value="2"> text-align</label>
+                <label><input type="radio" name="q5" value="3"> gap</label>
+            </div>
+
+            <div class="quiz-q" data-answer="1">
+                <p>6. Which box-sizing makes width include padding + border?</p>
+                <label><input type="radio" name="q6" value="0"> content-box</label>
+                <label><input type="radio" name="q6" value="1"> border-box</label>
+                <label><input type="radio" name="q6" value="2"> padding-box</label>
+                <label><input type="radio" name="q6" value="3"> full-box</label>
+            </div>
+
+            <div class="quiz-q" data-answer="3">
+                <p>7. The unit that is relative to the ROOT font-size?</p>
+                <label><input type="radio" name="q7" value="0"> em</label>
+                <label><input type="radio" name="q7" value="1"> px</label>
+                <label><input type="radio" name="q7" value="2"> %</label>
+                <label><input type="radio" name="q7" value="3"> rem</label>
+            </div>
+
+            <div class="quiz-q" data-answer="0">
+                <p>8. Grid columns: which gives THREE equal columns?</p>
+                <label><input type="radio" name="q8" value="0"> repeat(3, 1fr)</label>
+                <label><input type="radio" name="q8" value="1"> grid-column: 3</label>
+                <label><input type="radio" name="q8" value="2"> columns: 3</label>
+                <label><input type="radio" name="q8" value="3"> flex: 3</label>
+            </div>
+
+            <div class="quiz-q" data-answer="2">
+                <p>9. To make a page change layout on small screens you use…</p>
+                <label><input type="radio" name="q9" value="0"> @font-face</label>
+                <label><input type="radio" name="q9" value="1"> @keyframes</label>
+                <label><input type="radio" name="q9" value="2"> @media (min-width: 600px)</label>
+                <label><input type="radio" name="q9" value="3"> @import flex</label>
+            </div>
+
+            <div class="quiz-q" data-answer="1">
+                <p>10. Which fades the WHOLE element including children?</p>
+                <label><input type="radio" name="q10" value="0"> rgba()</label>
+                <label><input type="radio" name="q10" value="1"> opacity: 0.5</label>
+                <label><input type="radio" name="q10" value="2"> visibility: none</label>
+                <label><input type="radio" name="q10" value="3"> filter: blur</label>
+            </div>
+
+            <div class="quiz-q" data-answer="3">
+                <p>11. Reusable values like --main-color are called…</p>
+                <label><input type="radio" name="q11" value="0"> constants</label>
+                <label><input type="radio" name="q11" value="1"> classes</label>
+                <label><input type="radio" name="q11" value="2"> globals</label>
+                <label><input type="radio" name="q11" value="3"> CSS variables (custom properties)</label>
+            </div>
+
+            <div class="quiz-q" data-answer="0">
+                <p>12. Which makes a button change smoothly on hover?</p>
+                <label><input type="radio" name="q12" value="0"> transition: all 0.3s</label>
+                <label><input type="radio" name="q12" value="1"> animation-delay</label>
+                <label><input type="radio" name="q12" value="2"> transform-origin</label>
+                <label><input type="radio" name="q12" value="3"> z-index</label>
+            </div>
+
+            <div style="margin-top:6px;">
+                <button class="quiz-btn" onclick="checkQuiz()">Check my answers ✅</button>
+                <span id="quizScore"></span>
+            </div>
+        </section>
+
+    </main>
+
+    </main>
+
+    <footer>
+        <p>Made with ♥ for learning · The sequel to <a href="HTML-Complete-Notes.html">HTML-Complete-Notes.html</a></p>
+        <p>Full documentation: <a href="https://developer.mozilla.org/en-US/docs/Web/CSS" target="_blank">MDN — CSS</a></p>
+    </footer>
+
+    <button class="theme-btn" id="themeBtn" type="button">☀️ Light mode</button>
+    <button class="plain-btn" id="plainBtn" type="button" aria-pressed="false">📄 Plain code</button>
+
+    <script>
+        // --- Theme toggle ---
+        document.getElementById('themeBtn').addEventListener('click', function () {
+            document.body.classList.toggle('light');
+            this.textContent = document.body.classList.contains('light') ? '🌙 Dark mode' : '☀️ Light mode';
+        });
+        // --- Plain code mode (view-source friendly): strip colors, keep code plain ---
+        var plainBtn = document.getElementById('plainBtn');
+        function applyPlain(on) {
+            document.body.classList.toggle('plain-mode', on);
+            plainBtn.textContent = on ? '🎨 Colored code' : '📄 Plain code';
+            plainBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+            try { localStorage.setItem('notesPlain', on ? '1' : '0'); } catch (e) {}
+        }
+        plainBtn.addEventListener('click', function () {
+            applyPlain(!document.body.classList.contains('plain-mode'));
+        });
+        try { if (localStorage.getItem('notesPlain') === '1') applyPlain(true); } catch (e) {}
+
+
+        // --- Copy buttons: inject one into every code panel ---
+        document.querySelectorAll('.panel').forEach(function (panel) {
+            var pre = panel.querySelector('pre');
+            var bar = panel.querySelector('.panel-bar');
+            if (!pre || !bar) return;
+            var btn = document.createElement('button');
+            btn.className = 'copy-btn';
+            btn.textContent = 'Copy';
+            btn.addEventListener('click', function () {
+                var code = pre.querySelector('code');
+                navigator.clipboard.writeText(code.textContent).then(function () {
+                    btn.textContent = 'Copied!';
+                    setTimeout(function () { btn.textContent = 'Copy'; }, 1500);
+                });
+            });
+            bar.appendChild(btn);
+        });
+
+        // --- Search: filter sections ---
+        var searchBox = document.getElementById('search');
+        searchBox.addEventListener('input', function () {
+            var q = searchBox.value.toLowerCase().trim();
+            document.querySelectorAll('.card').forEach(function (card) {
+                var show = !q || card.textContent.toLowerCase().indexOf(q) !== -1;
+                card.style.display = show ? '' : 'none';
+            });
+        });
+
+        // --- Quiz ---
+        function checkQuiz() {
+            var score = 0, total = 0;
+            document.querySelectorAll('.quiz-q').forEach(function (q) {
+                q.classList.remove('correct', 'wrong');
+                var chosen = q.querySelector('input:checked');
+                if (!chosen) return;
+                total++;
+                var right = chosen.value === q.getAttribute('data-answer');
+                q.classList.add(right ? 'correct' : 'wrong');
+                if (right) score++;
+            });
+            var box = document.getElementById('quizScore');
+            if (total === 12) {
+                box.textContent = 'Your score: ' + score + '/12 ' + (score >= 10 ? '🏆 Amazing!' : score >= 7 ? '👍 Good job!' : '💪 Keep practicing!');
+            } else {
+                box.textContent = 'Answered ' + total + '/12 — ' + score + ' correct so far. Answer all 12!';
+            }
+        }
+
+        // --- Syntax highlighting ---
+        document.querySelectorAll('pre code').forEach(function (code) {
+            var html = code.innerHTML;
+            if (code.className.indexOf('lang-css') !== -1) {
+                // CSS: comments, properties, selectors, hex colors, at-rules
+                html = html.replace(/\/\*[\s\S]*?\*\//g, '<span class="c">$&</span>');
+                html = html.replace(/([;\s{])([a-zA-Z-]+)(\s*:)/g, '$1<span class="p">$2</span>$3');
+                html = html.replace(/(^|\n\s*|\}\s*)([.#]?[a-zA-Z][a-zA-Z0-9_-]*|\*)/g, '$1<span class="s">$2</span>');
+                html = html.replace(/#[0-9a-fA-F]{3,8}\b/g, '<span class="h">$&</span>');
+                html = html.replace(/@[a-z-]+/g, '<span class="a">$&</span>');
+            } else {
+                html = html.replace(/&lt;(\/?)([a-z][a-z0-9-]*)/g, '&lt;$1<span class="s">$2</span>');
+                html = html.replace(/&lt;!--([\s\S]*?)--&gt;/g, '<span class="c">&lt;!--$1--&gt;</span>');
+            }
+            code.innerHTML = html;
+        });
+    </script>
+
+</body>
+</html>

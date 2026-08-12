@@ -20,6 +20,7 @@ import {
   DSAWidget,
   MotivationWidget,
   QuickNotesWidget,
+  LearningProgressWidget,
 } from "@/features/dashboard/components";
 import type { QuickNote, MotivationQuote } from "@/features/dashboard/types";
 import {
@@ -256,6 +257,7 @@ export default function DashboardPage() {
         </div>
 
         <div className="space-y-6">
+          <LearningProgressWidget />
           <ProjectsWidget projects={mockProjects} />
           <DeadlinesWidget deadlines={mockDeadlines} />
         </div>
