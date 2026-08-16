@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Developer OS — The Operating System for Developers</title>
+    <meta
+      name="description"
+      content="Developer OS: a free, open-source productivity platform — DSA tracking, ML roadmaps, projects, coursework, and AI-assisted notes in one dashboard."
+    />
+    <meta name="theme-color" content="#0a0a12" />
+    <link rel="canonical" href="https://kenkaneki-ufx.github.io/Developer-OS/" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Developer OS — The Operating System for Developers" />
+    <meta
+      property="og:description"
+      content="Your second brain for everything you study, learn, build, and track. Free & open source (MIT)."
+    />
+    <meta
+      property="og:image"
+      content="https://kenkaneki-ufx.github.io/Developer-OS/images/00-hero-banner-social-preview.png"
+    />
+    <meta property="og:url" content="https://kenkaneki-ufx.github.io/Developer-OS/" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Developer OS — The Operating System for Developers" />
+    <meta
+      name="twitter:description"
+      content="Your second brain for everything you study, learn, build, and track. Free & open source (MIT)."
+    />
+    <meta
+      name="twitter:image"
+      content="https://kenkaneki-ufx.github.io/Developer-OS/images/00-hero-banner-social-preview.png"
+    />
+
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <link rel="preload" as="image" href="./images/05-dashboard-overview.png" />
+
+    <!-- Structured data -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Developer OS",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Windows, macOS, Linux",
+        "description": "A free, open-source personal productivity operating system for developers: AI-powered tasks, DSA tracking, ML roadmaps, projects, notes, and a college planner in one dashboard.",
+        "url": "https://kenkaneki-ufx.github.io/Developer-OS/",
+        "license": "https://github.com/kenkaneki-ufx/Developer-OS/blob/HEAD/LICENSE",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+      }
+    </script>
+
+    <!-- Fonts: Geist Sans + Geist Mono (Inter/system fallbacks) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800;900&family=Geist+Mono:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <script>
+      // Apply theme before first paint to avoid a flash.
+      (function () {
+        try {
+          var t = localStorage.getItem("dos-theme");
+          if (t !== "light" && t !== "dark") t = "dark"; // product defaults to dark
+          document.documentElement.setAttribute("data-theme", t);
+        } catch (e) {
+          document.documentElement.setAttribute("data-theme", "dark");
+        }
+      })();
+    </script>
+    <script type="module" crossorigin src="./assets/index-BttXFWNk.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-yjSpq6_J.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>

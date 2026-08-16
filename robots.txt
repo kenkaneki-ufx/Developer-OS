@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://kenkaneki-ufx.github.io/Developer-OS/sitemap.xml
