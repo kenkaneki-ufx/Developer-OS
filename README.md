@@ -2,6 +2,7 @@
 
 > **Your second brain for everything you study, learn, build, complete, review and track.**
 
+[![Website](https://img.shields.io/badge/🌐_Website-Live-4d7dff?style=flat-square&color=4d7dff)](https://kenkaneki-ufx.github.io/Developer-OS/)
 [![Next.js](https://img.shields.io/badge/Next.js-15-black?style=flat-square&logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
