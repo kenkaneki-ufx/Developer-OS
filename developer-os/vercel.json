@@ -1,0 +1,14 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "nextjs",
+  "buildCommand": "npm run build",
+  "installCommand": "npm install",
+  "outputDirectory": ".next",
+  "env": {
+    "NEXTAUTH_URL": "@nextauth-url",
+    "NEXTAUTH_SECRET": "@nextauth-secret",
+    "DATABASE_URL": "@database-url"
+  },
+  "regions": ["sin1"],
+  "crons": []
+}
