@@ -28,3 +28,5 @@ prisma/dev.db
 .idea/
 
 run.py
+.vercel
+.env*

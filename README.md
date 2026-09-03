@@ -120,7 +120,6 @@ Built with modern web technologies and powered by AI, this application provides 
 
 ```
 Developer-OS/
-├── first_setup.py                 # One-time setup
 ├── README.md
 ├── LICENSE
 └── developer-os/
@@ -186,75 +185,22 @@ Before you begin, ensure you have the following installed:
 - **Node.js** (v18.x or higher) - [Download](https://nodejs.org/)
 - **npm** (v9.x or higher) or **yarn** or **pnpm**
 - **PostgreSQL** - [Download](https://www.postgresql.org/download/)
-- **Python** (v3.8 or higher) - [Download](https://www.python.org/) (for setup scripts)
 - **Git** - [Download](https://git-scm.com/)
-- **Google Chrome** - required if you use `run.py`, which launches the app in Chrome specifically
-- **Windows** - `run.py` currently relies on Windows-only APIs (see [Quick Setup](#-quick-setup-recommended)); on macOS/Linux use the manual `npm run dev` workflow below
 
----
-
-## 🐍 Quick Setup (Recommended, Windows)
-
-Developer OS includes a one-time setup script that automatically prepares the project and then removes itself.
-
-### Clone the repository
+### Quick Setup
 
 ```bash
 git clone https://github.com/kenkaneki-ufx/Developer-OS.git
-cd Developer-OS
-```
-
-### Run the setup script
-
-```bash
-python first_setup.py
-```
-
-The setup script will automatically:
-
-- ✅ Verify Node.js and npm installation
-- ✅ Install all project dependencies
-- ✅ Create `.env.local` from `.env.example`
-- ✅ Generate the Prisma Client
-- ✅ Create `run.py`, the launcher you'll use from then on
-- ✅ Delete itself once setup is complete — it's a one-time script and won't be needed again
-
-> **Note**
->
-> `run.py` currently uses Windows-only APIs to hide its console window and launch Chrome. On macOS/Linux, skip both scripts and use the standard Node.js workflow instead:
->
-> ```bash
-> npm install
-> npm run dev
-> ```
-
----
-
-## 🚀 Running Developer OS
-
-After completing the setup, simply run (Windows only):
-
-```bash
-python run.py
-```
-
-This launcher will:
-
-- Start the development server
-- Automatically open Google Chrome, maximized, to `http://localhost:3000`
-- Keep the server running in the background until you close it
-
-On macOS/Linux, or if you prefer the standard Node.js workflow:
-
-```bash
+cd Developer-OS/developer-os
+npm install
+cp .env.example .env.local   # then fill in your values
+npm run db:generate
+npm run db:migrate
 npm run dev
 ```
 
-Then open:
+Then open [http://localhost:3000](http://localhost:3000).
 
-```
-http://localhost:3000
-```
 ---
 
 ### 📦 Manual Installation
@@ -384,6 +330,7 @@ The schema includes the following main models:
 ### Development Mode
 
 ```bash
+cd developer-os
 npm run dev
 ```
 
@@ -417,13 +364,6 @@ npm run test:coverage
 ---
 
 ## 📦 Available Scripts
-
-### Python Scripts
-
-| Script | Description |
-|--------|-------------|
-| `python first_setup.py` | One-time install and configuration; creates `run.py` and deletes itself when done |
-| `python run.py` | Start server and open the app in Chrome (or double-click) — Windows only |
 
 ### NPM Scripts
 
@@ -558,4 +498,4 @@ The analytics dashboard tracks:
 
 [Report Bug](https://github.com/your-username/developer-os/issues) · [Request Feature](https://github.com/your-username/developer-os/issues)
 
-</div>
+</div>
