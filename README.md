@@ -2,6 +2,10 @@
 
 > **Your second brain for everything you study, learn, build, complete, review and track.**
 
+**🚀 Live app:** [developer-os-phi.vercel.app](https://developer-os-phi.vercel.app)
+
+[![Deployment Status](https://deploy-badge.vercel.app/?url=https://developer-os-phi.vercel.app&name=Developer%20OS)](https://developer-os-phi.vercel.app) · [![Vercel](https://img.shields.io/badge/Vercel-000000?style=flat-square&logo=vercel&logoColor=white)](https://developer-os-phi.vercel.app)
+
 [![Next.js](https://img.shields.io/badge/Next.js-15-black?style=flat-square&logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
