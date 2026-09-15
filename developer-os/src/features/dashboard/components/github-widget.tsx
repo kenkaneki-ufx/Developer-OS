@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { GitBranch, GitCommit, GitPullRequest, AlertCircle } from "lucide-react";
+import { GitBranch, GitPullRequest, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { GitHubOverview } from "../types";
 

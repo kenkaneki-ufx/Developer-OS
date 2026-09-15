@@ -6,13 +6,9 @@
  */
 
 import type {
-  Task,
   DailyPlan,
   WeeklyPlan,
   TaskStats,
-  TaskCategory,
-  TaskPriority,
-  TaskStatus,
 } from "../types";
 
 // ============================================
@@ -21,25 +17,6 @@ import type {
 
 const today = "2026-07-28"; // Fixed date for hydration safety
 const yesterday = "2026-07-27";
-const tomorrow = "2026-07-29";
-
-function createTask(overrides: Partial<Task>): Task {
-  return {
-    id: crypto.randomUUID(),
-    title: "Untitled Task",
-    category: "other",
-    priority: "medium",
-    status: "pending",
-    source: "user-created",
-    estimatedMinutes: 30,
-    progress: 0,
-    scheduledDate: today,
-    tags: [],
-    createdAt: "2026-07-28T00:00:00.000Z",
-    updatedAt: "2026-07-28T00:00:00.000Z",
-    ...overrides,
-  };
-}
 
 // ============================================
 // Mock Tasks

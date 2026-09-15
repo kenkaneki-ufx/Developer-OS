@@ -7,8 +7,6 @@ import {
   Target,
   Flame,
   Clock,
-  CheckCircle2,
-  Calendar,
   Zap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";

@@ -1,8 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ExternalLink, Flame, Trophy } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Flame } from "lucide-react";
 import type { PlatformStats as PlatformStatsType } from "../types";
 
 interface PlatformStatsCardProps {

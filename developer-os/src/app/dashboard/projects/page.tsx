@@ -316,7 +316,7 @@ export default function ProjectsPage() {
     const exportData = {
       version: 1,
       exportedAt: new Date().toISOString(),
-      projects: projects.map(({ id, ...rest }) => rest),
+      projects: projects.map(({ id: _id, ...rest }) => rest),
     };
     const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);

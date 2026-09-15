@@ -204,13 +204,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.id = token.id as string;
       }
       if (token?.githubUsername) {
-        (session.user as any).githubUsername = token.githubUsername;
+        session.user.githubUsername = token.githubUsername as string;
       }
       if (token?.loginProvider) {
-        (session.user as any).loginProvider = token.loginProvider;
+        session.user.loginProvider = token.loginProvider as string;
       }
       if (token?.leetcodeUsername) {
-        (session.user as any).leetcodeUsername = token.leetcodeUsername;
+        session.user.leetcodeUsername = token.leetcodeUsername as string;
       }
       return session;
     },

@@ -3,9 +3,6 @@
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Filter,
-  SortAsc,
-  SortDesc,
   Search,
   X,
   ListFilter,

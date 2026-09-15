@@ -7,7 +7,6 @@ import {
   BookOpen,
   Target,
   Flame,
-  GitCommit,
   Clock,
   Sun,
   Moon,
@@ -22,7 +21,7 @@ import {
   QuickNotesWidget,
   LearningProgressWidget,
 } from "@/features/dashboard/components";
-import type { QuickNote, MotivationQuote } from "@/features/dashboard/types";
+import type { QuickNote } from "@/features/dashboard/types";
 import {
   mockStats,
   mockTasks,

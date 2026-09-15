@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Calendar, AlertTriangle, Clock, BookOpen, FileText, Trophy } from "lucide-react";
+import { Calendar, AlertTriangle, Clock, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { UpcomingDeadlines, Deadline } from "../types";
 

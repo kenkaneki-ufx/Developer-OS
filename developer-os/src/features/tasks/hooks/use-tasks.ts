@@ -12,7 +12,6 @@ import type {
   WeeklyPlan,
   TaskStats,
   TaskCategory,
-  TaskAIContext,
 } from "../types";
 import {
   mockWeeklyPlan,
@@ -27,7 +26,7 @@ export function useTasks() {
     field: "scheduledDate",
     order: "asc",
   });
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -539,13 +538,12 @@ export function useTasks() {
         .filter((t): t is Task => t !== null);
 
       setTasks((prev) => [...prev, ...newTasks]);
-    } catch (err) {
+    } catch {
       setError("Failed to generate tasks. Please try again.");
     } finally {
       setIsGenerating(false);
     }
-  }, [tasks, isGenerating]);
-
+  }, [isGenerating, isDuplicateTask]);
   // Filtered and sorted tasks
   const filteredTasks = useMemo(() => {
     let result = [...tasks];

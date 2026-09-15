@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSession } from "next-auth/react";
@@ -10,12 +11,9 @@ import {
   Code,
   Map,
   FolderKanban,
-  GitBranch,
   FileText,
-  BarChart3,
   Settings,
   ChevronDown,
-  FileCode,
   Sparkles,
   Calendar,
   LogIn,
@@ -355,9 +353,11 @@ export function Sidebar({ open, onOpenChange }: SidebarProps) {
                   className="flex items-center gap-3 rounded-xl p-2 -m-2 cursor-pointer hover:bg-muted/60 transition-all duration-200"
                 >
                   {user.image ? (
-                    <img
+                    <Image
                       src={user.image}
                       alt={user.name || "User"}
+                      width={40}
+                      height={40}
                       className="h-10 w-10 rounded-full object-cover shadow-md ring-2 ring-primary/20 group-hover:ring-primary/40 group-hover:scale-105 transition-all duration-200"
                     />
                   ) : (

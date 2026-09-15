@@ -134,7 +134,7 @@ async function linkLeetCodeAccount(userId: string, username: string) {
   });
 }
 
-export async function DELETE(request: NextRequest) {
+export async function DELETE(_request: NextRequest) {
   try {
     const session = await auth();
 

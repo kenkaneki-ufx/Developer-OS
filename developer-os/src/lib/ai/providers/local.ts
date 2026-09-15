@@ -18,7 +18,7 @@ export class DevAIProvider implements AIServiceInterface {
 
   private defaultModel: string;
 
-  constructor(config: AIConfig) {
+  constructor(_config: AIConfig) {
     this.defaultModel = "dev-ai";
   }
 
@@ -1367,7 +1367,7 @@ I can help with Developer OS!
 
   async complete(
     messages: AIMessage[],
-    options?: AICompletionOptions
+    _options?: AICompletionOptions
   ): Promise<AICompletionResponse> {
     const lastMessage = messages[messages.length - 1];
     const userMessage = lastMessage?.content || "";
@@ -1387,7 +1387,7 @@ I can help with Developer OS!
 
   async *stream(
     messages: AIMessage[],
-    options?: AICompletionOptions
+    _options?: AICompletionOptions
   ): AsyncGenerator<AIStreamChunk, void, unknown> {
     const lastMessage = messages[messages.length - 1];
     const userMessage = lastMessage?.content || "";

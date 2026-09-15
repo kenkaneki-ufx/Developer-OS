@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { BookOpen, Search, ExternalLink, Plus, Clock, Star, TrendingUp, ArrowUpRight, Tag, Folder } from "lucide-react";
+import { BookOpen, Search, Plus, Clock, Star, TrendingUp, ArrowUpRight, Tag, Folder } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 

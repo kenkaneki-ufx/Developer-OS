@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Calendar,
@@ -20,6 +20,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useCollege } from "@/features/college/hooks/use-college";
 import { DAYS, CLASS_TYPE_CONFIG, EXAM_TYPE_CONFIG } from "@/features/college/types";
+import type { ExamType } from "@/features/college/types";
 import type { DayOfWeek, Subject, TimetableSlot, Exam, ClassType } from "@/features/college/types";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { AnimatedCard } from "@/components/ui/animated-card";
@@ -860,7 +861,7 @@ export default function CollegePage() {
                         <label className="mb-1.5 block text-sm font-medium text-foreground">Type</label>
                         <select
                           value={editingExam.type}
-                          onChange={(e) => setEditingExam({ ...editingExam, type: e.target.value as any })}
+                          onChange={(e) => setEditingExam({ ...editingExam, type: e.target.value as ExamType })}
                           className="w-full rounded-xl border border-border bg-muted/30 px-4 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all duration-200"
                         >
                           {Object.entries(EXAM_TYPE_CONFIG).map(([key, config]) => (

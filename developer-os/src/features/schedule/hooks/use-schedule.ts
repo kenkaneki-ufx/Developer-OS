@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import type { WeeklySchedule } from "../types";
-import { defaultWeeklySchedule, exampleWeeklySchedule } from "../data/mock-schedule";
+import { defaultWeeklySchedule } from "../data/mock-schedule";
 
 const STORAGE_KEY = "developer-os-weekly-schedule";
 

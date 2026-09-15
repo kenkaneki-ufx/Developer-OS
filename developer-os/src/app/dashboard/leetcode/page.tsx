@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useSession } from "next-auth/react";
 import {
   Code2,
-  Trophy,
   TrendingUp,
   AlertCircle,
   Loader2,
@@ -21,16 +20,13 @@ import {
   ArrowRight,
   Sparkles,
   Brain,
-  Rocket,
   Hash,
   GitBranch,
   Lightbulb,
-  Award,
   Timer,
   ChevronRight,
   Play,
   Search,
-  Database,
   BarChart3,
   X,
 } from "lucide-react";
@@ -137,7 +133,7 @@ export default function LeetCodePage() {
   const [linkError, setLinkError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [retryCount, setRetryCount] = useState(0);
-  const [isAutoSyncing, setIsAutoSyncing] = useState(false);
+  const [, setIsAutoSyncing] = useState(false);
   const [activeTab, setActiveTab] = useState<"stats" | "topics" | "submissions">("stats");
   const [isAutoDetecting, setIsAutoDetecting] = useState(false);
   const [autoDetectError, setAutoDetectError] = useState<string | null>(null);
@@ -913,7 +909,7 @@ export default function LeetCodePage() {
           { label: "Total Questions", value: stats.totalQuestions, icon: Target, color: "text-blue-500", bg: "from-blue-500/10 to-blue-500/5", border: "border-blue-500/20" },
           { label: "Streak", value: stats.streak, suffix: " days", icon: Flame, color: "text-orange-500", bg: "from-orange-500/10 to-orange-500/5", border: "border-orange-500/20" },
           { label: "Completion", value: completionPercent, suffix: "%", icon: TrendingUp, color: "text-purple-500", bg: "from-purple-500/10 to-purple-500/5", border: "border-purple-500/20" },
-        ].map((stat, i) => (
+        ].map((stat) => (
           <motion.div
             key={stat.label}
             variants={itemVariants}
@@ -941,7 +937,7 @@ export default function LeetCodePage() {
             { label: "Easy", solved: stats.easySolved, total: stats.easyTotal, percentage: stats.easyPercentage, colors: difficultyColors.Easy },
             { label: "Medium", solved: stats.mediumSolved, total: stats.mediumTotal, percentage: stats.mediumPercentage, colors: difficultyColors.Medium },
             { label: "Hard", solved: stats.hardSolved, total: stats.hardTotal, percentage: stats.hardPercentage, colors: difficultyColors.Hard },
-          ].map((diff, i) => (
+          ].map((diff) => (
             <div key={diff.label} className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className={cn("text-sm font-semibold", diff.colors.text)}>{diff.label}</span>

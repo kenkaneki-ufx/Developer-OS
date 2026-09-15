@@ -15,7 +15,7 @@ interface DiagnosticResult {
     status: "pass" | "fail" | "skip";
     duration: number;
     error?: string;
-    details?: any;
+    details?: unknown;
   }[];
   summary: {
     totalTests: number;

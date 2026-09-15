@@ -1,4 +1,4 @@
-import type { CollegeData, Subject, TimetableSlot, Exam, Assignment, DayOfWeek, SyllabusSubject } from "../types";
+import type { CollegeData } from "../types";
 
 export const defaultCollegeData: CollegeData = {
   collegeDetails: null,

@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Flame, Target, CheckCircle2, TrendingUp } from "lucide-react";
+import { Flame, Target, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { StreakData } from "../types";
 

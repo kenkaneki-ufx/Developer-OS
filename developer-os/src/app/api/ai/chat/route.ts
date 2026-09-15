@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { createAIProvider } from "@/lib/ai";
-import type { AIProvider, AIMessage } from "@/lib/ai";
+import type { AIMessage } from "@/lib/ai";
 
 // Helper to create SSE stream
 function createStreamResponse(stream: AsyncGenerator<{ content: string; done: boolean }, void, unknown>, remaining: number) {
@@ -162,7 +162,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const session = await auth();
 

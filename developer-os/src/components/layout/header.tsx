@@ -13,6 +13,7 @@ import {
   Clock,
   ExternalLink,
 } from "lucide-react";
+import Image from "next/image";
 import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -300,9 +301,11 @@ export function Header({ onMenuClick }: HeaderProps) {
             className="flex items-center gap-2 rounded-xl p-1.5 hover:bg-muted/60 transition-colors duration-200"
           >
             {user?.image ? (
-              <img
+              <Image
                 src={user.image}
                 alt={user.name || "User"}
+                width={32}
+                height={32}
                 className="h-8 w-8 rounded-full ring-2 ring-primary/20 object-cover shadow-sm"
               />
             ) : (

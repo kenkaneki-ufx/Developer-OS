@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { X, Calendar, Clock, Tag, Sparkles } from "lucide-react";
+import { motion } from "framer-motion";
+import { X, Calendar, Clock, Tag } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type {
   Task,
@@ -51,7 +51,7 @@ export function TaskForm({ task, onSubmit, onCancel }: TaskFormProps) {
   const [scheduledDate, setScheduledDate] = useState(
     task?.scheduledDate || new Date().toISOString().split("T")[0]
   );
-  const [scheduledTime, setScheduledTime] = useState(task?.scheduledTime || "");
+  const scheduledTime = task?.scheduledTime || "";
   const [timeOfDay, setTimeOfDay] = useState<TimeOfDay>(task?.timeOfDay || "morning");
   const [tags, setTags] = useState<string[]>(task?.tags || []);
   const [tagInput, setTagInput] = useState("");

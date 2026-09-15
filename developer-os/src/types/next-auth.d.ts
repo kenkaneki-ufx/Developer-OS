@@ -6,6 +6,7 @@ declare module "next-auth" {
       id: string;
       githubUsername?: string;
       loginProvider?: string;
+      leetcodeUsername?: string;
     } & DefaultSession["user"];
   }
 }

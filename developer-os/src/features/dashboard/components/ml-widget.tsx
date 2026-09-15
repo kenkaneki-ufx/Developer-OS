@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Brain, BookOpen, CheckCircle2, Clock } from "lucide-react";
+import { Brain, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { MLProgress } from "../types";
 

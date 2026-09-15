@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Image from "next/image";
 import { Code2, User, Calendar } from "lucide-react";
 import type { GitHubUser } from "../types";
 import { item } from "../types";
@@ -14,7 +15,7 @@ export function UserProfileCard({ user }: UserProfileCardProps) {
     <motion.div variants={item} className="relative overflow-hidden rounded-2xl border border-border bg-card p-6 shadow-sm">
       <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-primary/5 blur-3xl" />
       <div className="relative flex items-start gap-6">
-        <img src={user.avatar_url} alt={user.login} className="h-20 w-20 rounded-2xl ring-4 ring-border shadow-lg" />
+        <Image src={user.avatar_url} alt={user.login} width={80} height={80} className="h-20 w-20 rounded-2xl ring-4 ring-border shadow-lg" />
         <div className="flex-1">
           <div className="flex items-center gap-3">
             <h2 className="text-2xl font-bold text-foreground">{user.name || user.login}</h2>

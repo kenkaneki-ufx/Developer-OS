@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSession, signIn } from "next-auth/react";
@@ -16,7 +17,7 @@ import {
   CheckCircle2,
   Loader2,
   RefreshCw,
-  Image,
+  Image as ImageIcon,
   Link as LinkIcon,
   Code2,
   ExternalLink,
@@ -75,7 +76,7 @@ function Toggle({ enabled, onToggle }: { enabled: boolean; onToggle: () => void 
 }
 
 export default function SettingsPage() {
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
   const [activeSection, setActiveSection] = useState<SettingsSection>("profile");
   const [saved, setSaved] = useState(false);
   const { schedule, saveSchedule } = useSchedule();
@@ -369,6 +370,7 @@ export default function SettingsPage() {
                   <div className="relative">
                     <div className="h-24 w-24 overflow-hidden rounded-full ring-4 ring-border bg-muted flex items-center justify-center">
                       {profileImage && !imageError ? (
+                        // eslint-disable-next-line @next/next/no-img-element -- arbitrary user-entered URL; needs native onError fallback
                         <img
                           src={profileImage}
                           alt="Profile"
@@ -473,7 +475,7 @@ export default function SettingsPage() {
                   <label className="mb-1.5 block text-sm font-medium text-foreground">Profile Image</label>
                   <div className="flex items-center gap-3">
                     <div className="relative flex-1">
-                      <Image className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                      <ImageIcon className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                       <input
                         type="url"
                         value={profileImage}
@@ -483,6 +485,7 @@ export default function SettingsPage() {
                       />
                     </div>
                     {profileImage && (
+                      // eslint-disable-next-line @next/next/no-img-element -- arbitrary user-entered URL; needs native onError fallback
                       <img
                         src={profileImage}
                         alt="Preview"
@@ -534,10 +537,12 @@ export default function SettingsPage() {
                     {session?.user?.githubUsername ? (
                       <div className="flex items-center gap-2">
                         {loginProvider === "github" && session?.user?.image && (
-                          <img 
-                            src={session.user.image} 
-                            alt="GitHub" 
-                            className="h-6 w-6 rounded-full" 
+                          <Image
+                            src={session.user.image}
+                            alt="GitHub"
+                            width={24}
+                            height={24}
+                            className="h-6 w-6 rounded-full"
                           />
                         )}
                         <span className="flex items-center gap-1 text-xs font-medium text-green-500">
@@ -578,10 +583,12 @@ export default function SettingsPage() {
                     </div>
                     <div className="flex items-center gap-2">
                       {loginProvider === "google" && session?.user?.image && (
-                        <img 
-                          src={session.user.image} 
-                          alt="Google" 
-                          className="h-6 w-6 rounded-full" 
+                        <Image
+                          src={session.user.image}
+                          alt="Google"
+                          width={24}
+                          height={24}
+                          className="h-6 w-6 rounded-full"
                         />
                       )}
                       <span className="flex items-center gap-1 text-xs font-medium text-green-500">
@@ -907,7 +914,7 @@ export default function SettingsPage() {
                   </div>
                   <div className="flex items-center gap-3">
                     {session?.user?.image && (
-                      <img src={session.user.image} alt="Google" className="h-8 w-8 rounded-full ring-2 ring-border" />
+                      <Image src={session.user.image} alt="Google" width={32} height={32} className="h-8 w-8 rounded-full ring-2 ring-border" />
                     )}
                     <span className="flex items-center gap-1.5 text-sm font-medium text-green-500">
                       <CheckCircle2 className="h-4 w-4" /> Connected

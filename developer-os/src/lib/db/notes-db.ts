@@ -122,8 +122,6 @@ async function migrateFromLocalStorage(): Promise<void> {
     const migrated = await db.get("meta", "migrated-from-ls");
     if (migrated) return;
 
-    console.log("[NotesDB] Migrating from localStorage to IndexedDB...");
-
     // Migrate notes
     try {
       const stored = localStorage.getItem(LS_NOTES_KEY);
@@ -134,7 +132,6 @@ async function migrateFromLocalStorage(): Promise<void> {
           await tx.store.put(note);
         }
         await tx.done;
-        console.log(`[NotesDB] Migrated ${notes.length} notes`);
         localStorage.removeItem(LS_NOTES_KEY);
       }
     } catch (e) {
@@ -151,7 +148,6 @@ async function migrateFromLocalStorage(): Promise<void> {
           await tx.store.put(subject);
         }
         await tx.done;
-        console.log(`[NotesDB] Migrated ${subjects.length} subjects`);
         localStorage.removeItem(LS_SUBJECTS_KEY);
       }
     } catch (e) {
@@ -160,7 +156,6 @@ async function migrateFromLocalStorage(): Promise<void> {
 
     // Mark migration complete
     await db.put("meta", { key: "migrated-from-ls", value: new Date().toISOString() });
-    console.log("[NotesDB] Migration complete");
   } catch (e) {
     console.warn("[NotesDB] Migration failed, will use defaults:", e);
   }

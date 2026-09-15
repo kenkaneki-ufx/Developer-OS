@@ -28,7 +28,7 @@ import {
 } from "../data/mock-dsa";
 
 export function useDSA() {
-  const [topics, setTopics] = useState<DSATopic[]>(mockTopics);
+  const [topics] = useState<DSATopic[]>(mockTopics);
   const [questions, setQuestions] = useState<DSAQuestion[]>(mockQuestions);
   const [platformStats] = useState<PlatformStats[]>(mockPlatformStats);
   const [streak, setStreak] = useState<StreakData>(mockStreak);

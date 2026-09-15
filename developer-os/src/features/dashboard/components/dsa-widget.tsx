@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Code, Flame, Target, TrendingUp } from "lucide-react";
+import { Code, Flame } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { DSAProgress } from "../types";
 

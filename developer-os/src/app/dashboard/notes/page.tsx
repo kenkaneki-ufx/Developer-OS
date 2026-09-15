@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FileText,
@@ -885,7 +886,7 @@ export default function NotesPage() {
           )}>{notes.filter((n) => !n.archived).length}</span>
         </motion.button>
 
-        {subjects.map((s, i) => {
+        {subjects.map((s) => {
           const count = notes.filter((n) => n.subject === s.id && !n.archived).length;
           const isActive = selectedSubject === s.id;
           const colors = subjectColorMap[s.color] || subjectColorMap.blue;
@@ -1920,7 +1921,7 @@ export default function NotesPage() {
                               />
                             </div>
                           )}
-                          {att.category === "image" && <div className="p-4 flex justify-center"><img src={att.url} alt={att.name} className="max-w-full max-h-[400px] rounded-lg object-contain" /></div>}
+                          {att.category === "image" && <div className="p-4 flex justify-center"><Image src={att.url} alt={att.name} width={800} height={400} unoptimized className="max-w-full max-h-[400px] w-auto h-auto rounded-lg object-contain" /></div>}
                           {att.category !== "pdf" && att.category !== "markdown" && att.category !== "image" && (
                             <div className="p-4 flex items-center gap-4">
                               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted/30">{getAttachmentIcon(att.category)}</div>

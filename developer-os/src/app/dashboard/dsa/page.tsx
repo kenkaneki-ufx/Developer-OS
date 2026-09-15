@@ -5,7 +5,6 @@ import { motion } from "framer-motion";
 import {
   Code,
   Search,
-  Filter,
   Plus,
   TrendingUp,
   Bookmark,
@@ -23,7 +22,7 @@ import {
   MistakeTracker,
 } from "@/features/dsa/components";
 import { useDSA } from "@/features/dsa/hooks/use-dsa";
-import type { Difficulty, Platform, QuestionStatus } from "@/features/dsa/types";
+import type { Difficulty } from "@/features/dsa/types";
 
 type ViewMode = "topics" | "questions" | "progress" | "mistakes" | "bookmarks";
 

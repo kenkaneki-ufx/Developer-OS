@@ -60,13 +60,6 @@ export default function MLRoadmapPage() {
     }
   };
 
-  const getCurrentPhase = () => {
-    const current = mlRoadmap.find(i => i.status === "in-progress");
-    if (current) return current.phase;
-    const firstPending = mlRoadmap.find(i => i.status === "pending");
-    return firstPending?.phase || "Foundation";
-  };
-
   return (
     <PageWrapper title="ML Roadmap" subtitle="Your Machine Learning learning journey">
       <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
